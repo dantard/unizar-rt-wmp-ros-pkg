@@ -23,7 +23,7 @@ The ros_rt_wmp nodes uses the RT-WMP protocol [1-5] that allows real time commun
 
 The data published in the topics are packed by the source ros_rt_wmp node in RT-WMP messages and delivered to the destination node. The latter unpack them and publish data to the correspondent topic. A similar (but two-way) process takes place for services. Since the RT-WMP is capable of managing efficiently the mobility of the nodes, the process is completely transparent to the users that have only to configure the needed topic/services and source/destination for each one of them.
 
-References
+* References
 
 [1] D. Tardioli, '''Real-Time Communication in Wireless ad-hoc networks. The RT-WMP protocol''', PhD Thesis, Universidad de Zaragoza, October, 2010
 
