@@ -7,7 +7,7 @@ As an example consider a team of robots building cooperatively a map. The robots
 
 The ros_rt_wmp nodes allow that, creating a multi-hop firm real-time network.
 
-*Example
+* Example
 
 Suppose that robot R0 has to share its \laser data with R4 that is, from the point of view of the network topology, 5 hops away and '''can't/don't want to''' share the same roscore. To do that is sufficient to instanciate two ros_rt_wmp nodes, the first on R0 and the second on R4. The \laser topic on R0 is remapped to the ros_rt_wmp "input" topic called (for example) /R0/tx/laser. It will provoke the node to send the data published in that topic to node R4 through the network.
 
