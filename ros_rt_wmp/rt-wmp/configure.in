@@ -1,0 +1,286 @@
+AC_INIT(configure.in)
+AM_INIT_AUTOMAKE(rt-wmp, 0.1)
+AM_MAINTAINER_MODE
+
+AC_ISC_POSIX
+AC_PROG_CC
+AC_PROG_CXX
+AM_PROG_CC_STDC
+AC_HEADER_STDC
+AC_PROG_RANLIB
+AM_PROG_CC_C_O
+
+#####################################################################################################################################################
+# PLATFORM TYPE
+#####################################################################################################################################################
+
+AC_ARG_WITH(headers,AC_HELP_STRING([--with-headers], [Specify Kernel Headers location [[default=running]]]),KERNEL_HEADERS_LOCATION=$withval,KERNEL_HEADERS_LOCATION=running)
+if test "$KERNEL_HEADERS_LOCATION" == "running" ; then
+	KERNEL_HEADERS_LOCATION="/lib/modules/`uname -r`"/build
+fi
+
+AC_SUBST(KERNEL_HEADERS_LOCATION)
+
+AC_ARG_WITH(gcc,AC_HELP_STRING([--with-gcc], [Specify Architecture [[default=arm-none-linux-gnueabi-]]]),GCCC=$withval,GCCC=arm-none-linux-gnueabi-)
+
+AC_ARG_WITH(arch,AC_HELP_STRING([--with-arch], [Specify Architecture [[default=x86]]]),COMPILE_ARCH=$withval,COMPILE_ARCH=x86)
+
+if test "$COMPILE_ARCH" == "x86" ; then
+	COMPILE_ARCH=" "
+	ARCHITECTURE="x86";
+elif test "$COMPILE_ARCH" == "arm" ; then
+	COMPILE_ARCH="ARCH=arm CROSS_COMPILE=$GCCC"
+	ARCHITECTURE="arm";
+fi
+
+AM_CONDITIONAL(COND_ARCH_X86, test "$ARCHITECTURE" == "x86" )                 
+AM_CONDITIONAL(COND_ARCH_ARM, test "$ARCHITECTURE" == "arm" )                 
+
+AC_SUBST(ARCHITECTURE)
+AC_SUBST(COMPILE_ARCH)
+
+AC_ARG_WITH(platform,AC_HELP_STRING([--with-platform], [Specify Platform [[default=uslinux]]]),WMP_WITH_PLATFORM=$withval,WMP_WITH_PLATFORM=linux_us)
+
+if test "$WMP_WITH_PLATFORM" == "linux_us" ; then
+	if test "$ARCHITECTURE" == "arm" ; then
+		CC=${GCCC}gcc
+	else	
+ 		CC=gcc
+		WMP_CPPFLAGS="-O2"
+	fi
+elif test "$WMP_WITH_PLATFORM" == "MaRTE_OS"; then
+	echo "Trying to guess MaRTE OS installation path";
+	TMP=`which mgcc`;
+	if test "$TMP" == "" ; then
+		echo "**** CONFIGURATION ERROR, EXITING..."
+		echo "**** Unable to locate mgcc."
+		echo "**** Is MaRTE Installed and in the PATH?"
+		exit 111
+	fi
+	MPATH=`echo  $TMP | sed 's/\/utils\/mgcc//'`
+	echo "Trying to guess GNAT installation path";
+	TMP=`which gnatmake`;
+	if test "$TMP" == "" ; then
+		echo "**** CONFIGURATION ERROR, EXITING..."
+		echo "**** Unable to locate gnatmake."
+		echo "**** Is GNAT Installed and in the PATH?"
+		exit 112
+	fi
+	CC=mgcc
+	LD=mld
+	WMP_CPPFLAGS="-nostdinc -I$MPATH/include"
+	GNATPATH=`echo  $TMP | sed 's/\/bin\/gnatmake//'`		
+	AC_SUBST(MPATH)	
+	AC_SUBST(GNATPATH)
+elif test "$WMP_WITH_PLATFORM" == "linux_ks"; then
+   echo "";
+else
+	echo "*** No EXISTING Platform specified, exiting..."
+	exit 114
+fi
+AM_CONDITIONAL(WMP_PLATFORM_USLINUX, test "$WMP_WITH_PLATFORM" == "linux_us" )
+AM_CONDITIONAL(WMP_PLATFORM_KSLINUX, test "$WMP_WITH_PLATFORM" == "linux_ks" )
+AM_CONDITIONAL(WMP_PLATFORM_MARTEOS, test "$WMP_WITH_PLATFORM" == "MaRTE_OS" )
+
+#####################################################################################################################################################
+# LLCOM
+#####################################################################################################################################################
+
+AC_ARG_WITH(llcom, AC_HELP_STRING([--with-llcom], [Specify llcom type [[default=default]]]),WMP_WITH_LLCOM=$withval,WMP_WITH_LLCOM=default) 
+if  test "$WMP_WITH_LLCOM" == "default"
+then
+	if test "$WMP_WITH_PLATFORM" == "linux_us" ; then
+		WMP_WITH_LLCOM="raw"
+	fi
+	if test "$WMP_WITH_PLATFORM" == "linux_ks" ; then
+		WMP_WITH_LLCOM="mac80211_mod"
+	fi
+else
+	if  test "$WMP_WITH_LLCOM" != "sock"   && 
+	    test "$WMP_WITH_LLCOM" != "ath5k_raw"  &&
+	    test "$WMP_WITH_LLCOM" != "raw"    &&
+	    test "$WMP_WITH_LLCOM" != "shmem"  &&
+	    test "$WMP_WITH_LLCOM" != "mac80211_mod"
+	 
+	then 
+	   echo "*** No EXISTING llcom specified, exiting..."
+	   exit 115
+	else
+	  if  test "$WMP_WITH_LLCOM"    == "sock"     || 
+	      test "$WMP_WITH_LLCOM"    == "shmem"     ||
+	      test "$WMP_WITH_LLCOM"    == "raw"      &&
+	      test "$WMP_WITH_PLATFORM" == "MaRTE_OS"  
+	  then
+	     echo "*** No EXISTING llcom for this platform (only ath5k_raw implemented for MaRTE OS), exiting..."
+	     exit 116
+	  else
+	    if test "$WMP_WITH_LLCOM"    == "sock"     ||
+	       test "$WMP_WITH_LLCOM"    == "shmem"     ||
+	       test "$WMP_WITH_LLCOM"    == "raw"      &&
+	       test "$WMP_WITH_PLATFORM" == "linux_ks"
+	    then
+	       echo "*** No EXISTING llcom for this platform (only ath5k_raw and mac80211_mod implemented for linux_ks), exiting..."
+	       exit 116
+	    fi
+	  fi
+	fi
+fi
+
+if  test "$WMP_WITH_LLCOM" == "ath5k_raw"
+then
+	if test -d src/platforms/linux_us/hwi/ath5k_raw/module ; then
+ 			#if test -d ../ath5k_raw/marte  ; then
+				echo -n ""
+			#fi
+	else 
+		echo "*** ERROR ath5k_raw not present!"		
+		echo "Directory ath5k_raw must be at the same level as rt-wmp"
+		echo "Internally links 'linux' and 'marte' directories must be created to the desired version"
+		exit 117
+	fi
+fi
+
+AM_CONDITIONAL(WMP_LLCOM_SOCK,  test "$WMP_WITH_LLCOM" == "sock"  )
+AM_CONDITIONAL(WMP_LLCOM_RAW,   test "$WMP_WITH_LLCOM" == "raw"   )
+AM_CONDITIONAL(WMP_LLCOM_ATH5K, test "$WMP_WITH_LLCOM" == "ath5k_raw" )
+AM_CONDITIONAL(WMP_LLCOM_SHMEM, test "$WMP_WITH_LLCOM" == "shmem" )
+AM_CONDITIONAL(WMP_LLCOM_MAC80211, test "$WMP_WITH_LLCOM" == "mac80211_mod" )
+
+AC_SUBST(WMP_WITH_LLCOM)
+
+
+#####################################################################################################################################################
+# ROUTING TYPE
+#####################################################################################################################################################
+AC_ARG_WITH(routing,AC_HELP_STRING([--with-routing], [Specify Routing Algorithm [[default=basic]]]),WMP_WITH_ROUTING=$withval,WMP_WITH_ROUTING=basic)
+if test "$WMP_WITH_ROUTING" != "basic" &&
+   test	"$WMP_WITH_ROUTING" != "tree"
+then
+	echo "*** No EXISTING Routing specified, exiting..."
+	exit 118
+fi
+AM_CONDITIONAL(WMP_ROUTING_BASIC, test "$WMP_WITH_ROUTING" == "basic")
+AM_CONDITIONAL(WMP_ROUTING_TREE, test "$WMP_WITH_ROUTING" == "tree")
+
+AC_SUBST(WMP_WITH_ROUTING)
+
+#####################################################################################################################################################
+# QoS
+#####################################################################################################################################################
+
+AC_ARG_ENABLE(qos-support,AC_HELP_STRING([--enable-qos-support], [Enable QoS Support [[default=no]]]),WMP_OPTION_QOS=yes,WMP_OPTION_QOS=no)
+if test "$WMP_OPTION_QOS" != "no"; then
+    AC_SUBST(AM_QOS_SUPPORT, "ENABLE_QOS_SUPPORT")
+else
+    AC_SUBST(AM_QOS_SUPPORT, "QOS_SUPPORT_DISABLED")  
+fi
+
+AM_CONDITIONAL(WMP_COND_QOS, test "$WMP_OPTION_QOS" == "yes" )
+AC_SUBST(WMP_OPTION_QOS)
+
+################################################################################
+# Linux_KS Interface
+################################################################################
+
+AC_ARG_ENABLE(ip_interface,AC_HELP_STRING([--disable-ip-interface], [Disable Linux_KS IP Interface [[default=no]]]),WMP_OPTION_KS_Interface=no,WMP_OPTION_KS_Interface=yes)
+
+#if test "$WMP_OPTION_EXAMPLES" != "yes"     &&
+#   test "$WMP_WITH_PLATFORM" != "linux_ks"
+#then
+#   echo "*** IP Interface only available for linux_ks, exiting..."
+#   exit
+#fi
+
+AM_CONDITIONAL(WMP_COND_KS_INTERFACE, test "$WMP_OPTION_KS_Interface" == "yes")
+AC_SUBST(WMP_OPTION_KS_Interface)
+
+
+TOP_DIR=`pwd`
+AC_SUBST(TOP_DIR)
+AC_SUBST(WMP_WITH_PLATFORM)
+AC_SUBST(WMP_CPPFLAGS)
+
+AC_SUBST(AM_PLATFORM, WMP_PLATFORM_$WMP_WITH_PLATFORM)
+AC_SUBST(AM_LLCOM, WMP_LLCOM_$WMP_WITH_LLCOM)
+AC_SUBST(AM_ROUTING, WMP_ROUTING_$WMP_WITH_ROUTING)
+AC_SUBST(AM_KS_HWI, $WMP_WITH_LLCOM)
+
+AC_CONFIG_FILES([
+Makefile
+src/Makefile
+src/wmp_config.h
+src/Kbuild
+])
+AC_CONFIG_FILES([
+example/Makefile
+example/empty/Makefile
+])
+
+if test ! "$WMP_WITH_PLATFORM" == "linux_ks"
+then
+AC_CONFIG_FILES([
+src/core/Makefile
+src/core/routing/Makefile
+src/core/routing/basic/Makefile
+src/core/routing/tree/Makefile
+src/platforms/Makefile
+src/platforms/linux_us/Makefile
+src/platforms/linux_us/hwi/Makefile
+src/platforms/linux_us/hwi/sockets/Makefile
+src/platforms/linux_us/hwi/ath5k_raw/Makefile
+src/platforms/linux_us/hwi/raw/Makefile
+src/platforms/linux_us/hwi/shmem/Makefile
+src/platforms/MaRTE_OS/Makefile
+src/platforms/MaRTE_OS/hwi/Makefile
+src/platforms/MaRTE_OS/hwi/ath5k_raw/Makefile
+])
+fi
+
+AC_OUTPUT
+
+# to make eclipse happy
+cd src
+ln -s wmp_config.h.in wmp_config.h.in.h 2>/dev/null
+cd ..
+
+# create directories
+rm -r lib 2>/dev/null
+rm -r lib-$WMP_WITH_PLATFORM 2>/dev/null
+
+if test ! "$WMP_WITH_PLATFORM" == "linux_ks"
+then
+mkdir lib-$WMP_WITH_PLATFORM 2>/dev/null
+ln -s lib-$WMP_WITH_PLATFORM lib 2>/dev/null
+fi
+
+echo ""
+echo "----------------------------------------"
+echo "BUILD ENVIRONMENT:"
+echo "Base dir          -    $TOP_DIR"
+echo "Platform          -    $WMP_WITH_PLATFORM"
+echo "Routing type      -    $WMP_WITH_ROUTING"
+echo "Low Level Comm    -    $WMP_WITH_LLCOM"
+echo "Architecture      -    $ARCHITECTURE"
+        if test "$ARCHITECTURE" == "arm"; then
+                echo "Cross compiler    -    $GCCC"
+        fi
+
+if test "$WMP_WITH_PLATFORM" == "linux_ks"; then
+echo "IP Interface      -    $WMP_OPTION_KS_Interface"
+echo "Kernel Header     -    $KERNEL_HEADERS_LOCATION"
+fi
+
+if test "$WMP_WITH_PLATFORM" == "MaRTE_OS"; then
+echo "MaRTE Path       -    $MPATH"
+echo "GNAT Path        -    $GNATPATH"
+fi
+
+echo "Platform:        $WMP_WITH_PLATFORM" > configuration.txt
+echo "Low Level Comm:  $WMP_WITH_LLCOM" >> configuration.txt
+echo "Compile Example: $WMP_OPTION_EXAMPLES" >> configuration.txt
+
+
+rm `find src -name *.o` >/dev/null 2>&1 
+rm `find src -name *.a` >/dev/null 2>&1
+rm `find src -name *.ko`>/dev/null 2>&1
+exit 0

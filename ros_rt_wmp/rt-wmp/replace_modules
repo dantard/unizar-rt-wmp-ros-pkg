@@ -1,0 +1,21 @@
+#!/bin/sh
+rmmod rt_wmp_interface rt_wmp >log.txt 2>&1
+mod=`cat /proc/modules | grep ^mac80211 | cut -d\  -f 4 | tr , " " | tr "-" " "`
+deps=`depmod -n | grep mac80211 | grep ko: | cut -f 1 -d\ `
+for i in $deps ; do
+	name=`basename $i .ko:`
+	rmmod $name >>log.txt 2>&1
+	if [ $? == 0 ]; then
+		echo Removing module $name
+	fi
+done
+rmmod mac80211 >log.txt 2>&1
+echo Installing new mac80211.ko
+insmod modules-x86/mac80211.ko
+echo "Re-inserting wireless modules $mod"
+modprobe -a $mod >/dev/null >>log.txt 2>&1
+echo "Installing RT-WMP modules"
+insmod modules-x86/rt_wmp.ko >>log.txt 2>&1
+insmod modules-x86/rt_wmp_interface.ko >>log.txt 2>&1
+echo "Check syslog:"
+tail -n 100 /var/log/syslog  | grep RT-WMP

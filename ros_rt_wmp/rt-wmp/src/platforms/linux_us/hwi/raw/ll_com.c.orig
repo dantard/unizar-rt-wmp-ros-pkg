@@ -1,0 +1,225 @@
+/*------------------------------------------------------------------------
+ *---------------------           RT-WMP              --------------------
+ *------------------------------------------------------------------------
+ *                                                         V7.0B  11/05/10
+ *
+ *
+ *  File: ./src/platforms/linux_us/hwi/raw/ll_com.c
+ *  Authors: Danilo Tardioli
+ *  ----------------------------------------------------------------------
+ *  Copyright (C) 2000-2010, Universidad de Zaragoza, SPAIN
+ *
+ *  Contact Addresses: Danilo Tardioli                   dantard@unizar.es
+ *
+ *  RT-WMP is free software; you can  redistribute it and/or  modify it
+ *  under the terms of the GNU General Public License  as published by the
+ *  Free Software Foundation;  either  version 2, or (at  your option) any
+ *  later version.
+ *
+ *  RT-WMP  is distributed  in the  hope  that  it will be   useful, but
+ *  WITHOUT  ANY  WARRANTY;     without  even the   implied   warranty  of
+ *  MERCHANTABILITY  or  FITNESS FOR A  PARTICULAR PURPOSE.    See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received  a  copy of  the  GNU General Public  License
+ *  distributed with RT-WMP;  see file COPYING.   If not,  write to the
+ *  Free Software  Foundation,  59 Temple Place  -  Suite 330,  Boston, MA
+ *  02111-1307, USA.
+ *
+ *  As a  special exception, if you  link this  unit  with other  files to
+ *  produce an   executable,   this unit  does  not  by  itself cause  the
+ *  resulting executable to be covered by the  GNU General Public License.
+ *  This exception does  not however invalidate  any other reasons why the
+ *  executable file might be covered by the GNU Public License.
+ *
+ *----------------------------------------------------------------------*/
+
+#include "config/compiler.h"
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <pthread.h>
+#include <math.h>
+#include <string.h>
+#include <sys/time.h>
+#include <ctype.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <linux/if.h>
+#include <netpacket/packet.h>
+#include <net/ethernet.h>     /* the L2 protocols */
+#include <asm/types.h>
+#include <time.h>
+#include "core/include/ml_com.h"
+#include "core/include/definitions.h"
+#include "core/interface/wmp_interface.h"
+#include "core/include/wmp_misc.h"
+#include "core/include/frames.h"
+#include "core/include/ll_com.h"
+
+static int s, rx;
+static struct ethhdr *eh;
+static struct sockaddr_ll socket_address;
+static char DEV[20], param[20], val[20], buffer[2500], *eth_head, *eth_data;
+static unsigned char src_mac[6], bcast_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
+int readllcfg() {
+	char filename[256];
+	sprintf(DEV, "wlan0");
+	snprintf(filename, 256, "%s/.rt-wmp/rt-wmp-us-raw.ll", getenv("HOME"));
+	FILE * f = fopen(filename, "r");
+	if (f > 0) {
+		WMP_MSG(stderr, "Reading Low Level Configuration file (%s)... \n",
+				filename);
+		while (fscanf(f, "%s %s", param, val) != EOF) {
+			int exists = 0;
+
+			if (strcmp(param, "DEVICE") == 0) {
+				strcpy(DEV, val);
+				exists = 1;
+			}
+
+			if (exists) {
+				WMP_MSG(stderr, "READ OPTION: %s = %s\n", param, val);
+			}else{
+				if (param[0]!='#'){
+					WMP_MSG(stderr, "WARNING ::: UKNOWN OPTION %s\n", param, val);
+				}
+			}
+		}
+		WMP_MSG(stderr, "Done.\n");
+	} else {
+		WMP_MSG(stderr, "File %s not found, using default values\n", filename);
+	}
+	return 0;
+}
+
+void closeLowLevelCom() {
+
+}
+
+int eth_raw_init(char * DEVICE) {
+
+	/* Vars */
+	int i;
+	struct ifreq ifr;
+	int ifindex = 0; /*Ethernet Interface index*/
+
+	/* Open socket */
+	s = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	if (s == -1) {
+		perror("socket():");
+		exit(1);
+	}
+	printf("Successfully opened socket: %i\n", s);
+
+	/*Get ethernet interface index*/
+	strncpy(ifr.ifr_name, DEVICE, IFNAMSIZ);
+	if (ioctl(s, SIOCGIFINDEX, &ifr) == -1) {
+		perror("SIOCGIFINDEX");
+		exit(1);
+	}
+	ifindex = ifr.ifr_ifindex;
+	printf("Successfully got interface index: %i\n", ifindex);
+
+	/*retrieve corresponding MAC*/
+	if (ioctl(s, SIOCGIFHWADDR, &ifr) == -1) {
+		perror("SIOCGIFINDEX");
+		exit(1);
+	}
+	for (i = 0; i < 6; i++) {
+		src_mac[i] = ifr.ifr_hwaddr.sa_data[i];
+	}
+	WMP_MSG(stderr,"Host MAC address: %02X:%02X:%02X:%02X:%02X:%02X\n", src_mac[0],
+			src_mac[1], src_mac[2], src_mac[3], src_mac[4], src_mac[5]);
+
+	/*prepare sockaddr_ll*/
+	socket_address.sll_family = PF_PACKET;
+	socket_address.sll_protocol = htons(ETH_P_ALL);
+	socket_address.sll_ifindex = ifindex;
+	//socket_address.sll_hatype   = ARPHRD_ETHER;
+	socket_address.sll_pkttype = PACKET_BROADCAST;
+	socket_address.sll_halen = ETH_ALEN;
+	if (strcmp(DEV,"lo") == 0){
+		WMP_MSG(stderr,"*** WARNING: Using 'lo' interface");
+		for (i = 0; i < 6; i++){
+			socket_address.sll_addr[0] = src_mac[i];
+		}
+	}else{
+		for (i = 0; i < 6; i++){
+			socket_address.sll_addr[0] = bcast_mac[i];
+		}
+	}
+	socket_address.sll_addr[6] = 0x00;
+	socket_address.sll_addr[7] = 0x00;
+	return 0;
+}
+
+int initLowLevelCom() {
+	readllcfg();
+	eth_raw_init(DEV);
+	eth_head = buffer; /* eth_head points to beginning of buffer (ethernet header fields) */
+	eth_data = buffer + ETH_HLEN; /* eth_data points to data field of the ethernet frame */
+	eh = (struct ethhdr *) eth_head;
+	return 1;
+}
+
+int llpsend(char * f, int size, int proto){
+	int i;
+	memcpy((void *) eh->h_dest, (void*) bcast_mac, ETH_ALEN);
+	memcpy((void *) eh->h_source, (void*) src_mac, ETH_ALEN);
+	eh->h_proto = htons(proto);
+	memcpy(eth_data, f, size);
+	i = sendto(s, buffer, size + ETHER_HDR_LEN, 0,
+			(struct sockaddr*) &socket_address, sizeof(socket_address));
+	if (i == -1) {
+		perror("sendto():");
+		exit(1);
+	}
+}
+
+int llsend(char * f, int size) {
+	llpsend(f,size,WMP_TYPE_FIELD);
+}
+
+rxInfo llreceive(char *f, int timeout) {
+	int r = 0;
+	rxInfo ret;
+	struct timeval tv;
+
+	if (timeout > 0) {
+		fd_set fd_rx;
+		tv.tv_sec = 0;
+		tv.tv_usec = 1000 * timeout;
+		FD_ZERO(&fd_rx);
+		FD_SET(s, &fd_rx);
+		r = select(FD_SETSIZE, &fd_rx, NULL, NULL, &tv);
+	} else {
+		r = 1;
+	}
+	if (r) {
+		int rlen = recvfrom(s, buffer, MTU, 0, 0, 0);
+		ret.proto = ntohs(eh->h_proto);
+		WMP_DBG(LL_COM,"protocol:%x\n",ret.proto);
+		memcpy(f, buffer + ETHER_HDR_LEN, rlen - ETHER_HDR_LEN);
+		ret.size = rlen - ETHER_HDR_LEN;
+		ret.error = 0;
+		ret.rate = 10;
+		ret.has_lq = 0;
+		return ret;
+	} else {
+		ret.error = 1;
+		return ret;
+	}
+}
+
+
+

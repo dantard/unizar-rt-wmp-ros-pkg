@@ -1,0 +1,11 @@
+if WMP_PLATFORM_USLINUX
+SUBDIRS = linux_us
+endif
+
+if WMP_PLATFORM_MARTEOS
+SUBDIRS= MaRTE_OS
+endif
+
+#if WMP_PLATFORM_KSLINUX
+#SUBDIRS = linux_ks
+#endif

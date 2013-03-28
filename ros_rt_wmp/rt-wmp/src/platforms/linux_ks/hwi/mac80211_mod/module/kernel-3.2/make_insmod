@@ -1,0 +1,11 @@
+mod=`cat /proc/modules | grep ^mac80211 | cut -d\  -f 4 | tr , " " | tr "-" " "`
+for i in $mod 
+do
+	deps+=`cat /proc/modules | grep ^"$i "| cut -d\  -f 4 | tr , " " | tr "-" " "`
+done
+sudo rmmod $deps $mod mac80211
+sudo insmod ./mac80211.ko
+for i in $mod
+do	
+	sudo modprobe $i
+done

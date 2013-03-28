@@ -1,0 +1,15 @@
+<package>
+  <description brief="ros_rt_wmp_msgs">
+
+     ros_rt_wmp_msgs
+
+  </description>
+  <author>Pablo Urcola</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ros_rt_wmp_msgs</url>
+  <depend package="roscpp"/>
+
+</package>
+
+

@@ -1,0 +1,11 @@
+<stack>
+  <description brief="ros-rt-wmp">ros-rt-wmp</description>
+  <author>Maintained by Danilo Tardioli (dantard@unizar.es)</author>
+  <license>BSD,GPL v2</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ros-rt-wmp-pkg</url>
+  <depend stack="common_msgs" /> <!-- nav_msgs, geometry_msgs, sensor_msgs -->
+  <depend stack="geometry" /> <!-- tf -->
+  <depend stack="ros" />
+  <depend stack="ros_comm" /> <!-- rospy, topic_tools, std_msgs, roscpp -->
+</stack>

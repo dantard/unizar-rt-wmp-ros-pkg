@@ -1,0 +1,68 @@
+ifdef WMP_ROUTING_basic
+   CONFIG_routing_basic=y
+else
+   CONFIG_routing_basic=no
+endif
+
+ifdef WMP_ROUTING_tree
+   CONFIG_routing_tree=y
+else
+   CONFIG_routing_tree=no
+endif
+
+ifdef WMP_KS_INTERFACE
+   CONFIG_KS_INTERFACE=y
+else
+   CONFIG_KS_INTERFACE=no
+endif
+
+ccflags-y += -I$(src)
+ccflags-y += -I$(src)/core/include
+ccflags-y += -I$(src)/core/interface
+ccflags-y += -I$(src)/platforms/linux_ks
+ccflags-y += -I$(src)/platforms/linux_ks/config
+
+
+obj-m := rt_wmp.o
+rt_wmp-y +=core/dijkstra_alg.o
+rt_wmp-y +=core/flow_control.o
+rt_wmp-y +=core/interface.o
+rt_wmp-y +=core/ml_com.o
+rt_wmp-y +=core/nstat.o
+rt_wmp-y +=core/queues.o
+rt_wmp-y +=core/rssi_average.o
+rt_wmp-y +=core/wmp_com.o
+rt_wmp-y +=core/wmp_utils.o
+rt_wmp-y +=core/dijkstra.o
+rt_wmp-y +=core/frame_compress.o
+rt_wmp-y +=core/lqm.o
+rt_wmp-y +=core/MobileAverage.o
+rt_wmp-y +=core/prim.o
+rt_wmp-y +=core/wmp_misc.o
+rt_wmp-y +=core/queue_core.o
+rt_wmp-y +=core/queue_rx.o
+rt_wmp-y +=core/queue_tx.o
+rt_wmp-y +=core/task_timing.o  
+rt_wmp-y +=core/routing/manage.o
+rt_wmp-y +=core/routing/aura.o
+rt_wmp-y +=core/routing/basic/frames.o
+rt_wmp-y +=core/routing/basic/handle_frames.o
+rt_wmp-$(CONFIG_routing_tree) +=core/routing/tree/aura.o
+rt_wmp-$(CONFIG_routing_tree) +=core/routing/tree/frames.o
+rt_wmp-$(CONFIG_routing_tree) +=core/routing/tree/handle_frames.o
+rt_wmp-$(CONFIG_routing_tree) +=core/routing/tree/tree.o
+rt_wmp-y +=core/RT-WMP.o
+
+rt_wmp-y +=platforms/linux_ks/proc/proc.o
+rt_wmp-y +=platforms/linux_ks/config/compiler.o
+rt_wmp-y +=platforms/linux_ks/hwi/@AM_KS_HWI@/ll_com.o
+rt_wmp-y +=platforms/linux_ks/wmp_misc.o
+rt_wmp-y +=platforms/linux_ks/wmpInit.o
+
+# ATH5K_RAW
+ifdef WMP_LLCOM_ATH5K  
+	obj-y += platforms/linux_ks/hwi/ath5k_raw/module/
+endif
+
+# Module for the interface
+obj-y += platforms/linux_ks/net_device/

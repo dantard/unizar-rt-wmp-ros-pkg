@@ -1,0 +1,8 @@
+int32 dest
+int8  priority
+
+#add other fields user-defined
+
+---
+int32 result
+# add fields user-defined, int32 is just an example, you can remove it

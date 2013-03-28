@@ -1,0 +1,10 @@
+# Needed for RT-WMP headers included
+ccflags-y += -I$(src)/../../..
+ccflags-y += -I$(src)/..
+
+# EXTRA_CFLAGS = -mhard-float
+
+obj-m := rt_wmp_interface.o
+rt_wmp_interface-y += main.o
+rt_wmp_interface-y += conf.o
+rt_wmp_interface-y += ioctl.o

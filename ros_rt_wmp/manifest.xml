@@ -1,0 +1,20 @@
+<package>
+  <description brief="ros-rt-wmp-us-raw">
+
+     ros-rt-wmp-us-raw
+
+  </description>
+  <author>Danilo Tardioli, dantard@unizar.es</author>
+  <license>GPL v2 </license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/ros-rt-wmp</url>
+
+  <rosdep name="libpcap" />
+  <depend package="std_msgs"></depend>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="tf"/>
+  <depend package="ros_rt_wmp_msgs"/>
+</package>
+
+
