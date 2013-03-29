@@ -80,8 +80,10 @@ int main(int argc, char** argv) {
 				STR("Specify node WMP address"));
 		argo_setCommentId(argo_addIntMandatory(&nnodes, STR("num-nodes"), 2, 1),
 				STR("Specify number of nodes"));
+		argo_setExample(argv[0],STR("--node-id 0 --num-nodes 3 --auto-namespace"));
+	} else {
+		argo_setExample(argv[0],STR("--auto-namespace"));
 	}
-	argo_setExample(argv[0],STR("--node-id 0 --num-nodes 3 --auto-namespace"));
 	argo_doProcess(argc, argv, 0);
 
 	wmpSetup(node_id, nnodes);
@@ -103,6 +105,9 @@ int main(int argc, char** argv) {
 	define_objects(&n,&w);
 
 	wmpRunBG();
+	if (wmpIsKernelSpace()){
+		printf("Node %s with id %d of %d is running.\n",name, wmpGetNodeId(), wmpGetNumOfNodes());
+	}
 	ros::spin();
 	return 0;
 

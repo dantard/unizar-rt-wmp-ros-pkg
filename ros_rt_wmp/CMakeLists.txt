@@ -4,7 +4,12 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 rosbuild_init()
 
 file(APPEND .config "")
+file(APPEND .target "")
+
+SET(type ros-rt-wmp)
+
 include(${PROJECT_SOURCE_DIR}/.config)
+include(${PROJECT_SOURCE_DIR}/.target)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
@@ -113,7 +118,10 @@ add_custom_target(compile ALL)
                                    
 ## Select the desired configuration v here v
 
-add_dependencies(compile ros-rt-wmp)
+
+
+add_dependencies(compile ${type})
+#add_dependencies(compile ros-rt-wmp)
 #add_dependencies(compile ros-rt-wmp-us-sock)
 #add_dependencies(compile ros-rt-wmp-us-ath5k)
 #add_dependencies(compile ros-rt-wmp-ks)

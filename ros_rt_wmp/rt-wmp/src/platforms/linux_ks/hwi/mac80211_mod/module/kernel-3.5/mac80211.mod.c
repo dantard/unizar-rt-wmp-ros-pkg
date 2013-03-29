@@ -297,4 +297,4 @@ __attribute__((section(".modinfo"))) =
 "depends=cfg80211";
 
 
-MODULE_INFO(srcversion, "0F0913B3479A913B0580468");
+MODULE_INFO(srcversion, "7E41C839432F103A5D8DD44");

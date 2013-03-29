@@ -91,8 +91,8 @@
 
 #define QOS_SUPPORT_DISABLED
 
-#define WMP_PLATFORM_linux_us
-#define WMP_LLCOM_raw
+#define WMP_PLATFORM_linux_ks
+#define WMP_LLCOM_mac80211_mod
 #define WMP_ROUTING_basic
 
 #endif
