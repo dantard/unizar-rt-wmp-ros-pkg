@@ -34,3 +34,5 @@ The data published in the topics are packed by the source ros_rt_wmp node in RT-
 [4] D. Sicignano, D. Tardioli and J. L. Villarroel, '''QoS over Real Time wireless multihop Network''', In the First International Conference on Ad-hoc Networks, 2009
 
 [5] D. Tardioli and J. L. Villarroel, '''Real-Time Communications over 802.11: RT-WMP''', In the fourth IEEE international Conference on Mobile Ad-hoc and Sensor Systems, 2007
+
+* Complete documentation can be found at: http://www.ros.org/wiki/ros-rt-wmp
