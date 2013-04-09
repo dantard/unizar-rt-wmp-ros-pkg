@@ -91,6 +91,8 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 		unsigned int dest, signed char priority) {
 	int i, nparts, must_signal = 0;
 	int a = wmpGetNodeId();
+	unsigned short ts = (unsigned short) (getRawActualTimeus() & 0x7F);
+
 	if (q->drop_next){
 		q->drop_next = 0;
 		return 1;
@@ -98,8 +100,10 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 	exclusive_on(q);
 
 	a = a << 11;
+	ts = ts << 5;
+
 	q->hash_idx++;
-	if (q->hash_idx > 2046) {
+	if (q->hash_idx > 14) {
 		q->hash_idx = 1;
 	}
 
@@ -120,7 +124,9 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 			q->longMsg[i]->dest = dest;
 			q->longMsg[i]->port = port;
 			q->longMsg[i]->priority = priority;
-			q->longMsg[i]->hash = a + q->hash_idx;
+			q->longMsg[i]->hash = a + ts +q->hash_idx;
+			//fprintf(stderr,"TX Hash:%d : %d, %d, %d\n", q->longMsg[i]->hash,a,ts,q->hash_idx);
+
 			q->longMsg[i]->ts = getRawActualTimeus();
 			q->longMsg[i]->msg_part_size = q->message_part_size;
 			q->longMsg[i]->num_parts = nparts;
