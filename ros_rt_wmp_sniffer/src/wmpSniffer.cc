@@ -68,9 +68,11 @@ int main(int argc, char **argv) {
 	} else if (argc == 2) {
 		param = argv[1];
 	}
-
-	pcap_init(strdup("lo"), 3);
-
+	if (argc == 1){
+		pcap_init(strdup("lo"), 3);
+	}else{
+		pcap_init(strdup(argv[1]), 3);
+	}
 	pid_t pID = vfork(); //smarter fork, pauses parent process till done
 	if (pID == 0) {
 
