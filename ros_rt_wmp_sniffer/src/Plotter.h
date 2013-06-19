@@ -71,7 +71,6 @@ public:
 		}
 		std::cout << "Writing " << sname.c_str() << std::endl;
 		fdata.open(sname.c_str());
-		std::cerr << sname << std::endl;
 		Q * elem = v.at(id);
 		//fdata << name.at(i) << std::endl << std::endl;
 		for (int j = 0; j < elem->getCount(); j++) {
@@ -81,6 +80,9 @@ public:
 	}
 
 	void writeAll(std::string name) {
+
+		//TODO:
+		return;
 		int res = system("mkdir data");
 		if (res!=0){
 			fprintf(stderr,"Error creating 'data' directory\n");

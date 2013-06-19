@@ -80,10 +80,12 @@ void window2::on_button12_clicked() {
 	range_setted = 0;
 	hide();
 }
-
+#include "icon.h"
 window2::window2(main_window* mw) :
 	window2_glade() {
+	set_icon(Gdk::Pixbuf::create_from_xpm_data(icon));
 	this->mw = mw;
+	button10->hide();
 	set_size_request(600, 600);
 	treeview2->signal_cursor_changed().connect(sigc::mem_fun(*this,
 			&window2::on_cursor_changed));
@@ -170,10 +172,14 @@ void window2::row_append(int id, const char* txt, const char*uni) {
 /* button efz*/
 void window2::on_button22_clicked() {
 	int nnodes = 1;
+	fprintf(stderr,"bgn:%d end:%d\n", 22, 22);
+
 	//io_open_sim_data(this->filename);
 	if (nnodes > 0) {
 		int n = (int) to_sb->get_value();
 		int from = (int) from_sb->get_value();
+
+
 		io_go_to(from);
 		io_create_tmp_file();
 		char data[2500];

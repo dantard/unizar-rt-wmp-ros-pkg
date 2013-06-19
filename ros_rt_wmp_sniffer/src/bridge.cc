@@ -78,42 +78,45 @@ int  tx, rx, unit_size,filepos = 0, delay, DIST_MAX,
 	THRESHOLD = 500, num_nodes, clicked = 0,stop = 0;
 
 void stop_bridge() {
-    buffer_layer_stop();
-    //fprintf(stderr, "Done.\n");
+	stop = 1;
 }
 
 void* bridge(void * param) {
-    //sleep(1);
-    //fprintf(stderr, "Ready...\n");
-
     /* BRIDGE */
     int index = 0;
     char f[2500], fdata[2500];
     unsigned long long time_us,old_time_us = 0,base_time_us=0;
     wmpFrame * p = (wmpFrame*) f;
     bool first_frame = true;
-    while (stop != 1) {
 
+	unsigned long long started_at_us = getRawActualTimeus();
 
-    	simData_Hdr sd_hdr;
+	while (stop != 1) {
+
+		simData_Hdr sd_hdr;
       	std::set<int> reached;
       	std::map<int, robo_pose_t> poses;
         int nbytes = 0, data_size = 0;
         char * pointer = &fdata[0];
 
+        nbytes=pcap_sniff_packet(f,sd_hdr,time_us,poses);
 
-        nbytes = buffer_layer_sniff_packet(f, sd_hdr, time_us, reached, poses);
+        if (nbytes < 0){
+        	continue;
+        }
+
+        if (time_us < started_at_us){
+        	continue;
+        }
+
         if (first_frame){
         	base_time_us=time_us;
         	first_frame = false;
         }
 
         time_us-=base_time_us;
-
        	if (nbytes <= 0){
-       		fprintf(stderr,"*** BRIDGE STOP REQUESTED\n");
         	stop = 1;
-        	buffer_layer_clear();
        		continue;
         }
 
@@ -122,7 +125,7 @@ void* bridge(void * param) {
         	if (!valid_frame(p, nbytes,num_nodes)) continue;
         	greatest_clean_time_check(p);
         }
-        //fprintf(stderr,"BC Size: %d\n",p->hdr.bc_len);
+
         sd_hdr.time=time_us;
         sd_hdr.num_nodes = num_nodes;
         sd_hdr.len = nbytes;
@@ -143,12 +146,10 @@ void* bridge(void * param) {
 
         pointer += flen;
         data_size += flen;
-        //fprintf(stderr, "BRIDGE :: Writing %d bytes\n",data_size);
         sdhp->simDataLen = data_size;
         io_write_sim_frame(&fdata[0], data_size);
         new_frame(fdata, data_size);
     }
-    fprintf(stderr, "Bridge switched off...                          \n");
     close(rx);
     close(tx);
     SIGNAL(&sem);
@@ -161,9 +162,6 @@ int start_bridge(int num_nodes_p, int _sim) {
 	sim = _sim;
     num_nodes = num_nodes_p;
     reset_actual_gct();
-	if (!buffer_layer_init(sim, num_nodes, iface)) {
-		return 0;
-	}
     io_reopen_file_to_write(num_nodes);
     pthread_mutex_init(&sem, NULL);
     WAIT(&sem);

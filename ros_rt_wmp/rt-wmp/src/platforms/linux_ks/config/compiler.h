@@ -121,7 +121,7 @@ typedef struct {
       (int) simple_strtol(s,&next,10);                         \
    })
 
-void inline atof(const char *cadena, double *res);
+void atof(const char *cadena, double *res);
 
 #define ATOF(src, dst) atof(src, dst)
 

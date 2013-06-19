@@ -178,7 +178,7 @@ rec_param_dlg_glade::rec_param_dlg_glade(
    vbox6->pack_start(*frame1, Gtk::PACK_SHRINK, 0);
    rec_param_dlg->get_vbox()->unset_flags(Gtk::CAN_FOCUS);
    rec_param_dlg->get_vbox()->pack_start(*vbox6, Gtk::PACK_SHRINK, 0);
-   rec_param_dlg->set_size_request(400,-1);
+   rec_param_dlg->set_size_request(400,200);
    rec_param_dlg->unset_flags(Gtk::CAN_FOCUS);
    rec_param_dlg->set_title("Recording Parameters");
    rec_param_dlg->set_modal(true);

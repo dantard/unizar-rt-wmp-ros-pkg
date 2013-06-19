@@ -207,7 +207,7 @@ int ml_receive(wmpFrame *f, int timeout) {
 			}
 
 			if (ml_filter(f->hdr.from)){
-				continue;
+				//continue;
 			}
 
 			if (ml_rx_error(f)){

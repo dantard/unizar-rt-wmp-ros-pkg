@@ -77,10 +77,6 @@ int rt_wmp_is_active(){
 
 int rt_wmp_netif_receive_skb(struct sk_buff *skb, int signal){
 	int proto;
-
-//	printk(KERN_ERR "DEV_MINE:%p\n", net_dev);
-
-
 	if (!initialized){
 #ifdef MAC80211
 		dev_kfree_skb(skb);
@@ -99,6 +95,7 @@ int rt_wmp_netif_receive_skb(struct sk_buff *skb, int signal){
 		proto = skb->protocol;
 		skb->data[0] = 98 + (signed char) signal;
 #endif
+
 
 		if (promisc){
 			enqueue_rx_queue(&rx_rtwmp_queue, skb);

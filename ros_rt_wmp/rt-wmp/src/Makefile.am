@@ -14,13 +14,24 @@ export WMP_KS_INTERFACE=foo
 endif
 
 all:
-	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD)/platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(shell uname -r | cut -c 1-3) modules $(COMPILE_ARCH)
-	cp platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(shell uname -r | cut -c 1-3)/Module.symvers .
+if WMP_LLCOM_MAC80211
+	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD)/platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(KERNEL_VERSION) modules $(COMPILE_ARCH)
+	cp platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(KERNEL_VERSION)/Module.symvers .
 	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD) modules $(COMPILE_ARCH)
 	( cd platforms/linux_ks/lib && make )
 	mkdir -p ../modules-$(ARCHITECTURE)
 	mv rt_wmp.ko platforms/linux_ks/net_device/rt_wmp_interface.ko ../modules-$(ARCHITECTURE)
-	mv platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(shell uname -r | cut -c 1-3)/mac80211.ko ../modules-$(ARCHITECTURE)	        
+	mv platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(KERNEL_VERSION)/mac80211.ko ../modules-$(ARCHITECTURE)	        
+endif
+if WMP_LLCOM_8192CU
+	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD)/platforms/linux_ks/hwi/8192cu/module/kernel-$(KERNEL_VERSION) modules $(COMPILE_ARCH)
+	cp platforms/linux_ks/hwi/8192cu/module/kernel-$(KERNEL_VERSION)/Module.symvers .
+	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD) modules $(COMPILE_ARCH)
+	( cd platforms/linux_ks/lib && make )
+	mkdir -p ../modules-$(ARCHITECTURE)
+	mv rt_wmp.ko platforms/linux_ks/net_device/rt_wmp_interface.ko ../modules-$(ARCHITECTURE)
+	mv platforms/linux_ks/hwi/8192cu/module/kernel-$(KERNEL_VERSION)/8192cu.ko ../modules-$(ARCHITECTURE)	        
+endif
 
 if COND_ARCH_X86
 install: 

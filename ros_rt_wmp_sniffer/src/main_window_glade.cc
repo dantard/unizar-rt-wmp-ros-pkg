@@ -53,7 +53,8 @@ main_window_glade::main_window_glade(
    menuitem4 = NULL;
    menubar1 = Gtk::manage(new class Gtk::MenuBar());
    alignment22 = Gtk::manage(new class Gtk::Alignment());
-   label93 = Gtk::manage(new class Gtk::Label("<b>Current Tree</b>"));
+   //label93 = Gtk::manage(new class Gtk::Label("<b>Links View</b>"));
+   label93 = Gtk::manage(new class Gtk::Label(""));
    ct_frame = Gtk::manage(new class Gtk::Frame());
    alignment21 = Gtk::manage(new class Gtk::Alignment());
    label92 = Gtk::manage(new class Gtk::Label("<b>Next Tree</b>"));
@@ -68,9 +69,9 @@ main_window_glade::main_window_glade(
    onedview = Gtk::manage(new class Gtk::Frame());
    prim_cb = Gtk::manage(new class Gtk::CheckButton("Prim"));
    foreign_cb = Gtk::manage(new class Gtk::CheckButton("Foreign"));
-   d1_cb = Gtk::manage(new class Gtk::CheckButton("1D Frames"));
-   d2_cb = Gtk::manage(new class Gtk::CheckButton("2D Frames"));
-   text_cb = Gtk::manage(new class Gtk::CheckButton("Text"));
+   d1_cb = Gtk::manage(new class Gtk::CheckButton("Frames"));
+   d2_cb = Gtk::manage(new class Gtk::CheckButton("2D View"));
+   text_cb = Gtk::manage(new class Gtk::CheckButton("Frame data"));
    hbox20 = Gtk::manage(new class Gtk::HBox(false, 20));
    alignment12 = Gtk::manage(new class Gtk::Alignment());
    label79 = Gtk::manage(new class Gtk::Label("<b>Show Options</b>"));

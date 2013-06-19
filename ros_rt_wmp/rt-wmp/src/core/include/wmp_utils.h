@@ -56,7 +56,7 @@ void wmp_print(const char *format, ...);
 int wmp_print_get_size(void);
 void wmp_print_reset(void);
 int wmp_print_put(wmpFrame * p);
-int inline ms_to_us(int n);
-int inline us_to_ms(int n);
+int ms_to_us(int n);
+int us_to_ms(int n);
 #endif /* WMP_UTILS_H_ */
 

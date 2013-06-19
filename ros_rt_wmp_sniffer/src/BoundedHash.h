@@ -211,7 +211,6 @@ public:
 		//std::sort(v.begin(),v.end(),sort_fun);
 		bh_ts_key elem = v.at(0);
 		int key = elem.first;
-	//	fprintf(stderr,"v_size:%d first:%d second:%d ts:%llu \n",v.size(),elem.first, elem.second, elem.sort_key);
 		T t = hm[key];
 		erase(0);
 		pthread_mutex_unlock(&mtxs);

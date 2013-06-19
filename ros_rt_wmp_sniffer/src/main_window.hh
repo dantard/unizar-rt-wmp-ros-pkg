@@ -168,6 +168,7 @@ private:
     virtual void on_rec_tb_toggled();
     virtual void on_rec_tb_released();
     virtual void on_rec_tb_activate();
+    bool MyCallback(int n);
 };
 
 /* C wrapper */

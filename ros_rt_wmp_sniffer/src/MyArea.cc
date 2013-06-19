@@ -55,7 +55,7 @@ MyArea::MyArea() : DrawingArea() {
         cols[1] = Gdk::Color("orange");
         cols[4] = Gdk::Color("blue");
        	cols[5] = Gdk::Color("yellow");
-       	cols[6] = Gdk::Color("light sky blue");
+       	cols[6] = Gdk::Color("orange");
        	cols[7] = Gdk::Color("forest green");
        	cols[8] = Gdk::Color("violet");
        	cols[9] = Gdk::Color("brown");
@@ -406,7 +406,6 @@ int MyArea::get_mouse_on_serial(){
 }
 
 void MyArea::clean_window(){
-	//fprintf(stderr,"clean_window\n");
 	WAIT(&sem);
 	frameVec.clear();
 	SIGNAL(&sem);

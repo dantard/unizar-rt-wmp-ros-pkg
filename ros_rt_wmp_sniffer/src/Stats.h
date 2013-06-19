@@ -542,7 +542,9 @@ public:
 	}
 
 	void new_message(wmpFrame * p, long long time, int pos) {
-		bool is_last_msg_jump = (p->msg.dest | (1 << p->hdr.to))&& ((dst < 0) || (p->msg.dest | 1 << dst));
+//		bool is_last_msg_jump = (p->msg.dest & (1 << p->hdr.to)) && ((dst < 0) || (p->msg.dest & 1 << dst));
+		bool is_last_msg_jump = (p->msg.dest & (1 << p->hdr.to)) && ((dst < 0) || (p->hdr.to == dst));
+
 		bool is_first_msg_jump = ((p->msg.src == p->hdr.from) && ((dst < 0) || (p->msg.dest | 1 << dst)));
 
 		unsigned int mkey = p->msg.msg_hash*100000 + 1000*abs(p->msg.part_id) + 100*p->msg.port;

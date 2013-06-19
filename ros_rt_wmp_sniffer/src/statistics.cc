@@ -93,6 +93,18 @@ Plotter< MaxMinCStats<long long>, long long > plotter;
 std::map<int, StatsFlow *> flows;
 
 std::map<unsigned int, long long> bc_map;
+long long last_ptime = 0, first_time;
+int last_pos = 0;
+bool first = false;
+char last_frame[2500];
+int total_frames = 0;
+
+#define PLAIN_RTWMP 	0
+#define QOS_RTWMP 		97
+
+bool first_frame = true;
+
+
 
 /* STATISTICS >>> */
 static int nnodes = 0, from, to;
@@ -100,7 +112,6 @@ static window2 * w2;
 
 int statistics_from_file(char * filename, int & begin, int & end){
 	nnodes=io_open_sim_data(filename);
-	fprintf(stderr,"Generating Statistics..%s.\n", filename);
 	int n=0;
 	if (nnodes>0) {
 		n=io_get_sim_data_num_of_elements();
@@ -123,6 +134,7 @@ int statistics_from_file(char * filename, int & begin, int & end){
 
 	int idx=0;
 	fprintf(stderr,"Generating Statistics...\n");
+	first_frame = true;
 	for (int i=from; i<to; i++) {
 		int bytes=io_read_next_sim_data(&fdata[0]);
 		if (i==from) base_time=p->time;
@@ -243,16 +255,6 @@ bool new_token(wmpFrame * p){
 	return false;//p->tkn.new_token;
 }
 
-long long last_ptime = 0, first_time;
-int last_pos = 0;
-bool first = false;
-char last_frame[2500];
-int total_frames = 0;
-
-#define PLAIN_RTWMP 	0
-#define QOS_RTWMP 		97
-
-
 void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, simData_Hdr * sdh) {
 	if (pos == from){
 		last_ptime = ptime;
@@ -288,11 +290,13 @@ void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, sim
 	timespan.new_time(ptime);
 
 	/* GENERAL */
-	if (p->hdr.serial != q->hdr.serial + 1){
+	if (p->hdr.serial != q->hdr.serial + 1 && !first_frame){
 		ncs.new_value(pos,pos);
 		loop_length.aux2 = 0;
 		efz.reset();
 	}
+
+	first_frame = false;
 
 	if (p->hdr.serial == q->hdr.serial + 2){
 		plrx.new_value(q->hdr.serial+1,pos);
@@ -356,18 +360,16 @@ void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, sim
 			auths.new_value(1);
 
 	}
+
 	if (p->hdr.type == MESSAGE){
 		msgs.new_value(1);
 
-		bool is_last_msg_jump = (p->msg.dest | (1 << p->hdr.to));
-//		bool is_first_msg_jump = p->hdr.from == p->msg.src;
+		bool is_last_msg_jump = (p->msg.dest & (1 << p->hdr.to));
 
 		/* Flows */
-		if (is_last_msg_jump) {
+		//if (is_last_msg_jump) {
 			int flow_id = p->hdr.to * 100 + p->msg.src + 1;
 			int pernode_id = p->msg.src + 10000;
-
-			//flows[0]->new_message(p, ptime, pos);
 
 			if (flows.find(flow_id) == flows.end()) {
 				flows[flow_id] = new StatsFlow(p->msg.src, p->hdr.to, 0, first_time);
@@ -376,13 +378,10 @@ void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, sim
 			if (flows.find(pernode_id) == flows.end()) {
 				flows[pernode_id] = new StatsFlow(p->msg.src, -1, 0, first_time);
 			}
-
-//			flows[flow_id]->new_message(p, ptime, pos);
-//			flows[pernode_id]->new_message(p, ptime, pos);
-		}
+		//}
 		/* Flows */
 
-		if (is_last_msg_jump) {
+		//if (is_last_msg_jump) {
 			if (p->hdr.retries == 0) {
 
 				if (loop_length.aux2 == 1) {
@@ -397,7 +396,7 @@ void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, sim
 			/* Message correctly delivered */
 			mmz.new_value(pos, pos);
 			mmz.aux1 = 1;
-		}
+		//}
 
 	}
 
@@ -525,29 +524,29 @@ void statistics_publish(window2 * w) {
 		publish(paps,0,plotter.subscribe(&paps,w2->getCurrentRowName()));
 		publish(loops,0,plotter.subscribe(&loops,w2->getCurrentRowName()));
 		publish(wc_loops,0,plotter.subscribe(&wc_loops,w2->getCurrentRowName()));
-		publish(th_wc, 0);
-		publish(bc_loop,0,plotter.subscribe(&bc_loop,w2->getCurrentRowName()));
-		publish(th_bc_wc, 0);
+//		publish(th_wc, 0);
+//		publish(bc_loop,0,plotter.subscribe(&bc_loop,w2->getCurrentRowName()));
+//		publish(th_bc_wc, 0);
 	w2->root();
 	w2->row_create("Errors","");
 	w2->subSectionBegin();
 		publish(ncs);
-		publish(incongruent);
+		//publish(incongruent);
 		publish(retries);
 		publish(drops);
 		publish(plrx);
-		publish(stops);
+		//publish(stops);
 	w2->root();
-	w2->row_create("Various","");
-	w2->subSectionBegin();
-		publish(loop_length,5,plotter.subscribe(&loop_length,w2->getCurrentRowName()));
-		publish(ett);
-		publish(reinserted);
+//	w2->row_create("Various","");
+//	w2->subSectionBegin();
+//		publish(loop_length,5,plotter.subscribe(&loop_length,w2->getCurrentRowName()));
+//		publish(ett);
+//		publish(reinserted);
 	w2->root();
 	w2->row_create("Intervals","");
 	w2->subSectionBegin();
 		publish(efz);
-		publish(mmz);
+		//publish(mmz);
 
 		std::map<int, StatsFlow * >::iterator iter;
 
@@ -586,9 +585,9 @@ void statistics_publish(window2 * w) {
 		fflush(stdout);
 		if (!iter->second->is_qos()) {
 			if (iter->first == 0) {
-				w2->row_create("Global Flow", "Real Time");
+				w2->row_create("Global Flow", "");
 			} else if (iter->first < 10000){
-				w2->row_create("Flow HRT :: Src: " + toString(
+				w2->row_create("Flow :: Src: " + toString(
 						iter->second->get_src()) + " Dst: " + toString(
 						iter->second->get_dst()),"", iter->second->begin());
 			} else {
@@ -650,8 +649,6 @@ void statistics_publish(window2 * w) {
 			w2->subSectionEnd();
 		}
 	}
-
-	printf("\n");
 	w2->subSectionEnd();
 	printf("\nDone.\n");
 

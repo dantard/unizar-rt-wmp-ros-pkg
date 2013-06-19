@@ -16,6 +16,9 @@ else
    CONFIG_KS_INTERFACE=no
 endif
 
+ifdef COND_ARCH_ARM
+	CFLAGS+="-march=armv6 -D__LINUX_ARM_ARCH__=6"
+endif
 ccflags-y += -I$(src)
 ccflags-y += -I$(src)/core/include
 ccflags-y += -I$(src)/core/interface

@@ -21,17 +21,27 @@ fi
 
 AC_SUBST(KERNEL_HEADERS_LOCATION)
 
-AC_ARG_WITH(gcc,AC_HELP_STRING([--with-gcc], [Specify Architecture [[default=arm-none-linux-gnueabi-]]]),GCCC=$withval,GCCC=arm-none-linux-gnueabi-)
+AC_ARG_WITH(gcc,AC_HELP_STRING([--with-gcc], [Specify gcc compiler [[default=arm-none-linux-gnueabi-]]]),GCCC=$withval,GCCC=arm-none-linux-gnueabi-)
 
 AC_ARG_WITH(arch,AC_HELP_STRING([--with-arch], [Specify Architecture [[default=x86]]]),COMPILE_ARCH=$withval,COMPILE_ARCH=x86)
 
+
+
+AC_ARG_WITH(version,AC_HELP_STRING([--with-version], [Force Kernel version (for mac80211) [[default=running]]]),KERNEL_VERSION=$withval,KERNEL_VERSION=running)
 if test "$COMPILE_ARCH" == "x86" ; then
 	COMPILE_ARCH=" "
 	ARCHITECTURE="x86";
+	if test "$KERNEL_VERSION" == "running" ; then
+		KERNEL_VERSION=$(uname -r | cut -c 1-3)
+	fi
 elif test "$COMPILE_ARCH" == "arm" ; then
 	COMPILE_ARCH="ARCH=arm CROSS_COMPILE=$GCCC"
 	ARCHITECTURE="arm";
+	if test "$KERNEL_VERSION" == "running" ; then
+		KERNEL_VERSION="3.2"
+	fi
 fi
+AC_SUBST(KERNEL_VERSION)
 
 AM_CONDITIONAL(COND_ARCH_X86, test "$ARCHITECTURE" == "x86" )                 
 AM_CONDITIONAL(COND_ARCH_ARM, test "$ARCHITECTURE" == "arm" )                 
@@ -100,7 +110,9 @@ else
 	    test "$WMP_WITH_LLCOM" != "ath5k_raw"  &&
 	    test "$WMP_WITH_LLCOM" != "raw"    &&
 	    test "$WMP_WITH_LLCOM" != "shmem"  &&
-	    test "$WMP_WITH_LLCOM" != "mac80211_mod"
+	    test "$WMP_WITH_LLCOM" != "mac80211_mod" &&
+	    test "$WMP_WITH_LLCOM" != "8192cu"
+
 	 
 	then 
 	   echo "*** No EXISTING llcom specified, exiting..."
@@ -108,6 +120,8 @@ else
 	else
 	  if  test "$WMP_WITH_LLCOM"    == "sock"     || 
 	      test "$WMP_WITH_LLCOM"    == "shmem"     ||
+	      test "$WMP_WITH_LLCOM"    == "mac80211_mod" ||
+	      test "$WMP_WITH_LLCOM"    == "8192cu" ||
 	      test "$WMP_WITH_LLCOM"    == "raw"      &&
 	      test "$WMP_WITH_PLATFORM" == "MaRTE_OS"  
 	  then
@@ -119,7 +133,7 @@ else
 	       test "$WMP_WITH_LLCOM"    == "raw"      &&
 	       test "$WMP_WITH_PLATFORM" == "linux_ks"
 	    then
-	       echo "*** No EXISTING llcom for this platform (only ath5k_raw and mac80211_mod implemented for linux_ks), exiting..."
+	       echo "*** No EXISTING llcom for this platform (only ath5k_raw, 8192cu and mac80211_mod implemented for linux_ks), exiting..."
 	       exit 116
 	    fi
 	  fi
@@ -145,6 +159,7 @@ AM_CONDITIONAL(WMP_LLCOM_RAW,   test "$WMP_WITH_LLCOM" == "raw"   )
 AM_CONDITIONAL(WMP_LLCOM_ATH5K, test "$WMP_WITH_LLCOM" == "ath5k_raw" )
 AM_CONDITIONAL(WMP_LLCOM_SHMEM, test "$WMP_WITH_LLCOM" == "shmem" )
 AM_CONDITIONAL(WMP_LLCOM_MAC80211, test "$WMP_WITH_LLCOM" == "mac80211_mod" )
+AM_CONDITIONAL(WMP_LLCOM_8192CU, test "$WMP_WITH_LLCOM" == "8192cu" )
 
 AC_SUBST(WMP_WITH_LLCOM)
 
@@ -204,6 +219,7 @@ AC_SUBST(AM_PLATFORM, WMP_PLATFORM_$WMP_WITH_PLATFORM)
 AC_SUBST(AM_LLCOM, WMP_LLCOM_$WMP_WITH_LLCOM)
 AC_SUBST(AM_ROUTING, WMP_ROUTING_$WMP_WITH_ROUTING)
 AC_SUBST(AM_KS_HWI, $WMP_WITH_LLCOM)
+
 
 AC_CONFIG_FILES([
 Makefile
@@ -268,6 +284,7 @@ echo "Architecture      -    $ARCHITECTURE"
 if test "$WMP_WITH_PLATFORM" == "linux_ks"; then
 echo "IP Interface      -    $WMP_OPTION_KS_Interface"
 echo "Kernel Header     -    $KERNEL_HEADERS_LOCATION"
+echo "Kernel Version    -    $KERNEL_VERSION"
 fi
 
 if test "$WMP_WITH_PLATFORM" == "MaRTE_OS"; then

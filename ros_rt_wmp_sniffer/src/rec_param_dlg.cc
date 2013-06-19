@@ -106,9 +106,12 @@ void rec_param_dlg::on_shmem_btn_clicked(){
 }
 
 #include <vte-0.0/vte/vte.h>
+#include "icon.h"
 
 rec_param_dlg::rec_param_dlg() : rec_param_dlg_glade(){
-
+	set_icon(Gdk::Pixbuf::create_from_xpm_data(icon));
+	frame13->hide();
+	 set_size_request(400,200);
 }
 void rec_param_dlg::on_filename_clicked(){
 	Gtk::FileChooserDialog dialog("Please choose a Filename",

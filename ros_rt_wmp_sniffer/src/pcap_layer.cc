@@ -41,7 +41,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
+#include <zlib.h>
 #include <ctime>
 #include <netinet/if_ether.h>
 #include <netinet/udp.h>
@@ -52,6 +52,8 @@
 #include "core/include/frames.h"
 #include <stdlib.h>
 #include <iostream>
+#include "misc.h"
+
 static pcap_t *handle;
 static struct pcap_pkthdr header;
 static int offset;
@@ -61,7 +63,7 @@ static int pfd[2];
 std::map<int, int> mac_ip;
 
 int pcap_init(char * dev, int num_nodes) {
-	char errbuf[PCAP_ERRBUF_SIZE]; /* Error string */
+	char errbuf[PCAP_ERRBUF_SIZE];
 	fprintf(stderr, "Sniffing on %s\n", dev);
 
 	/* Open the session in promiscuous mode */
@@ -70,14 +72,10 @@ int pcap_init(char * dev, int num_nodes) {
 
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
-		return 0;
+		exit(1);
 	}
-	pcap_keep_running = true;
 
-	if (pipe(pfd) == -1) {
-		perror("pipe");
-		exit(EXIT_FAILURE);
-	}
+	pcap_keep_running = true;
 	return 0;
 }
 
@@ -107,7 +105,7 @@ double int2Rate(unsigned char val) {
 	}
 	return rate;
 }
-#include <zlib.h>
+
 int decompress(char * buf, int * size) {
 	char tmp[2500];
 	uLongf len = 2500;
@@ -122,7 +120,6 @@ int decompress(char * buf, int * size) {
 	return 1;
 }
 
-#include "misc.h"
 static int serial = 100;
 int pcap_sniff_packet(char * data, simData_Hdr & sd,
 		unsigned long long &time_us, std::map<int, robo_pose_t> & poses) {
@@ -136,22 +133,11 @@ int pcap_sniff_packet(char * data, simData_Hdr & sd,
 		char * f_data = NULL;
 		int ds_status_offset = 0;
 
-		const u_char *packet;
-		fd_set set1;
-		FD_ZERO(&set1);
-		FD_SET(pcap_fileno(handle), &set1);
-		FD_SET(pfd[0], &set1);
-		select(pfd[0] + 1, &set1, NULL, NULL, 0);
-
-		if (FD_ISSET(pcap_fileno(handle), &set1)) {
-			packet = pcap_next(handle, &header);
-		} else {
-			continue;
-		}
+		const u_char * packet = pcap_next(handle, &header);
 		if (packet == NULL) {
-			//fprintf(stderr, "NULL packet, exiting...\n");
-			continue;
+			return -1;
 		}
+
 		int eth_hdr_offset = 0;
 		switch (dl) {
 		case 1:
@@ -167,26 +153,23 @@ int pcap_sniff_packet(char * data, simData_Hdr & sd,
 			ds_status_offset = rth->it_len + 1;
 			sd.rate = int2Rate(packet[0x11]);
 			eth_hdr_offset = rth->it_len + 4;
-
-			//				for (int i=rth->it_len;i<rth->it_len + 160 ;i ++){
-			//					fprintf(stderr,"%x ",packet[i]);
-			//				}
-			//fprintf(stderr,"\n");
 		}
 			break;
 
 		default:
 			offset = 0;
+			break;
 		};
+
 		const char * pkt_p = (char*) packet + offset;
 
 		if (header.len > offset) {
 
 			short protocol_type = ntohs(*(short*) (packet + offset - 2));
-			int mac_src = ((packet + eth_hdr_offset)[10] << 8) + ((packet
-					+ eth_hdr_offset)[11]);
-			int mac_dst = ((packet + eth_hdr_offset)[4] << 8) + ((packet
-					+ eth_hdr_offset)[5]);
+			int mac_src = ((packet + eth_hdr_offset)[10] << 8)
+					+ ((packet + eth_hdr_offset)[11]);
+			int mac_dst = ((packet + eth_hdr_offset)[4] << 8)
+					+ ((packet + eth_hdr_offset)[5]);
 			struct udphdr * udph = (struct udphdr *) (pkt_p
 					+ sizeof(struct iphdr));
 			struct iphdr * iph = (struct iphdr *) pkt_p;
@@ -194,11 +177,11 @@ int pcap_sniff_packet(char * data, simData_Hdr & sd,
 			if (protocol_type == 0x0800 && iph->protocol == IPPROTO_UDP
 					&& htons(udph->dest) == 0x6969) {
 				sd.is_wmp = true;
-				if ((dl == 1 || (dl == 127 && packet[ds_status_offset] & 3)
-						== 1)) {
+				if ((dl == 1
+						|| (dl == 127 && (packet[ds_status_offset] & 3)) == 1)) {
 					sd.frame_type = SP_LUS_WMP_FRAME;
 				} else {
-					sd.frame_type = SP_LUS_WMP_FRAME;//_DUP;
+					sd.frame_type = SP_LUS_WMP_FRAME; //_DUP;
 				}
 				f_len = htons(udph->len) - sizeof(struct udphdr);
 				f_data = (char *) (pkt_p + sizeof(struct udphdr)
@@ -207,50 +190,41 @@ int pcap_sniff_packet(char * data, simData_Hdr & sd,
 				sd.frame_type = SP_LUS_WMP_FRAME;
 			} else if (protocol_type == 0x0800 && iph->protocol == IPPROTO_UDP
 					&& htons(udph->dest) == 0x6868) {
-				//fprintf(stderr,"**** mac src:%x mac dst:%x\n", mac_src, mac_dst);
 				if (mac_ip.find(mac_src) == mac_ip.end()
 						|| mac_ip.find(mac_dst) == mac_ip.end()) {
-					//fprintf(stderr,"Uknown MAC pair %x or %x \n", mac_src,mac_dst);
 					continue;
 				}
 				f_data = (char *) (pkt_p + sizeof(struct udphdr)
 						+ sizeof(struct iphdr));
 				wmpFrame * p = (wmpFrame *) f_data;
-				//fprintf(stderr,"src:%d dest:%d serial:%d len:%d typ:%d \n",p->msg.src, p->msg.dest,p->hdr.serial,p->msg.len,p->hdr.type);
 
-				//memset(p,0,sizeof(wmpFrame));
-#ifdef	ENABLE_BC_SUPPORT
-				p->hdr.bc_len = 0;
-				p->hdr.bc_type = 0;
-#endif
 				p->hdr.type = MESSAGE;
 				p->hdr.from = mac_ip[mac_src];
 				p->hdr.to = mac_ip[mac_dst];
 
-				f_len = header.len - (offset + sizeof(struct udphdr)
-						+ sizeof(struct iphdr));
-				//fprintf(stderr,"%d head_len %d caplen %d f_len:%d msg_len:%d s:%d d:%d\n",pkt_p - f_data, header.len,header.caplen,f_len,p->msg.len, p->msg.src, p->msg.dest);
-
+				f_len =
+						header.len
+								- (offset + sizeof(struct udphdr)
+										+ sizeof(struct iphdr));
 				sd.is_wmp = true;
 				sd.frame_type = SP_LUS_WMP_FRAME;
 			} else if (protocol_type == 0x0800 && iph->protocol == IPPROTO_UDP) {
 				if (mac_ip.find(mac_src) == mac_ip.end()
 						|| mac_ip.find(mac_dst) == mac_ip.end()) {
-					//					fprintf(stderr,"Uknown MAC pair %x or %x \n", mac_src,mac_dst);
 					continue;
 				}
 
 				f_data = (char *) (pkt_p + sizeof(struct iphdr)
 						+ sizeof(struct udphdr));
 				wmpFrame * p = (wmpFrame *) f_data;
-#ifdef	ENABLE_BC_SUPPORT
-				p->hdr.bc_len = 0;
-#endif
+
 				p->hdr.from = mac_ip[mac_src];
 				p->hdr.to = mac_ip[mac_dst];
 				p->hdr.type = MESSAGE;
-				p->msg.len = header.len - (offset + sizeof(struct udphdr)
-						+ sizeof(struct iphdr));
+				p->msg.len =
+						header.len
+								- (offset + sizeof(struct udphdr)
+										+ sizeof(struct iphdr));
 				f_len = htons(udph->len) - sizeof(struct udphdr);
 
 				sd.is_wmp = true;
@@ -259,17 +233,13 @@ int pcap_sniff_packet(char * data, simData_Hdr & sd,
 			} else if (protocol_type == 0x0800) {
 				if (mac_ip.find(mac_src) == mac_ip.end()
 						|| mac_ip.find(mac_dst) == mac_ip.end()) {
-					//fprintf(stderr,"Uknown MAC pair %x or %x \n", mac_src,mac_dst);
 					continue;
 				}
 				f_data = (char *) (pkt_p + sizeof(struct iphdr));
 				wmpFrame * p = (wmpFrame *) f_data;
-#ifdef	ENABLE_BC_SUPPORT
-				p->hdr.bc_len = 0;
-#endif
+
 				p->hdr.from = mac_ip[mac_src];
 				p->hdr.to = mac_ip[mac_dst];
-				//fprintf(stderr,">>> %x jjj %x ---- %d -> %d\n", mac_src,mac_dst,p->hdr.from,p->hdr.to);
 
 				p->hdr.type = MESSAGE;
 				p->hdr.serial = serial++;
@@ -325,15 +295,9 @@ int pcap_sniff_packet(char * data, simData_Hdr & sd,
 			return header.len;
 		}
 	}
-	//pcap_close(handle);
 	return 0;
 }
 
 void pcap_layer_close() {
-	char dsblq = 0;
 	pcap_keep_running = false;
-	/* to unlock the select */
-	if (write(pfd[1], &dsblq, 1) == -1) {
-		fprintf(stdout, "Problem closing pcap layer");
-	}
 }

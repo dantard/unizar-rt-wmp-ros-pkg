@@ -152,7 +152,7 @@ area::area(): DrawingArea(){
     cols[0] = Gdk::Color("black");
     cols[2] = Gdk::Color("red");
     cols[3] = Gdk::Color("green");
-    cols[1] = Gdk::Color("yellow");
+    cols[1] = Gdk::Color("orange");
     cols[4] = Gdk::Color("blue");
     cols[5] = Gdk::Color("violet");
     for (unsigned i=0;i<6;i++){

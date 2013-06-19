@@ -73,6 +73,11 @@ void io_flush(){
 std::vector<int> f_offset;
 std::map<int,int> serialToOffset;
 
+int io_change_file(char * filename){
+	io_close_sim_data();
+	strcpy(file.name, filename);
+	return 0;
+}
 int io_change_file(){
 	io_close_sim_data();
 	return 0;
@@ -127,10 +132,10 @@ int io_open_sim_data(char * filename) {
 int io_close_sim_data() {
 	if (file.open){
 		fflush(file.ptr);
-//		if (fclose(file.ptr)!=0){
-//			fprintf(stderr,"Problems to close file...");
-//			return 0;
-//		}
+		if (fclose(file.ptr)!=0){
+			fprintf(stderr,"Problems to close file...");
+			return 0;
+		}
 	}
 	file.open = false;
 	return 1;

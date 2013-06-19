@@ -85,10 +85,22 @@ class main_window* mw;
 extern char sniff_iface[16];
 extern char iface[16];
 
+
+std::string nts(char val) {
+	std::ostringstream oss;
+	oss << (int) val;
+	return oss.str();
+};
+std::string nts(unsigned char val) {
+	std::ostringstream oss;
+	oss << (int) val;
+	return oss.str();
+};
+
 template<class T>
 std::string nts(T val) {
 	std::ostringstream oss;
-	oss << (int) val;
+	oss << (T) val;
 	return oss.str();
 };
 
@@ -101,18 +113,7 @@ std::string hnts(T val) {
 };
 
 
-template<>
-std::string nts(char val) {
-	std::ostringstream oss;
-	oss << (int) val;
-	return oss.str();
-};
-template<>
-std::string nts(unsigned char val) {
-	std::ostringstream oss;
-	oss << (int) val;
-	return oss.str();
-};
+
 
 void dec2bin(long decimal, char *binary) {
 	PF(fprintf(stderr,"**PF**  dec2bin \n");)
@@ -210,11 +211,9 @@ void main_window::on_hscale_zoom_value_changed() {
 	fill_screen();
 }
 bool main_window::on_main_window_expose_event(GdkEventExpose *ev) {
-
-	//vpaned1->set_position(vpaned1->get_height()*0.7);
-	hpaned->set_position(hpaned->get_width()*0.7);
-	//hpaned1->set_position(hpaned1->get_width()*0.5);
-	return false;
+	 if ( Gdk::WINDOW_STATE_MAXIMIZED & get_state() )
+	        cerr << "trueaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" << endl;
+return false;
 
 }
 
@@ -288,7 +287,7 @@ void main_window::updater(){
 			label69->set_text(txt);
 			sprintf(txt, "Max EFZ: %d", best);
 			label70->set_text(txt);
-			sprintf(txt, "Actual EFZ: %d", actual);
+			sprintf(txt, "Present EFZ: %d", actual);
 			label71->set_text(txt);
 			gdk_threads_leave();
 
@@ -345,14 +344,14 @@ void main_window::reset(int val) {
 			areadx->addRobot("N" + nts(i));
 			int xp = (int) (dist * cos((float) i * ang));
 			int yp = (int) (dist * sin((float) i * ang));
-			areadx->setRobotPose(i, xp, yp, 0, 0);
+			areadx->setRobotPose(i, alignment21->get_width()/2 + xp, yp, 0, 0);
 		}
 
 		for (int i = 0; i < nnodes; i++) {
 			areasx->addRobot("N" + nts(i));
 			int xp = (int) (dist * cos((float) i * ang));
 			int yp = (int) (dist * sin((float) i * ang));
-			areasx->setRobotPose(i, xp, yp, 0, 0);
+			areasx->setRobotPose(i, 	alignment21->get_width()/2 + xp, yp, 0, 0);
 		}
 
 		MyArea->setNumOfNodes(nnodes);
@@ -392,6 +391,7 @@ void main_window::reset(int val) {
 		hscale_zoom->set_range(20, 100);
 	}
 }
+
 void main_window::on_w_resize(GdkEventConfigure* event) {
 	//hpaned->set_position((int) (0.85 * this->get_width()));
 	//vpaned1->set_position((int) (0.65 * this->get_height()));
@@ -400,15 +400,45 @@ void main_window::on_w_resize(GdkEventConfigure* event) {
 	//hpaned1->set_position(hpaned1->get_width()*0.5);
 	//hpaned->set_position(hpaned->get_width()*0.7);
 
+
+	//hpaned1->set_position(hpaned1->get_width()*0.5);
+
+
+	sigc::slot<bool> my_slot = sigc::bind(sigc::mem_fun(*this,&main_window::MyCallback), 1);
+
+	  // This is where we connect the slot to the Glib::signal_timeout()
+	sigc::connection conn = Glib::signal_timeout().connect(my_slot,
+	          50);
+
+}
+bool main_window::MyCallback(int n) {
+	vpaned1->set_position(vpaned1->get_height()*0.7);
+	hpaned->set_position(hpaned->get_width()*0.7);
+	double dist = 150;
+	float ang = 2.0 * M_PI / nnodes;
+	for (int i = 0; i < nnodes; i++) {
+		int xp = (int) (dist * cos((float) i * ang));
+		int yp = (int) (dist * sin((float) i * ang));
+		areadx->setRobotPose(i, alignment21->get_width() / 2 + xp, yp, 0, 0);
+	}
+
+	for (int i = 0; i < nnodes; i++) {
+		int xp = (int) (dist * cos((float) i * ang));
+		int yp = (int) (dist * sin((float) i * ang));
+		areasx->setRobotPose(i, alignment21->get_width() / 2 + xp, yp, 0, 0);
+	}
+	return false;
 }
 
 main_window::~main_window() {
 
 }
-
+#include "icon.h"
 main_window::main_window(char * s_iface) :
 	main_window_glade() {
+	set_icon(Gdk::Pixbuf::create_from_xpm_data(icon));
 	PF(fprintf(stderr,"**PF**  main_window::main_window \n");)
+	prim_cb->hide();
 	mw = this;
 	w1 = NULL;
 	w2 = NULL;
@@ -587,9 +617,6 @@ void main_window::update_frame_info(simData_Hdr * p, wmpFrame * q) {
 	double time = (double) p->time / 1000;
 	row_child_append("Time", nts(time));
 	row_child_append("Protocol", "0x"+hnts(p->proto));
-	//row_child_append("Reinserted", nts(p->reinserted));
-//	unsigned long long diff = p->onair_local_ts - q->hdr.ts;
-//	row_child_append("On Air Local Time", nts((int) diff));
 	char txt[p->len + 1000];
 	getDataString(q,p->len,txt);
 	row_child_append("RAW", txt);
@@ -625,8 +652,7 @@ void main_window::draw_stuffs(char * data, int pos_in_file, int show_f,
 	PF(fprintf(stderr,"**PF**  main_window::draw_stuffs \n");)
 	simData_Hdr * p = (simData_Hdr *) data;
 	wmpFrame * r = (wmpFrame *) (data + sizeof(simData_Hdr));
-//	simData_Node *q, *s, *t, *u;
-//	u = q = s = t = (simData_Node*) (data + wmp_get_frame_total_lenght(r,nnodes) + sizeof(simData_Hdr));
+
 	frame_time = p->time;
 	selectedFrame = *r;
 	MyArea->setActive(r->hdr.from);
@@ -670,11 +696,6 @@ void main_window::draw_stuffs(char * data, int pos_in_file, int show_f,
 					col, nt);
 			k++;
 		} else {
-#ifdef ENABLE_BC_SUPPORT
-			if (r->hdr.type == TOKEN && (r->hdr.bc_len > 0|| r->tkn.extra == 34) ){
-				col = 1;
-			}
-#endif
 			if (r->hdr.type == MESSAGE){
 				if (!mBitsIsSet(r->msg.type, 4)){
 					col = 6;
@@ -689,7 +710,7 @@ void main_window::draw_stuffs(char * data, int pos_in_file, int show_f,
 				col = 0;
 			}
 			if (r->hdr.type == ACK){
-				col = 8;
+				col = 1;
 			}
 			int f_idx = MyArea->insertOne(r->hdr.from, r->hdr.to, p->time,
 					pos_in_file, r->hdr.serial, col, nt);
@@ -790,14 +811,14 @@ void main_window::draw_stuffs(char * data, int pos_in_file, int show_f,
 					}
 				}
 #else
+
+
+
 			if (r->hdr.type == TOKEN) {
 				areadx->clearLinks(0);
 				areadx->clearLinks(1);
 				areasx->clearLinks(0);
 				areasx->clearLinks(1);
-
-				areadx->addLink(r->hdr.from, r->hdr.to,1, r->hdr.type,2);
-				areasx->addLink(r->hdr.from, r->hdr.to,1, r->hdr.type,2);
 				char * p1 = wmp_get_frame_routing_pointer(r, nnodes);
 				char p2[nnodes*nnodes];
 				memcpy(p2,p1,nnodes*nnodes);
@@ -834,6 +855,13 @@ void main_window::draw_stuffs(char * data, int pos_in_file, int show_f,
 					}
 				}
 			}
+			int color=r->hdr.type;
+			if (color==6){
+				color = 1;
+			}
+
+			areadx->addLink(r->hdr.from, r->hdr.to,1, color,2);
+			areasx->addLink(r->hdr.from, r->hdr.to,1, color,2);
 #endif
 
 
@@ -896,6 +924,12 @@ int shmem_pre_init();
 bool main_window::begin_online_record() {
 	PF(fprintf(stderr,"**PF**  main_window::begin_record \n");)
 
+	if (w2){
+		w2->hide();
+		delete(w2);
+		w2 = 0;
+	}
+
 	rp_dlg = new class rec_param_dlg();
 
 	int nn = kf->get_integer("Recording", "Num_Of_Nodes");
@@ -944,7 +978,9 @@ bool main_window::begin_online_record() {
 	oss << "rt-wmp-" << nn << "N.vis";
 
 	strcpy(this->filename,rp_dlg->filename_txt->get_text().c_str());
-	io_change_file();
+	io_change_file(this->filename);
+
+
 
 	this->set_title("wmpSniffer -" + std::string(this->filename));
 	kf->set_string("Files", "Last_Opened" ,this->filename);
@@ -985,6 +1021,7 @@ bool main_window::begin_online_record() {
 	rp_dlg->hide();
 	delete (rp_dlg);
 	reset_actual_gct();
+	play_idx = 0;
 	if (!begin_record()){
 		return false;
 	}
@@ -1012,14 +1049,15 @@ bool main_window::begin_record(){
 		areadx->addRobot("N" + nts(i));
 		int xp = (int) (dist * cos((float) i * ang));
 		int yp = (int) (dist * sin((float) i * ang));
-		areadx->setRobotPose(i, xp, yp, 0, 0);
+		areadx->setRobotPose(i, alignment21->get_width()/2  + xp, yp, 0, 0);
 	}
+
 
 	for (int i = 0; i < nnodes; i++) {
 		areasx->addRobot("N" + nts(i));
 		int xp = (int) (dist * cos((float) i * ang));
 		int yp = (int) (dist * sin((float) i * ang));
-		areasx->setRobotPose(i, xp, yp, 0, 0);
+		areasx->setRobotPose(i, alignment21->get_width()/2 + xp, yp, 0, 0);
 	}
 
 	areadx->clearPoints();
@@ -1043,6 +1081,10 @@ void main_window::continue_record(char * data, int data_size) {
 	int elem = (int) hscale_zoom->get_value();
 	if (play_idx > elem){
 		MyArea->delete_older();
+	}
+	if (!d1_cb->get_active()){
+		MyArea->clean_window();
+		play_idx = 0;
 	}
 	draw_stuffs(&data[0], play_idx, d1_cb->get_active(), d2_cb->get_active(), text_cb->get_active() && !tw_has_focus && timered_show_t);
 	timered_show_t = false;
@@ -1391,8 +1433,8 @@ void main_window::update_frame_labels(wmpFrame * f) {
 	row_child_append("Noise", nts(f->hdr.noise));
 	row_child_append("Type", nts(f->hdr.type));
 	row_child_append("Serial", nts((int) f->hdr.serial));
-	row_child_append("From", nts(f->hdr.from));
-	row_child_append("To", nts(f->hdr.to));
+	row_child_append("From", nts((int)f->hdr.from));
+	row_child_append("To", nts((int)f->hdr.to));
 	row_child_append("Retries", nts(f->hdr.retries));
 	row_child_append("Ack", nts(f->hdr.ack));
 	row_child_append("Flow Control", nts(f->hdr.fc));
@@ -1406,8 +1448,8 @@ void main_window::update_frame_labels(wmpFrame * f) {
 	if (f->hdr.type == TOKEN) {
 		row_append("Token", "");
 		row_child_append("Beginner", nts((int) f->tkn.beginner));
-		row_child_append("Max Priority", nts(f->tkn.maxPri));
-		row_child_append("Id Max Pri", nts(f->tkn.idMaxPri));
+		row_child_append("Max Priority", nts((int)f->tkn.maxPri));
+		row_child_append("Id Max Pri", nts((int)f->tkn.idMaxPri));
 		row_child_append("Age", nts((int) f->tkn.age));
 		row_child_append("Ack Hash", nts((int) f->tkn.ack_hash));
 		row_child_append("Ack Part", nts((int) f->tkn.ack_part));
@@ -1447,7 +1489,7 @@ void main_window::update_frame_labels(wmpFrame * f) {
 		row_child_append("Source", nts(f->msg.src));
 		row_child_append("Destination", nts(f->msg.dest));
 		row_child_append("Port", nts(f->msg.port));
-		row_child_append("Priority", nts(f->msg.priority));
+		row_child_append("Priority", nts((int)f->msg.priority));
 		row_child_append("Length", nts(f->msg.len));
 		row_child_append("Age", nts((int) f->msg.age));
 

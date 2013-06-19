@@ -86,7 +86,11 @@ int wmpGetFrameHash(wmpFrame * p){
 	return (p->hdr.serial * 10000 + p->hdr.from * 1000 + p->hdr.to
 			* 100 + p->hdr.retries * 10 + p->hdr.type);//+sdh.frame_type;
 }
+bool active = false;
+void buffer_layer_activate(bool activate){
+	active = activate;
 
+}
 
 int lastPopped;
 void buffer_layer_clear(){
@@ -96,6 +100,7 @@ void buffer_layer_clear(){
 	keyQueue.clear();
 	bh.clear();
 }
+
 int buffer_layer_sniff_packet(char * data, simData_Hdr & sdh,
 		unsigned long long & time_us, std::set<int> & reached, std::map<int,
 				robo_pose_t> & poses) {
@@ -152,6 +157,12 @@ void* loop(void * v) {
 
 		/* SNIFFING */
 		int size = sf->sniff_func(buf, sdh, time_us, poses);
+
+		if (!active){
+			buffer_layer_clear();
+			continue;
+		}
+
 		unsigned int key;
 		if (size > 0) {
 			bh.sleep();

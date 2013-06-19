@@ -93,6 +93,8 @@ int io_get_filepos();
 int io_write_sim_frame(char * fdata, int data_size);
 int io_get_pose_from_serial(int serial);
 int io_change_file();
+int io_change_file(char *p);
+
 void io_flush();
 
 int io_write_on_tmp_file(char * p, int size);

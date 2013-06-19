@@ -106,4 +106,5 @@ int buffer_layer_sniff_packet(char * data, simData_Hdr & sdh,
 		unsigned long long & time_us, std::set<int> & reached, std::map<int,robo_pose_t> & poses);
 void buffer_layer_stop();
 void buffer_layer_clear();
+void buffer_layer_activate(bool activate);
 #endif /* BUFFER_LAYER_H_ */

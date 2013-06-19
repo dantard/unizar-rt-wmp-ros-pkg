@@ -43,6 +43,8 @@
     	entry1->set_text("");
     	set_title("Search");
     	m_refTreeModel->clear();
+    	treeview1->remove_all_columns();
+
     }
     int window1::get_selected(){
     	return selected;
@@ -55,6 +57,16 @@
     	//wmpFrame * p= (wmpFrame*) tmp;
     	io_go_to(0);
     	int res=0,serial=0,idx=0,pos=0;
+    	treeview1->remove_all_columns();
+    	treeview1->set_model(m_refTreeModel);
+      	treeview1->append_column("ID", m_Columns.m_col_id); //This number will be shown with the default numeric formatting.
+      	treeview1->append_column("Serial", m_Columns.m_col_number);
+
+      	if (message_rb->get_active()){
+      		treeview1->append_column("Message                       ", m_Columns.m_col_name);
+      	}
+
+
     	while (res>=0){
        		if (token_rb->get_active()){
        			res=read_next_token(msg,bc_msg,&serial,&pos,entry1->get_text().c_str());
@@ -112,17 +124,16 @@
     void window1::on_button12_clicked(){
     	hide();
     }
-
+#include "icon.h"
 window1::window1(main_window* mw):window1_glade(){
 	this->mw=mw;
+	all_rb->hide();
+	drop_rb->hide();
+	set_icon(Gdk::Pixbuf::create_from_xpm_data(icon));
 	set_size_request(200, 600);
 	treeview1->signal_cursor_changed().connect(sigc::mem_fun(*this, &window1::on_cursor_changed));
 	m_refTreeModel = Gtk::TreeStore::create(m_Columns);
-	treeview1->set_model(m_refTreeModel);
-  	treeview1->append_column("ID", m_Columns.m_col_id); //This number will be shown with the default numeric formatting.
-  	treeview1->append_column("Serial", m_Columns.m_col_number);
-  	treeview1->append_column("Message                       ", m_Columns.m_col_name);
-  	treeview1->append_column("BC Message", m_Columns.m_col_bc);
+  	//treeview1->append_column("BC Message", m_Columns.m_col_bc);
 	set_title("Search");
 	set_keep_above(true);
 }

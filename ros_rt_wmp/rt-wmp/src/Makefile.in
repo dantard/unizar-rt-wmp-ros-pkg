@@ -121,6 +121,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 KERNEL_HEADERS_LOCATION = @KERNEL_HEADERS_LOCATION@
+KERNEL_VERSION = @KERNEL_VERSION@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
@@ -555,13 +556,20 @@ uninstall-am:
 @WMP_COND_KS_INTERFACE_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@export WMP_KS_INTERFACE=foo
 
 @WMP_PLATFORM_KSLINUX_TRUE@all:
-@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD)/platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(shell uname -r | cut -c 1-3) modules $(COMPILE_ARCH)
-@WMP_PLATFORM_KSLINUX_TRUE@	cp platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(shell uname -r | cut -c 1-3)/Module.symvers .
-@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD) modules $(COMPILE_ARCH)
-@WMP_PLATFORM_KSLINUX_TRUE@	( cd platforms/linux_ks/lib && make )
-@WMP_PLATFORM_KSLINUX_TRUE@	mkdir -p ../modules-$(ARCHITECTURE)
-@WMP_PLATFORM_KSLINUX_TRUE@	mv rt_wmp.ko platforms/linux_ks/net_device/rt_wmp_interface.ko ../modules-$(ARCHITECTURE)
-@WMP_PLATFORM_KSLINUX_TRUE@	mv platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(shell uname -r | cut -c 1-3)/mac80211.ko ../modules-$(ARCHITECTURE)	        
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD)/platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(KERNEL_VERSION) modules $(COMPILE_ARCH)
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	cp platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(KERNEL_VERSION)/Module.symvers .
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD) modules $(COMPILE_ARCH)
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	( cd platforms/linux_ks/lib && make )
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	mkdir -p ../modules-$(ARCHITECTURE)
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	mv rt_wmp.ko platforms/linux_ks/net_device/rt_wmp_interface.ko ../modules-$(ARCHITECTURE)
+@WMP_LLCOM_MAC80211_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	mv platforms/linux_ks/hwi/mac80211_mod/module/kernel-$(KERNEL_VERSION)/mac80211.ko ../modules-$(ARCHITECTURE)	        
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD)/platforms/linux_ks/hwi/8192cu/module/kernel-$(KERNEL_VERSION) modules $(COMPILE_ARCH)
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	cp platforms/linux_ks/hwi/8192cu/module/kernel-$(KERNEL_VERSION)/Module.symvers .
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD) modules $(COMPILE_ARCH)
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	( cd platforms/linux_ks/lib && make )
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	mkdir -p ../modules-$(ARCHITECTURE)
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	mv rt_wmp.ko platforms/linux_ks/net_device/rt_wmp_interface.ko ../modules-$(ARCHITECTURE)
+@WMP_LLCOM_8192CU_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	mv platforms/linux_ks/hwi/8192cu/module/kernel-$(KERNEL_VERSION)/8192cu.ko ../modules-$(ARCHITECTURE)	        
 
 @COND_ARCH_X86_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@install: 
 @COND_ARCH_X86_TRUE@@WMP_PLATFORM_KSLINUX_TRUE@	make -C $(KERNEL_HEADERS_LOCATION) M=$(PWD) modules_install INSTALL_MOD_DIR=kernel/drivers/rt-wmp/
