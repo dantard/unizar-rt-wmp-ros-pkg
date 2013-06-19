@@ -371,7 +371,7 @@ static int __devinit interface_open(struct net_device *netdev) {
 
 	/* Read the configuration for the traffic */
 	readConfig(&priv->conf);
-	wmpForceTopology("chain",0);
+	//wmpForceTopology("chain",0);
 
 	/* Run RT-WMP */
 	wmpRunBG();
