@@ -44,8 +44,7 @@
 
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
-
-TOPIC("number", std_msgs::Float64, "0", "1,2", 11);
+TOPIC("number", std_msgs::Float64, "0", "1", 11);
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
 
 END_TOPIC_DEFINITION

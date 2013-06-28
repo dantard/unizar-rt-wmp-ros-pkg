@@ -116,6 +116,17 @@ public:
 				Manager * m = stuffs[req.param3];
 				m->justOne();
 			}
+		}else if (req.command == SET_PRIORITY) {
+			if (stuffs.find(req.param3) != stuffs.end()) {
+				Manager * m = stuffs[req.param3];
+				m->setPriority(req.param1);
+			}
+		}else if (req.command == GET_PRIORITY) {
+			if (stuffs.find(req.param3) != stuffs.end()) {
+				Manager * m = stuffs[req.param3];
+				int val = m->getPriority();
+				res.result = val;
+			}
 		}
 
 		return true;

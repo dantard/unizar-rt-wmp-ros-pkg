@@ -138,6 +138,7 @@ char * fgets(char *s, int size, struct file *f);
 #else
 #define EXPORT_MESSAGE_COMPRESSION()
 #endif
+struct proc_dir_entry * get_proc_root(void);
 
 #define EXPORT_SYMBOLS()   EXPORT_SYMBOL(wmpPush);\
                               EXPORT_SYMBOL(wmpPop);\
@@ -197,6 +198,8 @@ char * fgets(char *s, int size, struct file *f);
 						      EXPORT_SYMBOL(wmp_queue_rx_set_elem_done);\
 						      EXPORT_SYMBOL(wmpForceTopology);\
 						      EXPORT_SYMBOL(wmpSetTaskMinimumSeparation);\
+						      EXPORT_SYMBOL(lqm_get_distance);\
+						      EXPORT_SYMBOL(get_proc_root);\
 						      EXPORT_SYMBOL(wmpForceBurst);
 
 

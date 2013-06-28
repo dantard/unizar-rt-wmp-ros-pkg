@@ -28,16 +28,22 @@
 
 #define NUM_PORTS 50
 
+#include <asm/uaccess.h>
+#include <linux/proc_fs.h>
+
 /* Type of the message to be sent */
 typedef enum {QoS, BROADCAST, OTHER, DROP} tpTraffic;
 
 /* Generic configuration structure */
+typedef struct  {
+    u16         number;
+    signed char        priority;
+    tpTraffic   traffic;
+    struct proc_dir_entry *proc_entry;
+ }tpPort;
+
 typedef struct{
-   struct {
-      u16         number;
-      signed char        priority;
-      tpTraffic   traffic;
-   } port[NUM_PORTS];
+   tpPort port[NUM_PORTS];
    short count;
 }tpPortConf;
 
@@ -82,5 +88,9 @@ int getPortConf (tpConfig *conf, tpProto proto, tpDir dir, u16 port, signed char
  *  The priority and the type of traffic for ICMP are assigned to 'priority' and 'traffic'
  */
 int getConfICMP (tpConfig* conf, signed char *priority, tpTraffic *traffic);
+
+int conf_init_proc(void);
+int conf_close_proc(tpConfig *conf);
+struct proc_dir_entry * get_proc_root(void);
 
 #endif

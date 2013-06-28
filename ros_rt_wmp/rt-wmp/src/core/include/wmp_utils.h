@@ -56,6 +56,8 @@ void wmp_print(const char *format, ...);
 int wmp_print_get_size(void);
 void wmp_print_reset(void);
 int wmp_print_put(wmpFrame * p);
+void wmp_print_append(wmpFrame * p);
+void wmp_print_clean(wmpFrame * p) ;
 int ms_to_us(int n);
 int us_to_ms(int n);
 #endif /* WMP_UTILS_H_ */

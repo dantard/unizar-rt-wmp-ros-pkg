@@ -32,6 +32,8 @@ int ioctl_node_info(tpNodeInfo __user *pinfo);
 
 int ioctl_lqm(char __user *plqm);
 
+int ioctl_distances(char __user *plqm);
+
 int ioctl_network_connected(tpNetworkConnectedInfo __user *pinfo);
 
 int ioctl_queue_actions(tpQueueActionInfo __user *pinfo);

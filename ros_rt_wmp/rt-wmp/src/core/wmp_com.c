@@ -73,6 +73,10 @@ void rssi_set_f( char (*f) (char)){
 	}
 }
 
+char getSimulatedRssi(char to){
+	return 80;
+}
+
 void wmpUpdateRssi(wmpFrame *p){
 	int i;
 	/* Calculate RSSI */
@@ -89,8 +93,6 @@ void wmpUpdateRssi(wmpFrame *p){
 	/* if I received a frame but the other says does not hear me, I suppose it
 	 * hear me
 	 */
-	//wmp_print_lqm(lqm_get_ptr(),"EBF\n",wmpGetNumOfNodes());
-
 	lqm_set_val(status.id,p->hdr.from,rssi_get_averaged_rssi(p->hdr.from));
 
 }
@@ -100,7 +102,7 @@ void wmpSendDrop(wmpFrame * p){
 	q.hdr.to=p->hdr.from;
 	q.hdr.from=status.id;
 	q.hdr.type=DROP_TOKEN;
-	q.hdr.rssi=80;
+	q.hdr.rssi=getSimulatedRssi(q.hdr.to);
 	q.hdr.noise=0;
 	q.hdr.retries=0;
 	q.drop.drop_serial=p->hdr.serial;
@@ -155,7 +157,6 @@ int wmpSend(wmpFrame* p){
 
 	/* MANAGE POWER SAVE */
 	duration = wmp_calculate_frame_duration_us(status.rate,size);
-	wmp_print("DUR:%d",duration);
 
 	if (p->hdr.sleep > duration){
 		p->hdr.sleep -= duration;
@@ -165,7 +166,7 @@ int wmpSend(wmpFrame* p){
 
 	/* < MANAGE POWER SAVE */
 
-	p->hdr.rssi = 80;
+	p->hdr.rssi = getSimulatedRssi(p->hdr.to);
 	p->hdr.from = status.id;
 	p->hdr.serial = status.highestSerial;
 
@@ -306,12 +307,11 @@ void wmpSendAck(wmpFrame * p){
 	p->hdr.to=status.lastRecvdFrom;
 	p->hdr.from=status.id;
 	p->hdr.type=ACK;
-	p->hdr.rssi=80;
+	p->hdr.rssi=getSimulatedRssi(p->hdr.to);
 	p->hdr.noise=0;
 	p->hdr.retries=0;
 	status.highestSerial++;
 	p->hdr.serial=status.highestSerial;
-	wmp_print("%d ", p->hdr.sleep);
 	size = sizeof(Token_Hdr)+sizeof(Ack)+wmp_print_put(p);
 	ml_send( p, size);
 }
@@ -321,13 +321,11 @@ int vigilant_sleep(wmpFrame * p, wmpFrame * q){
 	status.highestSerial = q->hdr.serial;
 	rtn=ml_receive(q, q->hdr.sleep/1000); ///XXXX should be q
 	if (rtn==EXPIRED){
-		wmp_print("EXPD ");
 		p->hdr.sleep = 0;
 		return NEW_TOKEN;
 	}else {
 		q->hdr.sleep = 0;
 		p->hdr.sleep = 0;
-		wmp_print("RCVD serial %d ", q->hdr.serial);
 		return INTERPRET_RECEIVED;
 	}
 }

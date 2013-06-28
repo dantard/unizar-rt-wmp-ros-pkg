@@ -74,6 +74,7 @@ void init_lqm(int m_size){
 	lqm_dist=(char**) MALLOC(size*sizeof(char*));
 	for (i=0;i<size;i++){
 		lqm_dist[i]=(char *) MALLOC(size*sizeof(char));
+		memset(lqm_dist[i],-1,size*sizeof(char));
 	}
 
 	/* init distance matrix */
@@ -388,15 +389,21 @@ void lqm_compute_prob(char ** lqm) {
 int lqm_prob_get_path(int src, int dest, char * path) {
 	int res = src, exres = 0, idx = 0;
 	while (res != dest) {
+
 		res = Next[res][dest];
-		if (path!=0){
+//		fprintf(stderr,"src:%d dst:%d res:%d\n",src,dest,res);
+		if (path != 0){
 			path[idx] = res;
 			idx++;
 		}
-		if (res == exres){
-			return -1;
-		}
+//		if (res == exres){
+//			return -1;
+//		}
 		exres = res;
 	}
-	return Next[res][dest];
+	return path[0];//Next[res][dest];
+}
+/* returns first hop (if exist) or -1 if not. If path is passed, the function returns the whole path */
+int lqm_prob_get_val(int src, int dest) {
+	return A0[src][dest];
 }

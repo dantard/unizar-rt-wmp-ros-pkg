@@ -30,6 +30,7 @@
 #include <linux/kernel.h>
 #include <asm/uaccess.h>
 #include "core/interface/wmp_interface.h"
+#include "core/include/lqm.h"
 
 int ioctl_node_info(tpNodeInfo __user *pinfo) {
 	int ret = 0;
@@ -54,6 +55,24 @@ int ioctl_node_info(tpNodeInfo __user *pinfo) {
 }
 
 int ioctl_lqm(char __user *plqm) {
+	char lqm[wmpGetNumOfNodes() * wmpGetNumOfNodes()];
+	int size = wmpGetLatestLQM(lqm);
+	return copy_to_user(plqm, lqm, size);
+}
+
+int ioctl_distances(char __user *plqm) {
+	char lqm[wmpGetNumOfNodes() * wmpGetNumOfNodes()];
+	int k=0,i=0,j=0;
+	for (i=0;i<wmpGetNumOfNodes();i++){
+		for (j=0;j<wmpGetNumOfNodes();j++){
+			lqm[k]=lqm_get_distance(i,j);
+			k++;
+		}
+	}
+	return copy_to_user(plqm, lqm, k);
+}
+
+int ioctl_get_path(char __user *plqm) {
 	char lqm[wmpGetNumOfNodes() * wmpGetNumOfNodes()];
 	int size = wmpGetLatestLQM(lqm);
 	return copy_to_user(plqm, lqm, size);

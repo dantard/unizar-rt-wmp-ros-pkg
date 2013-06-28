@@ -76,7 +76,7 @@ protected:
 	boost::shared_array<uint8_t> dbuff;
 
 	enum wmp_commands_t {
-		STOP, TOPIC_STOP, TOPIC_START, TOPIC_DECIMATE, TOPIC_JUSTONE
+		STOP, TOPIC_STOP, TOPIC_START, TOPIC_DECIMATE, TOPIC_JUSTONE, SET_PRIORITY, GET_PRIORITY
 	};
 public:
 	ros::NodeHandle * n;
@@ -158,6 +158,15 @@ public:
 
 	virtual void startRX(){
 	}
+
+	virtual unsigned char getPriority(){
+		return flow_prio;
+	}
+
+	virtual void setPriority(unsigned char prio){
+		flow_prio = prio;
+	}
+
 
 	virtual void run()=0;
 

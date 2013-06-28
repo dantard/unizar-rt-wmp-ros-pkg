@@ -322,7 +322,6 @@ static int __net_init load_interface(void) {
 }
 
 static void __net_exit unload_interface(void) {
-
 	if (interface) {
 		unregister_netdev(interface);
 		free_netdev(interface);
@@ -370,6 +369,7 @@ static int __devinit interface_open(struct net_device *netdev) {
 	wmpForceBurst(IP_TRAFFIC_PORT);
 
 	/* Read the configuration for the traffic */
+	conf_init_proc();
 	readConfig(&priv->conf);
 	//wmpForceTopology("chain",0);
 
@@ -402,6 +402,8 @@ static int __devinit interface_open(struct net_device *netdev) {
 static int __devexit interface_close (struct net_device *netdev) {
 	priv_data *priv;
 	priv = netdev_priv(netdev);
+
+	conf_close_proc(&priv->conf);
 
 	/* Stop threads */
 	kthread_stop(priv->rx_thread);
@@ -594,6 +596,10 @@ static int interface_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd) {
 
 	case SIO_GETLATESTLQM:
 		ioctl_lqm(ifr->ifr_data);
+		break;
+
+	case SIO_GETLATESTDISTANCE:
+		ioctl_distances(ifr->ifr_data);
 		break;
 
 	case SIO_NETWORKCONNECTED:

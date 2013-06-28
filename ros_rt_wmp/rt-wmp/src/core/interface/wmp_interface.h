@@ -266,6 +266,8 @@ void wmpSetRxError(char * name, int rate);
 int wmpSetTaskMinimumSeparation(int port, int period);
 int  wmpIsKernelSpace(void);
 void wmpForceBurst(int port);
+int  wmpGetLatestDistances(char * dist);
+
 char lqm_get_val(int i, int j);
 #endif
 

@@ -58,6 +58,19 @@ int wmpGetLatestLQM(char * lqm){
 	return k;
 }
 
+
+int wmpGetLatestDistance(char * lqm){
+	int k=0,i=0,j=0;
+	for (i=0;i<status.N_NODES;i++){
+		for (j=0;j<status.N_NODES;j++){
+			lqm[k]=lqm_get_distance(i,j);
+			k++;
+		}
+	}
+	return k;
+}
+
+
 char wmpGetMaxRssi(void){
 	return status.max_rssi;
 }

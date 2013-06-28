@@ -102,10 +102,6 @@ public:
 		return flow_prio;
 	}
 
-	virtual int getPriority() {
-		return flow_prio;
-	}
-
 	bool callback(typename T::Request &req, typename T::Response &resp) {
 		ROSWMP_DEBUG(stderr, "Callback received");
 

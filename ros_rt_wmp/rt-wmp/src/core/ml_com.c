@@ -155,8 +155,6 @@ static int ml_rx_error(wmpFrame * p){
 
 
 	if (discard){
-		wmp_print("MLDSD serial %d \n",  (int)p->hdr.serial);
-
 		last_discarded = p->hdr.serial;
 		last_discarded_type = p->hdr.type;
 	}

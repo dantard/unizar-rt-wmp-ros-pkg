@@ -460,6 +460,27 @@ int llsend(char * f, int size) {
 	llpsend(f, size, WMP_TYPE_FIELD);
 }
 
+
+char getSimulatedRssiRX(char * f){
+	wmpFrame * p = (wmpFrame *) f;
+	char from = p->hdr.from;
+	char myself = wmpGetNodeId();
+	if (from == 0){
+		if (myself == 1) return 50;
+		if (myself == 2) return 80;
+	}
+	if (from == 1){
+		if (myself == 0) return 50;
+		if (myself == 2) return 25;
+	}
+	if (from == 2){
+		if (myself == 0) return 80;
+		if (myself == 1) return 25;
+	}
+	return 80;
+}
+
+
 rxInfo llreceive(char *f, int timeout) {
 	int r = 0;
 	rxInfo ret;
@@ -484,7 +505,8 @@ rxInfo llreceive(char *f, int timeout) {
 			ret.size = rlen - ETHER_HDR_LEN;
 			ret.error = 0;
 			ret.rate = 10;
-			ret.has_lq = 0;
+			ret.has_lq = 1;
+			ret.rssi = getSimulatedRssiRX(f);
 			return ret;
 		} else {
 			ret.error = 1;
@@ -492,4 +514,5 @@ rxInfo llreceive(char *f, int timeout) {
 		}
 	}
 }
+
 

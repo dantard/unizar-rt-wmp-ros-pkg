@@ -41,6 +41,7 @@
 #include <linux/proc_fs.h>
 #include "config/compiler.h"
 #include "core/interface/wmp_interface.h"
+#include "core/include/lqm.h"
 
 /* Variables for the directory and all the files */
 static struct proc_dir_entry *directory;
@@ -48,6 +49,7 @@ static struct proc_dir_entry *directory;
 static struct proc_dir_entry *fNodeId;
 static struct proc_dir_entry *fNumOfNodes;
 static struct proc_dir_entry *fLatestLQM;
+static struct proc_dir_entry *fLatestDistances;
 
 static struct proc_dir_entry *fNetworkConnected;
 
@@ -110,6 +112,24 @@ int f_getLatestLQM(char *page, char **start, off_t off, int count, int *eof, voi
       for (i = 0; i<size ; i++){
          for (j = 0; j<size ; j++){
             p += sprintf(p, " %04d ",lqm[i*size+j]);
+         }
+         p += sprintf(p, "\n");
+      }
+      return p-page;             // Returns the size
+   }
+}
+
+int f_getLatestDistances(char *page, char **start, off_t off, int count, int *eof, void *data){
+   if (off > 0) {
+      *eof = 1;
+      return 0;
+   }
+   else {
+      int i, j, size = wmpGetNumOfNodes();
+      char *p = page;
+      for (i = 0; i<size ; i++){
+         for (j = 0; j<size ; j++){
+            p += sprintf(p, " %04d ",lqm_get_distance(i,j));
          }
          p += sprintf(p, "\n");
       }
@@ -453,7 +473,7 @@ int f_loopId(char *page, char **start, off_t off, int count, int *eof, void *dat
    }
 }
 
-typedef enum { NODEID, NUMOFNODES, LATESTLQM, NETWORKCONNECTED, CPUDELAY,
+typedef enum { NODEID, NUMOFNODES, LATESTLQM, LATESTDISTANCES, NETWORKCONNECTED, CPUDELAY,
                TIMEOUT, WCMULT, RATE, FREEPOSTX, ELEMSTX, ELEMSRX, NETIT, GETMTU,
                ACTIVESEARCH, INSTANCEID, PRIMBASEDROUTING, MESSAGERESCHEDULE,
                FLOWCONTROL, SERIAL, LOOPID, ALL} tpClose;
@@ -496,9 +516,11 @@ void __close_proc(tpClose where){
       case CPUDELAY:
          remove_proc_entry(fNetworkConnected->name, fNetworkConnected->parent);
       case NETWORKCONNECTED:
-         remove_proc_entry(fLatestLQM->name, fLatestLQM->parent);
-      case LATESTLQM:
-         remove_proc_entry(fNumOfNodes->name, fNumOfNodes->parent);
+         remove_proc_entry(fLatestDistances->name, fLatestDistances->parent);
+      case LATESTDISTANCES:
+          remove_proc_entry(fLatestLQM->name, fLatestLQM->parent);
+       case LATESTLQM:
+    	  remove_proc_entry(fNumOfNodes->name, fNumOfNodes->parent);
       case NUMOFNODES:
          remove_proc_entry(fNodeId->name, fNodeId->parent);
       case NODEID:
@@ -506,6 +528,11 @@ void __close_proc(tpClose where){
       //case DIR:
    }
 }
+
+struct proc_dir_entry * get_proc_root(){
+	return directory;
+}
+
 
 /* Creates /proc/rt-wmp/ and all the files inside it */
 int init_proc(void){
@@ -530,6 +557,12 @@ int init_proc(void){
    fLatestLQM = create_proc_read_entry("latestLQM", 0666, directory, f_getLatestLQM, NULL);
    if(!fLatestLQM){
       __close_proc(LATESTLQM);
+      return -ENOMEM;
+   }
+
+   fLatestDistances = create_proc_read_entry("latestDistances", 0666, directory, f_getLatestDistances, NULL);
+   if(!fLatestDistances){
+      __close_proc(LATESTDISTANCES);
       return -ENOMEM;
    }
 

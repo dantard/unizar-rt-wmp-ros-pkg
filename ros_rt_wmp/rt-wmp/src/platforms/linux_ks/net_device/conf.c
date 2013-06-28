@@ -25,18 +25,87 @@
 
 #include "config/compiler.h"
 #include "core/include/global.h"
-
+#include <linux/version.h>
+#include <linux/proc_fs.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <asm/uaccess.h>
 #include "conf.h"
+
+static struct proc_dir_entry *directory;
+
+/* Creates /proc/rt-wmp/ and all the files inside it */
+int conf_init_proc(void) {
+	printk(KERN_ERR "Initializing /proc files (net device)...");
+	directory = get_proc_root();
+	directory = proc_mkdir("port", directory);
+	if (!directory) {
+		remove_proc_entry("port");
+		return -ENOMEM;
+	}
+	return 1;
+}
+
+
+int conf_close_proc(tpConfig *conf) {
+	int i;
+	for (i = 0; i < conf->udp_in.count; i++) {
+		remove_proc_entry(conf->udp_in.port[i].proc_entry->name, directory);
+	};
+
+	for (i = 0; i < conf->tcp_out.count; i++) {
+		remove_proc_entry(conf->tcp_out.port[i].proc_entry->name, directory);
+	};
+
+	for (i = 0; i < conf->udp_out.count; i++) {
+		remove_proc_entry(conf->udp_out.port[i].proc_entry->name, directory);
+	};
+
+	for (i = 0; i < conf->tcp_in.count; i++) {
+		remove_proc_entry(conf->tcp_in.port[i].proc_entry->name, directory);
+	};
+    remove_proc_entry(directory->name, directory->parent);
+	return 1;
+}
+
+int f_port_read(char *page, char **start, off_t off, int count, int *eof,
+		void *data) {
+	if (off > 0) {
+		*eof = 1;
+		return 0;
+	} else {
+		tpPort * tp = (tpPort*) data;
+		return sprintf(page, "%u\n", tp->priority);
+	}
+}
+
+
+
+int f_port_write(struct file *f, const char __user *buff, unsigned long len, void *data ){
+	char aux[32];
+	tpPort * tp;
+	int val, size = (len>32?32:len);
+        
+	if (copy_from_user(aux, buff, size)) {
+	  return -EFAULT;
+	}
+	aux[size-1]='\0';
+
+	val = atoi(aux);
+	tp = (tpPort*) data;
+	tp->priority = val;
+
+	return len;
+}
+
+
 
 /**
  *  If there is space left in 'portConf' for another port, stores the
  *  configuration (priority and type of traffic) for the port 'number'
  *  If 'number' is 0, the configuration is used for every port
  */
-void asign_port (tpPortConf* portConf, u16 number, signed char priority, tpTraffic traffic) {
+void asign_port (tpPortConf* portConf, u16 number, signed char priority, tpTraffic traffic, int type) {
    if (number == 0) {             // Global configuration
       portConf->count = -1;
       portConf->port[0].number = number;
@@ -49,6 +118,29 @@ void asign_port (tpPortConf* portConf, u16 number, signed char priority, tpTraff
          portConf->port[portConf->count].number = number;
          portConf->port[portConf->count].priority = priority;
          portConf->port[portConf->count].traffic = traffic;
+         /* PROC */
+         {
+			 char txt[64];
+			 if (type == 1){
+				 sprintf(txt,"udp_in_%d",number);
+			 }else if (type == 2){
+				 sprintf(txt,"udp_out_%d",number);
+			 } if (type == 3){
+				 sprintf(txt,"tcp_in_%d",number);
+			 } if (type == 4){
+				 sprintf(txt,"tcp_out_%d",number);
+			 }
+
+        	 portConf->port[portConf->count].proc_entry = create_proc_entry(txt, 0666, directory);
+			 if(!portConf->port[portConf->count].proc_entry){
+				//__close_proc(0);
+			 }
+			 portConf->port[portConf->count].proc_entry->read_proc = f_port_read;
+			 portConf->port[portConf->count].proc_entry->write_proc = f_port_write;
+
+			 portConf->port[portConf->count].proc_entry->data = (void*) &(portConf->port[portConf->count]);
+			 //portConf->port[portConf->count].proc_entry->write_proc = f_CpuDelay_read;
+         }
          portConf->count++;
       }
    }
@@ -112,28 +204,28 @@ int readConfig(tpConfig *conf) {
       exists = 0;
       if (strcmp(proto, "UDP") == 0) {
          if (strcmp(dir, "FROM") == 0) {
-            asign_port(&conf->udp_in, port, priority, traffic);
+            asign_port(&conf->udp_in, port, priority, traffic, 1);
             exists = 1;
          } else if (strcmp(dir, "TO") == 0) {
-            asign_port(&conf->udp_out, port, priority, traffic);
+            asign_port(&conf->udp_out, port, priority, traffic, 2);
             exists = 1;
          } else if (strcmp(dir, "BOTH") == 0) {
-            asign_port(&conf->udp_in, port, priority, traffic);
-            asign_port(&conf->udp_out, port, priority, traffic);
+            asign_port(&conf->udp_in, port, priority, traffic, 1);
+            asign_port(&conf->udp_out, port, priority, traffic, 2);
             exists = 1;
          } else {
             printk(KERN_INFO "*** UNKNOWN DIRECTION %s\n", dir);
          }
       } else if (strcmp(proto, "TCP") == 0) {
          if (strcmp(dir, "FROM") == 0) {
-            asign_port(&conf->tcp_in, port, priority, traffic);
+            asign_port(&conf->tcp_in, port, priority, traffic, 3);
             exists = 1;
          } else if (strcmp(dir, "TO") == 0) {
-            asign_port(&conf->tcp_out, port, priority, traffic);
+            asign_port(&conf->tcp_out, port, priority, traffic, 4);
             exists = 1;
          } else if (strcmp(dir, "BOTH") == 0) {
-            asign_port(&conf->tcp_in, port, priority, traffic);
-            asign_port(&conf->tcp_out, port, priority, traffic);
+            asign_port(&conf->tcp_in, port, priority, traffic, 3);
+            asign_port(&conf->tcp_out, port, priority, traffic, 4);
             exists = 1;
          } else {
             printk(KERN_INFO "*** UNKNOWN DIRECTION %s\n", dir);
@@ -156,6 +248,7 @@ int readConfig(tpConfig *conf) {
    filp_close(f,0);
 
    // Will be TRUE if one or more ports have been read
+
    return ret;
 }
 

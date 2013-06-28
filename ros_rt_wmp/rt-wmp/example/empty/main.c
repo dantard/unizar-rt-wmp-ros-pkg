@@ -52,13 +52,12 @@ void *fthread_tx (void * param){
 	int idx = 0;
 	while (1){
 		dest = 1 << (wmpGetNumOfNodes()-1); //Last node of the present
-		len = 1500;
-		priority = 3; 
+		len = 500;
+		priority = 1;//rand()%5; 
 		sprintf(buff,"MESSAGE n.%d from node %d dest %d",i++, wmpGetNodeId(),dest);
 		wmpPushData(port,buff,len,dest,priority);
-		usleep(100000);
+		usleep(1500000);
 		idx++;
-
 	}
 }
 
@@ -90,7 +89,7 @@ int main(int argc, char* argv[]){
 	wmpSetup(atoi(argv[1]), atoi(argv[2]));
 	
 	pthread_t th1, th2;
-	if (wmpGetNodeId()==0) 	{
+	if (wmpGetNodeId()==1) 	{
 		pthread_create(&th1,0,fthread_tx,0);
 	}	
 	pthread_create(&th2,0,fthread_rx,0);

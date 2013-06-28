@@ -39,6 +39,10 @@
 #include "include/wmp_misc.h"
 #include "include/lqm.h"
 #include "interface/wmp_interface.h"
+
+
+#define NET_DEBUG
+
 long long wmp_timespec_to_ns(struct timespec *ts){
     long long val = (long long) ts->tv_sec * 1000000000 + (long long) ts->tv_nsec;
     return val;
@@ -61,7 +65,10 @@ void wmp_add_ms(struct timespec *ts, int ms){
 
 unsigned int wmp_calculate_frame_duration_ms(int rate, int size) {
 	int res = (242 + (10 * (28 + size * 8) / rate));
-	res++;
+	res=res/1000;
+	if (res == 0){
+		res++;
+	}
 	return res;
 }
 
@@ -180,53 +187,68 @@ int inline us_to_ms(int n){
 
 #ifdef NET_DEBUG
 
-static char buffer[1000];
-static int buffer_idx = 0;
-void wmp_print(const char *format, ...) {
-	  va_list args;
-	  va_start (args, format);
-	  vsprintf (buffer+buffer_idx,format, args);
-	  va_end (args);
-	  buffer_idx=strlen(buffer);
-}
+	static char buffer[1000];
+	static int buffer_idx = 0;
+	void wmp_print(const char *format, ...) {
+		  va_list args;
+		  va_start (args, format);
+		  vsprintf (buffer+buffer_idx,format, args);
+		  va_end (args);
+		  buffer_idx=strlen(buffer);
+	}
 
-int wmp_print_get_size(void) {
-	return strlen(buffer);
-}
-void wmp_print_reset(void) {
-	buffer[0] = 0;
-	buffer_idx = 0;
-}
+	void wmp_print_append(wmpFrame * p) {
+		int len;
+		char * net_data;
+		len =  wmp_get_frame_total_lenght(p);
+		net_data = ((char*) p) + len;
+		strcpy(buffer, net_data);
+		buffer_idx = strlen(buffer);
+	}
 
-int wmp_print_put(wmpFrame * p) {
-	int len, tail;
-	len = tail = wmp_get_frame_total_lenght(p);
-	len = 1500 - len;
-	len  = strlen(buffer) > len ? len : strlen(buffer);
-	memcpy((((char *) p) + tail), buffer, len);
-	//printk(KERN_INFO "%s",buffer);
-	wmp_print_reset();
-	return len;
-}
+	int wmp_print_get_size(void) {
+		return strlen(buffer);
+	}
+	void wmp_print_reset(void) {
+		buffer[0] = 0;
+		buffer_idx = 0;
+	}
 
-int inline ms_to_us(int n){
-	return n*1000;
-}
-int inline us_to_ms(int n){
-	return n/1000;
-}
+	void wmp_print_clean(wmpFrame * p) {
+		int i, len =  wmp_get_frame_total_lenght(p);
+		char * net_data = ((char*) p) + len;
+		for (i=0;i<50;i++){
+			net_data[i] = 0;
+		}
+	}
+
+	int wmp_print_put(wmpFrame * p) {
+		int len, tail;
+		len = tail = wmp_get_frame_total_lenght(p);
+		len = 1500 - len;
+		len  = strlen(buffer) > len ? len : strlen(buffer);
+		len +=2;
+		memcpy((((char *) p) + tail), buffer, len);
+		wmp_print_reset();
+		return len;
+	}
+
+
 #else
-void wmp_print(const char *format, ...) {
-}
+	void wmp_print(const char *format, ...) {
+	}
 
-int wmp_print_get_size(void) {
-	return 0;
-}
-void wmp_print_reset(void) {
-}
+	int wmp_print_get_size(void) {
+		return 0;
+	}
+	void wmp_print_reset(void) {
+	}
 
-int wmp_print_put(wmpFrame * p) {
-	return 0;
-}
+	int wmp_print_put(wmpFrame * p) {
+		return 0;
+	}
+	void wmp_print_clean(wmpFrame * p) {}
+
+	void wmp_print_append(wmpFrame * p) {}
 
 #endif

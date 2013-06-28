@@ -58,6 +58,9 @@ void lqm_copy_to(char ** src, char ** dest);
 
 char (*lqm_get_f(void))(char);
 void lqm_set_f( char (*f) (char));
-
+int lqm_prob_get_path(int src, int dest, char * path);
+void lqm_compute_prob(char ** lqm);
+int lqm_prob_get_path(int src, int dest, char * path);
+int lqm_prob_get_val(int src, int dest);
 #endif /*LQM_H_*/
 

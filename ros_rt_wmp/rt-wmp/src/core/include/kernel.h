@@ -56,7 +56,7 @@ int init_proc(void);
 void close_proc(void);
 
 #define INIT_PROC() init_proc()
-#define CLOSE_PROC() close_proc()
+#define CLOSE_PROC() close_proc();
 
 module_init(load_rtwmp);
 module_exit(unload_rtwmp);

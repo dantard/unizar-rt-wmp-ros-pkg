@@ -153,6 +153,7 @@ typedef struct  {
 	unsigned char net_id;
 	int use_ett;
 	int use_prim;
+	int use_prob;
 	int use_prune;
 	int MAXIMUM_DATA_SIZE;
 	double x,y;
