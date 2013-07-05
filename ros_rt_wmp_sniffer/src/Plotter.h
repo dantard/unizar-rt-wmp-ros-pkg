@@ -58,6 +58,7 @@ class Plotter {
 std::vector<Q * > v;
 std::vector<T> v1,v2;
 std::vector<std::string> names;
+std::vector<int> quotient_to_ms;
 public:
 	void write_to_file(int id) {
 		std::ofstream fdata;
@@ -121,9 +122,10 @@ public:
 
 	}
 
-	int subscribe(Q * elem, std::string s= "***"){
+	int subscribe(Q * elem, std::string s= "***", int q_t_ms = 1){
 		v.push_back(elem);
 		names.push_back(s);
+		quotient_to_ms.push_back(q_t_ms);
 		return (v.size()-1);
 	}
 
@@ -133,7 +135,7 @@ public:
 			std::ofstream fdata;
 			fdata.open (".dataplot");
 			for (int i = 0 ; i< elem->getCount();i++){
-				fdata << elem->getPos(i) << " " << elem->get(i) << std::endl;
+				fdata << elem->getPos(i) << " " << (elem->get(i)/quotient_to_ms.at(idx)) << std::endl;
 			}
 			fdata.close();
 			FILE * f = popen("gnuplot","w");

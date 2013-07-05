@@ -599,8 +599,8 @@ void statistics_publish(window2 * w) {
 			publish(iter->second->getNMsg(), 2);
 			publish(iter->second->getBw(), 2);
 			publish(iter->second->getNrd(), 2);
-			publish(iter->second->getMdd(), 0, plotter.subscribe(&iter->second->getMdd(),w2->getCurrentRowName()));
-			publish(iter->second->getPapMdd(), 0, plotter.subscribe(&iter->second->getPapMdd(),w2->getCurrentRowName()));
+			publish(iter->second->getMdd(), 0, plotter.subscribe(&iter->second->getMdd(),w2->getCurrentRowName(),1000));
+			publish(iter->second->getPapMdd(), 0, plotter.subscribe(&iter->second->getPapMdd(),w2->getCurrentRowName(),1000));
 //			publish(iter->second->getRescheduled(), 2);
 //			publish(iter->second->getOrphan(), 2);
 //			publish(iter->second->getPreempted(), 2);
@@ -618,7 +618,7 @@ void statistics_publish(window2 * w) {
 				int id = iter->second->getId();
 				MaxMinCStats<long long> & npl = iter->second->getNextPrioLoop();
 				if (id >= 2000){
-					publish(npl, 2,plotter.subscribe(&npl,w2->getCurrentRowName()));
+					publish(npl, 2,plotter.subscribe(&npl,w2->getCurrentRowName(),1000));
 				}
 			}
 			w2->subSectionEnd();
@@ -630,7 +630,7 @@ void statistics_publish(window2 * w) {
 				int id = iter->second->getId();
 				MaxMinCStats<long long> & npl = iter->second->getNextPrioLoop();
 				if (id < 1000){
-					publish(npl, 2,plotter.subscribe(&npl,w2->getCurrentRowName()));
+					publish(npl, 2,plotter.subscribe(&npl,w2->getCurrentRowName(),1000));
 				}
 			}
 			w2->subSectionEnd();
@@ -642,7 +642,7 @@ void statistics_publish(window2 * w) {
 				int id = iter->second->getId();
 				MaxMinCStats<long long> & npl = iter->second->getNextPrioLoop();
 				if (id >= 1000){
-					publish(npl, 2, plotter.subscribe(&npl,w2->getCurrentRowName()));
+					publish(npl, 2, plotter.subscribe(&npl,w2->getCurrentRowName(),1000));
 				}
 			}
 			w2->subSectionEnd();
