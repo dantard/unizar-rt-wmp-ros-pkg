@@ -59,7 +59,7 @@ int wmpGetLatestLQM(char * lqm){
 }
 
 
-int wmpGetLatestDistance(char * lqm){
+int wmpGetLatestDistances(char * lqm){
 	int k=0,i=0,j=0;
 	for (i=0;i<status.N_NODES;i++){
 		for (j=0;j<status.N_NODES;j++){

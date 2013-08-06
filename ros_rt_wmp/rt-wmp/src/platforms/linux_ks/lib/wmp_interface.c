@@ -244,12 +244,12 @@ int wmpGetLatestLQM(char * lqm) {
 	return size;
 }
 
-int wmpGetLatestDistance(char * lqm) {
+int wmpGetLatestDistances(char * lqm) {
 	int size = wmpGetNumOfNodes();
 	size *= size;
 
 	ifr.ifr_data = (void *) lqm;
-	if ((ioctl(ioctl_sock, SIO_GETLATESTDISTANCE, &ifr)) < 0) {
+	if ((ioctl(ioctl_sock, SIO_GETLATESTDISTANCES, &ifr)) < 0) {
 		perror("Error in wmpGetLatestDistance IOCTL");
 		exit(1);
 	}
