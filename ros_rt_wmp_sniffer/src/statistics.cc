@@ -98,17 +98,37 @@ int last_pos = 0;
 bool first = false;
 char last_frame[2500];
 int total_frames = 0;
-
-#define PLAIN_RTWMP 	0
-#define QOS_RTWMP 		97
-
 bool first_frame = true;
-
-
 
 /* STATISTICS >>> */
 static int nnodes = 0, from, to;
 static window2 * w2;
+static int lastForeignTime = 0;
+long long lastIat;
+unsigned long long old_qosPh_serial = 0;
+FILE * outf;
+static bool flows_initied = false;
+
+void statistics_init_flows() {
+	if (!flows_initied){
+		flows_initied = true;
+		std::map<int, StatsFlow * >::iterator iter;
+		for (iter = flows.begin(); iter != flows.end(); ++iter) {
+			delete iter->second;
+		}
+		flows.clear();
+
+		flows[0] = new StatsFlow(-1,-1,-1,0);
+		for (int i = 0; i < nnodes; i++) {
+			flows[10000+i] = new StatsFlow(10000+i, i, -2, 0, first_time);
+			for (int j = 0; j < nnodes; j++) {
+				int flow_id = j * 100 + i + 1;
+				int pernode_id = i + 10000;
+				flows[flow_id] = new StatsFlow(flow_id, i, j, 0, first_time);
+			}
+		}
+	}
+}
 
 int statistics_from_file(char * filename, int & begin, int & end){
 	nnodes=io_open_sim_data(filename);
@@ -126,13 +146,13 @@ int statistics_from_file(char * filename, int & begin, int & end){
 		to=end;
 	}
 	io_go_to(from);
-	char fdata[2700];
-
-	simData_Hdr * p = (simData_Hdr *) fdata;
-	wmpFrame * r = (wmpFrame *) (fdata + sizeof(simData_Hdr));
-	long long base_time = 0;
 
 	int idx=0;
+	char fdata[2700];
+	long long base_time = 0;
+	simData_Hdr * p = (simData_Hdr *) fdata;
+	wmpFrame * r = (wmpFrame *) (fdata + sizeof(simData_Hdr));
+
 	fprintf(stderr,"Generating Statistics...\n");
 	first_frame = true;
 	for (int i=from; i<to; i++) {
@@ -175,21 +195,10 @@ int hf(int key)
   return key;
 }
 
-
-static int lastForeignTime = 0;
-long long lastIat;
-unsigned long long old_qosPh_serial = 0;
-FILE * outf;
 void statistics_init() {
 	outf= fopen("outf.txt","w+");
-	std::map<int, StatsFlow * >::iterator iter;
-	for (iter = flows.begin(); iter != flows.end(); ++iter) {
-		delete iter->second;
-	}
-	flows.clear();
 
-	flows[0] = new StatsFlow(-1,-1,0);
-	flows[1] = new StatsFlow(-1,-1,1);
+	flows_initied = false;
 
 	tkns.init();
 	msgs.init();
@@ -261,6 +270,8 @@ void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, sim
 		last_pos = pos;
 		first_time = ptime;
 	}
+
+	statistics_init_flows();
 
 	if (!sdh->is_wmp){
 		foreign.new_value(pos,pos);
@@ -361,43 +372,24 @@ void statistics_new_frame(wmpFrame * p, long long ptime, int pos, int bytes, sim
 
 	}
 
-	if (p->hdr.type == MESSAGE){
+	if (p->hdr.type == MESSAGE) {
 		msgs.new_value(1);
 
 		bool is_last_msg_jump = (p->msg.dest & (1 << p->hdr.to));
+		if (p->hdr.retries == 0) {
 
-		/* Flows */
-		//if (is_last_msg_jump) {
-			int flow_id = p->hdr.to * 100 + p->msg.src + 1;
-			int pernode_id = p->msg.src + 10000;
-
-			if (flows.find(flow_id) == flows.end()) {
-				flows[flow_id] = new StatsFlow(p->msg.src, p->hdr.to, 0, first_time);
-			}
-
-			if (flows.find(pernode_id) == flows.end()) {
-				flows[pernode_id] = new StatsFlow(p->msg.src, -1, 0, first_time);
-			}
-		//}
-		/* Flows */
-
-		//if (is_last_msg_jump) {
-			if (p->hdr.retries == 0) {
-
-				if (loop_length.aux2 == 1) {
-					loop_length.new_value(loop_length.aux1, pos);
-					loops.new_value(ptime - loops.bookmark, pos);
-					if (loop_length.aux1 == ((2 * nnodes - 3) + (nnodes - 1)
-							+ (nnodes - 1))) {
-						wc_loops.new_value(ptime - loops.bookmark, pos);
-					}
+			if (loop_length.aux2 == 1) {
+				loop_length.new_value(loop_length.aux1, pos);
+				loops.new_value(ptime - loops.bookmark, pos);
+				if (loop_length.aux1
+						== ((2 * nnodes - 3) + (nnodes - 1) + (nnodes - 1))) {
+					wc_loops.new_value(ptime - loops.bookmark, pos);
 				}
 			}
-			/* Message correctly delivered */
-			mmz.new_value(pos, pos);
-			mmz.aux1 = 1;
-		//}
-
+		}
+		/* Message correctly delivered */
+		mmz.new_value(pos, pos);
+		mmz.aux1 = 1;
 	}
 
 	std::map<int, StatsFlow * >::iterator iter;
@@ -586,11 +578,11 @@ void statistics_publish(window2 * w) {
 		if (!iter->second->is_qos()) {
 			if (iter->first == 0) {
 				w2->row_create("Global Flow", "");
-			} else if (iter->first < 10000){
+			} else if (iter->first < 10000 && iter->second->get_count() > 0){
 				w2->row_create("Flow :: Src: " + toString(
 						iter->second->get_src()) + " Dst: " + toString(
 						iter->second->get_dst()),"", iter->second->begin());
-			} else {
+			} else if (iter->first >= 10000) {
 				w2->row_create("Node # " + toString(
 						iter->second->get_src()),"", iter->second->begin());
 			}

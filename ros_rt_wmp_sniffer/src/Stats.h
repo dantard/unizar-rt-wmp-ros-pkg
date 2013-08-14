@@ -460,8 +460,8 @@ class StatsFlow {
 
 
 
-	bool initied, isqos;
-	int id, from, to, src, dst , begin_id, loop_id;
+	bool initied, isqos, global_flow, pernode;
+	int id, from, to, src, dst , begin_id, loop_id, flow_id;
 
 	struct {
 		int Pos, NTPos, MKey, msg_id_pos;
@@ -497,20 +497,28 @@ public:
 		prev.NTPos = 0;
 	}
 
-	StatsFlow(int from, int to, bool qos, long long time_begin = 0) :
+	StatsFlow(int flow_id, int from, int to, bool qos, long long time_begin = 0) :
 			mdd("Message Delivery Delay", "us"), papMdd("Message Delivery Delay + PAP", "us"), nrd(
 					"Message Not Reaching Destination", "us"), bw("Bandwidth",
 					"Kbps"), nmsg("Messages", ""), preempted("Preempted","Msg Univocal Id"), rescheduled("Rescheduled","Id"),orphan("Orphan","Id"),
 					o3("Out Of Order","Id"), avail("Available time per second","ms"), ctt("Tokens","us"), cta("Auths","us"), ctm("Messages","us"){
 		this->src=from;
 		this->dst=to;
+		this->global_flow = (dst == -1);
+		this->pernode = (dst == -2);
 		this->isqos=qos;
+		this->flow_id = flow_id;
 		init();
 		bw.new_time(0);
 	}
 	int get_src(){
 		return src;
 	}
+
+	int get_count(){
+		return messages.size();
+	}
+
 	int get_dst(){
 		return dst;
 	}
@@ -518,6 +526,14 @@ public:
 		return isqos;
 	}
 	void new_frame(wmpFrame * p, long long time, int pos){
+
+		if (!initied){
+			begin_id = pos;
+			prev.Pos = pos;
+			prev.Time = time;
+			initied = true;
+		}
+
 		bw.new_time(time);
 		avail.new_time(time);
 		if (p->hdr.type == TOKEN){
@@ -527,14 +543,14 @@ public:
 				loop_id = p->hdr.loop_id;
 			}
 		}
-		prev.Pos = pos;
-		prev.Time = time;
-		prev.Frame = *p;
-		if (p->hdr.type == MESSAGE){
+
+		if (p->hdr.type == MESSAGE && mBitsIsSet(p->msg.type, 4)){
 			new_message(p, time, pos);
 		}
 
-
+		prev.Pos = pos;
+		prev.Time = time;
+		prev.Frame = *p;
 	}
 
 	int begin(){
@@ -542,19 +558,37 @@ public:
 	}
 
 	void new_message(wmpFrame * p, long long time, int pos) {
-//		bool is_last_msg_jump = (p->msg.dest & (1 << p->hdr.to)) && ((dst < 0) || (p->msg.dest & 1 << dst));
-		bool is_last_msg_jump = (p->msg.dest & (1 << p->hdr.to)) && ((dst < 0) || (p->hdr.to == dst));
+		int flow_id = p->hdr.to * 100 + p->msg.src + 1;
 
-		bool is_first_msg_jump = ((p->msg.src == p->hdr.from) && ((dst < 0) || (p->msg.dest | 1 << dst)));
+		bool is_first_msg_jump = false;
+		bool is_reaching_me = false;
+
+		if (global_flow){
+			is_first_msg_jump = (p->msg.src == p->hdr.from);
+			is_reaching_me = (p->msg.dest & 1 << p->hdr.to);
+			bool im_interested = is_reaching_me || is_first_msg_jump;
+			if (!im_interested){
+				return;
+			}
+		}else if (pernode){
+			bool im_interested = this->src == p->msg.src ;
+			if (!im_interested){
+				return;
+			}
+			is_first_msg_jump = (p->msg.src == p->hdr.from);
+			is_reaching_me = (p->msg.dest & 1 << p->hdr.to);
+		}else{
+			/* source es el source de mi flujo, yo estoy dentro de los destinos */
+			bool im_interested = this->src == p->msg.src && (p->msg.dest & (1<<dst));
+			if (!im_interested){
+				return;
+			}
+			is_first_msg_jump = (p->msg.src == p->hdr.from);
+			is_reaching_me = (p->hdr.to == dst);
+		}
 
 		unsigned int mkey = p->msg.msg_hash*100000 + 1000*abs(p->msg.part_id) + 100*p->msg.port;
 
-		if (!initied){
-			begin_id = pos;
-			prev.Pos = pos;
-			prev.Time = time;
-			initied = true;
-		}
 		if (messages.find(mkey) == messages.end()){
 			messages[mkey].begin = 0;
 			messages[mkey].end = 0;
@@ -581,7 +615,8 @@ public:
 			}
 		}
 
-		if (is_last_msg_jump) {
+		if (is_reaching_me) {
+
 			messages[mkey].end = pos;
 			messages[mkey].timeEnd = time;
 			messages[mkey].LoopId.last = p->hdr.loop_id;
@@ -617,7 +652,7 @@ public:
 
 			if (be.begin != 0) {
 				if (be.end != 0) {
-					if ((be.timeEnd - be.timeBegin)>0){
+					if ((be.timeEnd - be.timeBegin)>=0){
 						mdd.new_value(be.timeEnd - be.timeBegin, be.begin);
 					}
 					if (be.LoopId.first != be.LoopId.last){

@@ -698,7 +698,7 @@ void main_window::draw_stuffs(char * data, int pos_in_file, int show_f,
 		} else {
 			if (r->hdr.type == MESSAGE){
 				if (!mBitsIsSet(r->msg.type, 4)){
-					col = 6;
+					col = 11;
 				}
 #ifdef WMP_ROUTING_tree
 				if (!mBitsIsSet(r->msg.type,4)){
