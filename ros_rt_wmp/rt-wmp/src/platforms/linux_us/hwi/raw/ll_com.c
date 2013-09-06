@@ -506,7 +506,7 @@ rxInfo llreceive(char *f, int timeout) {
 			ret.error = 0;
 			ret.rate = 10;
 			ret.has_lq = 1;
-			ret.rssi = getSimulatedRssiRX(f);
+			//ret.rssi = getSimulatedRssiRX(f);
 			return ret;
 		} else {
 			ret.error = 1;
