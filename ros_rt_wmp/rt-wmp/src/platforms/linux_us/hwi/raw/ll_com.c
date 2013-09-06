@@ -505,7 +505,7 @@ rxInfo llreceive(char *f, int timeout) {
 			ret.size = rlen - ETHER_HDR_LEN;
 			ret.error = 0;
 			ret.rate = 10;
-			ret.has_lq = 1;
+			ret.has_lq = 0;
 			//ret.rssi = getSimulatedRssiRX(f);
 			return ret;
 		} else {
