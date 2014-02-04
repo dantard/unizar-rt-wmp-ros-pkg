@@ -52,11 +52,11 @@ void *fthread_tx (void * param){
 	int idx = 0;
 	while (1){
 		dest = 1 << (wmpGetNumOfNodes()-1); //Last node of the present
-		len = 500;
+		len = 300;
 		priority = 1;//rand()%5; 
 		sprintf(buff,"MESSAGE n.%d from node %d dest %d",i++, wmpGetNodeId(),dest);
 		wmpPushData(port,buff,len,dest,priority);
-		usleep(1500000);
+		usleep(150000);
 		idx++;
 	}
 }
