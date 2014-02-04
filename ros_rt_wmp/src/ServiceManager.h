@@ -102,6 +102,10 @@ public:
 		return flow_prio;
 	}
 
+	virtual bool isHost() {
+		return this->host == wmpGetNodeId();
+	}
+
 	bool callback(typename T::Request &req, typename T::Response &resp) {
 		ROSWMP_DEBUG(stderr, "Callback received");
 

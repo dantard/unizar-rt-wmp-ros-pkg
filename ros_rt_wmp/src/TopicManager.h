@@ -76,6 +76,11 @@ public:
 		}
 	}
 
+	virtual bool isHost() {
+		return amIsrc;
+	}
+
+
 	void init() {
 
 		if (amIsrc) {

@@ -72,10 +72,18 @@ public:
 			pm.serial = wmpGetSerial();
 			pm.loop_id = wmpGetLoopId();
 			pm.connected = wmpIsNetworkConnected();
+
 			for (int i = 0; i<wmpGetNumOfNodes(); i++){
 				for (int j = 0; j<wmpGetNumOfNodes(); j++){
 					pm.lqm.push_back(lqm_get_val(i,j));
 				}
+			}
+
+			int size = wmpGetNumOfNodes()*wmpGetNumOfNodes();
+			char distances[size];
+			wmpGetLatestDistances(distances);
+			for (int i = 0; i < size; i++) {
+				pm.dist.push_back(distances[i]);
 			}
 
 			publisher.publish(pm);
@@ -90,45 +98,43 @@ public:
 
 	bool manage(ros_rt_wmp_msgs::WMPControl::Request &req,
 			ros_rt_wmp_msgs::WMPControl::Response &res) {
-		if (req.header.dest != wmpGetNodeId()) {
+		if (req.dest != wmpGetNodeId()) {
 			ROS_ERROR("This service is local only, returning local value");
 		}
-		//ROSWMP_DEBUG(stderr, "Local service called with command %d, %s\n",req.command, req.param3.c_str());
-		fprintf (stderr, "Local service called with command %d, %s node %d \n",req.command, req.param3.c_str(), wmpGetNodeId());
+		ROSWMP_DEBUG(stderr, "Local service called with command %d, %s\n",req.command, req.param3.c_str());
+		//fprintf (stderr, "Local service called with command %d, %s node %d \n",req.command, req.param3.c_str(), wmpGetNodeId());
 
-		if (req.command == TOPIC_STOP) {
-			if (stuffs.find(req.param3) != stuffs.end()) {
-				Manager * m = stuffs[req.param3];
-				m->stop();
-			}
-		} else if (req.command == TOPIC_START) {
-			if (stuffs.find(req.param3) != stuffs.end()) {
-				Manager * m = stuffs[req.param3];
-				m->start();
-			}
-		}else if (req.command == TOPIC_DECIMATE) {
-			if (stuffs.find(req.param3) != stuffs.end()) {
-				Manager * m = stuffs[req.param3];
-				m->setDecimation(req.param1);
-			}
-		}else if (req.command == TOPIC_JUSTONE) {
-			if (stuffs.find(req.param3) != stuffs.end()) {
-				Manager * m = stuffs[req.param3];
-				m->justOne();
-			}
-		}else if (req.command == SET_PRIORITY) {
-			if (stuffs.find(req.param3) != stuffs.end()) {
-				Manager * m = stuffs[req.param3];
-				m->setPriority(req.param1);
-			}
-		}else if (req.command == GET_PRIORITY) {
-			if (stuffs.find(req.param3) != stuffs.end()) {
-				Manager * m = stuffs[req.param3];
-				int val = m->getPriority();
-				res.result = val;
-			}
+		if (stuffs.find(req.param3) == stuffs.end()) {
+			res.result = -1;
+			res.info = "ERROR: Inexistent topic/service";
+			return true;
+		}
+		if (req.dest != wmpGetNodeId()) {
+			res.result = -1;
+			res.info = "ERROR: Wrong destination parameter";
+			return true;
+		}
+		Manager * m = stuffs[req.param3];
+		if (!m->isHost()){
+			res.result = -1;
+			res.info = "ERROR: The specified node is not source/host of this topic/service";
+			return true;
 		}
 
+		if (req.command == TOPIC_STOP) {
+			m->stop();
+		} else if (req.command == TOPIC_START) {
+			m->start();
+		}else if (req.command == TOPIC_DECIMATE) {
+			m->setDecimation(req.param1);
+		}else if (req.command == TOPIC_JUSTONE) {
+			m->justOne();
+		}else if (req.command == SET_PRIORITY) {
+			m->setPriority(req.param1);
+		}else if (req.command == GET_PRIORITY) {
+			res.result = m->getPriority();
+		}
+		res.info = "OK";
 		return true;
 	}
 };

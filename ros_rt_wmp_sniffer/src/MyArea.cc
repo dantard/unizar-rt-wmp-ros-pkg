@@ -60,8 +60,9 @@ MyArea::MyArea() : DrawingArea() {
        	cols[8] = Gdk::Color("violet");
        	cols[9] = Gdk::Color("brown");
        	cols[10]= Gdk::Color("dark sea green");
+    	cols[11]= Gdk::Color("dodger blue");
 
-        for (int i=0;i<11;i++){
+        for (int i=0;i<12;i++){
 	        colormap->alloc_color(cols[i]);
         }
         this->set_events(

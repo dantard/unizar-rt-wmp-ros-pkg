@@ -1,7 +1,9 @@
-ros_rt_wmp_msgs/WMPServiceHeader header
+int32 dest
+int32 priority
 int32 command
 int32 param1
 int32 param2
 string param3
 ---
 int32 result
+string info

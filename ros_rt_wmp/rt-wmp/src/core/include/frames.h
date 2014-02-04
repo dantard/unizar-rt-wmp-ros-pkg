@@ -34,12 +34,13 @@
  *
  *----------------------------------------------------------------------*/
 
-#include "wmp_config.h"
+#include <linux/types.h>
+#include <asm/types.h>
 
 #ifndef FRAMES_H_
 #define FRAMES_H_
 /* STATES TYPES */
-#define FRESH_TOKEN       1
+#define FRESH_TOKEN     1
 #define TOKEN           2
 #define AUTHORIZATION 	3
 #define MESSAGE         4
@@ -51,62 +52,62 @@
 #define AURA_MSG		4
 
 typedef struct {
-	char rssi;
-	char noise;
-	unsigned long serial;
-	unsigned char net_id;
-	char type;
-	signed char from;
-	signed char to;
-	char retries;
-	unsigned int ack;
-	unsigned short loop_id;
-	unsigned short burst;
-	int sleep;
-	unsigned char waiting;
-	unsigned int fc;
+	__s8 rssi;
+	__s8 noise;
+	__u32 serial;
+	__u8 net_id;
+	__s8 type;
+	__s8 from;
+	__s8 to;
+	__s8 retries;
+	__u32 ack;
+	__u16 loop_id;
+	__u16 burst;
+	__s32 sleep;
+	__u8 waiting;
+	__u32 fc;
 } __attribute__ ((__packed__)) Token_Hdr;
 
 typedef struct {
-	unsigned char beginner;
-	signed char maxPri;
-	signed char idMaxPri;
-	unsigned int age;
-	unsigned short ack_hash;
-	short ack_part;
+	__u8 beginner;
+	__s8 maxPri;
+	__s8 idMaxPri;
+	__u32 age;
+	__u16 ack_hash;
+	__s16 ack_part;
 } __attribute__ ((__packed__)) Token;
 
 typedef struct {
-	unsigned char type;
-	unsigned char src;
-	unsigned int dest;
-	unsigned int reached;
-	unsigned int age;
-	unsigned short msg_hash;
-	unsigned short msg_part_size;
-	short part_id;
-	unsigned short len;
-	unsigned char port;
-	signed char priority;
+	__u8 type;
+	__u8 src;
+	__u32 dest;
+	__u32 reached;
+	__u32 age;
+	__u16 msg_hash;
+	__u16 msg_part_size;
+	__s16 part_id;
+	__u16 len;
+	__u8 port;
+	__s8 priority;
 } __attribute__ ((__packed__)) Message;
 
 typedef struct {
-	unsigned char type;
-	unsigned char src;
-	unsigned int dest;
-	unsigned int reached;
-	unsigned int age;
-	unsigned short ack_hash;
-	short ack_part;
+	__u8 type;
+	__u8 src;
+	__u32 dest;
+	__u32 reached;
+	__u32 age;
+	__u16 ack_hash;
+	__s16 ack_part;
 } __attribute__ ((__packed__)) Authorization;
 
 typedef struct {
-	unsigned long drop_serial;
+	__u32 drop_serial;
 } __attribute__ ((__packed__)) Drop;
 
 typedef struct {
-	unsigned short ack_hash;
-	short ack_part;
+	__u16 ack_hash;
+	__s16 ack_part;
 } __attribute__ ((__packed__)) Ack;
 
 typedef struct {

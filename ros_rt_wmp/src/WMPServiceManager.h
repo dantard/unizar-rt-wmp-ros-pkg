@@ -49,16 +49,16 @@ public:
 protected:
 
 	void fillDestination(typename T::Request &req) {
-		if (req.header.dest == wmpGetNodeId()) {
+		if (req.dest == wmpGetNodeId()) {
 			ROS_ERROR(
 					"Forbidden to call local service in a remote fashion, call will fail");
 		} else {
-			ServiceManager<T>::host = req.header.dest;
+			ServiceManager<T>::host = req.dest;
 		}
 	}
 
 	int getPriority(typename T::Request &req) {
-		return req.header.priority;
+		return req.priority;
 	}
 
 };

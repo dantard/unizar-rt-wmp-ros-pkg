@@ -235,10 +235,9 @@ void wmpAddDest(unsigned int dest, char id) {
 }
 
 int wmpPushData(unsigned int port, char  * p, unsigned int   size, unsigned int   dest, signed char priority){
-	if (dest > ((1<<wmpGetNumOfNodes())-1)){
-		//XXX:printk(KERN_ERR "Erroreeeeee\n");
-		return 0;
-	}
+
+	unsigned int filter = (1 << wmpGetNumOfNodes()) - 1;
+	dest = dest & filter;
 
 	if (dest == (1 << wmpGetNodeId())){
 		return queue_rx_push_loop_data(&wmp_queue_rx, port, p, size, dest, priority, wmpGetNodeId());

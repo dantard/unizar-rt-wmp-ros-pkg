@@ -179,9 +179,10 @@ public:
 		ROSWMP_DEBUG(stderr, "Starting %s\n",name.c_str());
 		stopped = false;
 	}
-	
 
-
+	virtual bool isHost() {
+		return false;
+	}
 
 	template <typename Q> bool deserialize(char * p, int size, Q & pm){
 		memcpy(dbuff.get(), p, size);
