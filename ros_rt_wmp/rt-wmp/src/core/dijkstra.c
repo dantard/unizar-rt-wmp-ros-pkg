@@ -55,11 +55,19 @@ void put_matrix(char ** matrix){
 		for (j = i; j < status.N_NODES; j++) {
 			if (matrix[i][j] > 0 && matrix[j][i] > 0) {
 				if (matrix[i][j] < matrix[j][i]) {
-					dij_set(i, j, (long) (lqm_get_f())(matrix[i][j]));
-					dij_set(j, i, (long) (lqm_get_f())(matrix[i][j]));
+					long val = (long) (lqm_get_f())(matrix[i][j]);
+					if (val < 0){
+						val = 10000;
+					}
+					dij_set(i, j, val);
+					dij_set(j, i, val);
 				} else {
-					dij_set(i, j, (long) (lqm_get_f())(matrix[j][i]));
-					dij_set(j, i, (long) (lqm_get_f())(matrix[j][i]));
+					long val = (long) (lqm_get_f())(matrix[j][i]);
+					if (val < 0){
+						val = 10000;
+					}
+					dij_set(i, j, val);
+					dij_set(j, i, val);
 				}
 			} else {
 				dij_set(i, j, 0);
@@ -75,8 +83,7 @@ void dij_put_matrix(char ** matrix){
 
 int nextStepWithCost(char ** matrix,int src, int dest, int* cost) {
 	char path[32];
-   int hops;
-	//print_lqm();
+	int hops;
 	put_matrix(matrix);
 	hops = dij_getPath(src,dest,path);
 	if (hops > 0){

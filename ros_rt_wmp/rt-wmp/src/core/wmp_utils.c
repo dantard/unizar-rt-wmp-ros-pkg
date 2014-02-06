@@ -41,7 +41,7 @@
 #include "interface/wmp_interface.h"
 
 
-#define NET_DEBUG
+//#define NET_DEBUG
 
 long long wmp_timespec_to_ns(struct timespec *ts){
     long long val = (long long) ts->tv_sec * 1000000000 + (long long) ts->tv_nsec;
@@ -73,8 +73,12 @@ unsigned int wmp_calculate_frame_duration_ms(int rate, int size) {
 }
 
 unsigned int wmp_calculate_frame_duration_us(int rate, int size) {
-	int res = (242 + (10 * (28 + size * 8) / rate));
-	return res;
+	if (rate !=0){
+		int res = (242 + (10 * (28 + size * 8) / rate));
+		return res;
+	}else{
+		return 1;
+	}
 }
 
 int wmpGetFrameHash(wmpFrame * p){

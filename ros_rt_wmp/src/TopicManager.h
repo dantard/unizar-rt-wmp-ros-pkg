@@ -86,7 +86,7 @@ public:
 		if (amIsrc) {
 			std::ostringstream s;
 			s << n->getNamespace() << "/tx/" << name;
-			sub = n->subscribe(s.str(), 1, &TopicManager::callback, this);
+			sub = n->subscribe(s.str(), 10, &TopicManager::callback, this);
 			ROSWMP_DEBUG(stderr,"Callback subscribed (%s)\n", s.str().c_str());
 
 			if (! amIstatic){
@@ -134,10 +134,13 @@ public:
 	virtual std::string getSubTopic(T & pm) {
 		return "x";
 	}
+
 	virtual void callback(const boost::shared_ptr<T const> & message) {
+
 		if (!justone && (stopped || shouldDecimate())) {
 			return;
 		}
+
 		justone = false;
 		if (!amIstatic){
 			fillDestination(message);
@@ -149,7 +152,7 @@ public:
 			ROSWMP_DEBUG(stderr,"Serializing size %d\n",n);
 			int bc_dest = computeBroadcastDest();
 			ROSWMP_DEBUG(stderr, "Push BC Message, size %d dest %d name %s\n", n + sizeof(flow_t),bc_dest,name.c_str());
-
+			wmpPushData(port, sbuff, n + sizeof(flow_t), bc_dest, priority);
 
 //			int size = n;
 //			char * p = sbuff + sizeof(flow_t);
@@ -165,10 +168,6 @@ public:
 //			}
 //			fprintf(stderr, "Post compress :%d\n", size);
 
-
-
-
-			wmpPushData(port, sbuff, n + sizeof(flow_t), bc_dest, priority);
 		}
 	}
 	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri ){
@@ -191,6 +190,8 @@ public:
 			signed char pri;
 			unsigned int size;
 			unsigned char src1;
+
+			fprintf(stderr,"Popping\n");
 
 			if (!popMessage(pm, size, src1, pri)) {
 				continue;
@@ -215,7 +216,9 @@ public:
 
 
 			if (flows_map.find(hash.str()) == flows_map.end()) {
-				flows_map[hash.str()].publisher = n->advertise<T> (hash.str(),1);
+				flows_map[hash.str()].publisher = n->advertise<T> (hash.str(),10);
+				flows_map[hash.str()].publisher.publish(pm);
+				sleep(1);
 			}
 
 			flows_map[hash.str()].publisher.publish(pm);

@@ -41,22 +41,31 @@
 #include <math.h>
 #include <fcntl.h>
 
+int m_size = 256;
+
 void *fthread_tx (void * param){
 	int dest, len, i=0, port = 0;
 	signed char priority;
-	char buff[1500];
+	char buff[1500000];
 	
 	sleep(3);
 
 	fprintf(stderr,"Initializing TX thread...\n");
 	int idx = 0;
 	while (1){
-		dest = 1 << (wmpGetNumOfNodes()-1); //Last node of the present
-		len = 300;
+		if (wmpGetNodeId() == 0){
+			dest = 1 << (wmpGetNumOfNodes()-1); //Last node of the present
+		}else{
+			dest = 1;
+		}
+ 		len = m_size;
 		priority = 1;//rand()%5; 
 		sprintf(buff,"MESSAGE n.%d from node %d dest %d",i++, wmpGetNodeId(),dest);
 		wmpPushData(port,buff,len,dest,priority);
-		usleep(150000);
+//		wmpPushData(port,buff,len,dest,priority);
+//		wmpPushData(port,buff,len,dest,priority);
+//		break;
+		usleep(10000);
 		idx++;
 	}
 }
@@ -69,27 +78,39 @@ void *fthread_rx (void * param){
 	sleep(3);
 
 	fprintf(stderr,"Initializing RX thread...\n");
+	char buff[1500000];
+
+//	sprintf(buff,"MESSAGE2 n.%d from node %d dest %d",555, wmpGetNodeId(),1);
+//	wmpPushData(port,buff,m_size,1,priority);
 
 	while (1){
 
 		int res = wmpPopDataTimeout(port,&p,&size,&src,&priority,1000);
 		if(res>=0){
-			fprintf(stderr,"Received message-> size: %d src:%d prio:%d text:%s \n",size,src, priority,p);
+			fprintf(stderr,"Node %d Received message-> size: %d src:%d prio:%d text:%s \n",wmpGetNodeId(),size,src, priority,p);
 		}
 		wmpPopDataDone(res);
+		if (0 && res>=0){
+			static int i=0;
+			sprintf(buff,"MESSAGE n.%d from node %d dest %d",i++, wmpGetNodeId(),1<<src);
+			wmpPushData(0,buff,m_size,1<<src,priority);
+		}
 	}
 
 }
 
 int main(int argc, char* argv[]){
-	if (argc < 3) {
-		fprintf(stderr,"Use: %s id num_of_nodes\n",argv[0]);
+	if (argc < 5) {
+		fprintf(stderr,"Use: %s id num_of_nodes size beluga\n",argv[0]);
 		return 0;
 	}
 	wmpSetup(atoi(argv[1]), atoi(argv[2]));
-	
+	m_size = atoi(argv[3]);
+	int beluga = atoi(argv[4]);
+	setBeluga(beluga);
+
 	pthread_t th1, th2;
-	if (wmpGetNodeId()==1) 	{
+	if (wmpGetNodeId()==(wmpGetNumOfNodes()-1)) 	{
 		pthread_create(&th1,0,fthread_tx,0);
 	}	
 	pthread_create(&th2,0,fthread_rx,0);

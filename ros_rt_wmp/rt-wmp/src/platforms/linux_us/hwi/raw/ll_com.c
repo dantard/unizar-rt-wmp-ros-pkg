@@ -68,8 +68,14 @@
 
 #include "radiotap/radiotap.h"
 #include "radiotap/radiotap_iter.h"
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <fcntl.h>
+#include "core/interface/wmp_interface.h"
 
-static int s, rx, freq, txpower, pfd[2], dl, use_mon = 1;
+static	sem_t * sem_tx, * sem_rx, * sem_ack;
+
+static int s, rx, freq, txpower, dl, use_mon = 1, use_coord = 1;
 static struct ethhdr *eh;
 static struct sockaddr_ll socket_address;
 static char DEV[20], ESSID[32], param[20], val[20], buffer[2500], *eth_head,
@@ -79,6 +85,25 @@ static unsigned char src_mac[6], bcast_mac[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 static struct pcap_pkthdr header;
 static pcap_t *handle;
 static int use_lo = 0;
+
+int shmid;
+key_t key;
+char *shm;
+
+void initshmem() {
+	fprintf(stderr,"Preparing SHMEM\n");
+	key = 5678;
+	shmid = shmget(key, 2000, IPC_CREAT | 0666);
+	if (shmid < 0) {
+		perror("Failure in shmget");
+		exit(-1);
+	}
+	shm = shmat(shmid, NULL, 0);
+}
+
+char * getPoint(){
+	return shm;
+}
 
 static int readllcfg() {
 	char filename[256], line[256];
@@ -113,6 +138,13 @@ static int readllcfg() {
 				exists = 1;
 			} else if (strcmp(param, "USE_MONITOR") == 0) {
 				use_mon = atoi(val);
+				exists = 1;
+			} else if (strcmp(param, "USE_COORDINATOR") == 0) {
+				use_coord = atoi(val);
+				if (use_coord){
+					strcpy(DEV, "lo");
+					use_mon = 0;
+				}
 				exists = 1;
 			}
 
@@ -183,15 +215,14 @@ static void parse_radiotap(struct ieee80211_radiotap_header * buf, int * rate,
 
 static int pcap_init(char * dev, int promisc) {
 	char errbuf[PCAP_ERRBUF_SIZE];
-	fprintf(stderr, "Opening device %s...", dev);
 	handle = pcap_open_live(dev, BUFSIZ, promisc, 1000, errbuf);
-	fprintf(stderr, "Success.", dev);
 
 	if (handle == NULL) {
 		fprintf(stderr, "Couldn't open device %s: %s\n", dev, errbuf);
 		return 0;
 	}
 	dl = pcap_datalink(handle);
+	return 1;
 }
 
 static rxInfo pcap_sniff_packet(char * data, int delay_ms) {
@@ -327,6 +358,7 @@ void closeLowLevelCom() {
 }
 
 int initLowLevelCom() {
+
 	char cmd[256];
 	readllcfg();
 	eth_raw_init(DEV);
@@ -334,6 +366,17 @@ int initLowLevelCom() {
 	eth_data = buffer + ETH_HLEN; /* eth_data points to data field of the ethernet frame */
 	eh = (struct ethhdr *) eth_head;
 	use_lo = strcmp(DEV, "lo") == 0;
+
+	if (use_coord) {
+		initshmem();
+		char name[64];
+		sprintf(name, "sem_rx_%d", wmpGetNodeId());
+		sem_rx = sem_open(name, O_CREAT, S_IRUSR | S_IWUSR, 0);
+		sem_tx = sem_open("sem_tx", O_CREAT, S_IRUSR | S_IWUSR, 0);
+		sem_ack = sem_open("sem_ack", O_CREAT, S_IRUSR | S_IWUSR, 0);
+		return 1;
+	}
+
 	if (!use_lo && use_mon) {
 		fprintf(stderr, "Checking sudo...");
 		int res = system("sudo ls >/dev/null 2>1");
@@ -378,7 +421,7 @@ int initLowLevelCom() {
 				fprintf(stderr, "\nUnable to create mon0 interface exiting...");
 				exit(0);	
 			}else{
-				fprintf(stderr,"OK\n");			
+				fprintf(stderr,"OK\n");
 			}
 		}		
 		usleep(500000);
@@ -395,7 +438,7 @@ int initLowLevelCom() {
 		if (res != 0){
 			fprintf(stderr, "failed (normal with some driver)\n");
 		}else{
-			fprintf(stderr,"OK\n");			
+			fprintf(stderr,"OK\n");
 		}
 		usleep(100000);
 
@@ -406,7 +449,7 @@ int initLowLevelCom() {
 			fprintf(stderr, "failed, exiting...\n");
 			exit(0);
 		}else{
-			fprintf(stderr,"OK\n");			
+			fprintf(stderr,"OK\n");
 		}
 		usleep(100000);
 
@@ -416,7 +459,7 @@ int initLowLevelCom() {
 		if (res != 0){
 			fprintf(stderr, "failed\n");
 		}else{
-			fprintf(stderr,"OK\n");			
+			fprintf(stderr,"OK\n");
 		}
 		usleep(100000);
 
@@ -443,21 +486,33 @@ int initLowLevelCom() {
 }
 
 static int llpsend(char * f, int size, int proto) {
-	int i;
+	int res;
 	memcpy((void *) eh->h_dest, (void*) bcast_mac, ETH_ALEN);
 	memcpy((void *) eh->h_source, (void*) src_mac, ETH_ALEN);
 	eh->h_proto = htons(proto);
 	memcpy(eth_data, f, size);
-	i = sendto(s, buffer, size + ETHER_HDR_LEN, 0,
+
+	res = sendto(s, buffer, size + ETHER_HDR_LEN, 0,
 			(struct sockaddr*) &socket_address, sizeof(socket_address));
-	if (i == -1) {
+
+	if (res == -1) {
 		perror("sendto():");
 		exit(1);
 	}
+	return res;
 }
 
 int llsend(char * f, int size) {
-	llpsend(f, size, WMP_TYPE_FIELD);
+	if (use_coord){
+		//fprintf(stderr,"Node %d waiting auth to tx\n",wmpGetNodeId());
+		sem_wait(sem_tx);
+		memcpy(shm,f,1500);
+		sem_post(sem_ack);
+		//fprintf(stderr,"Node %d txd\n",wmpGetNodeId());
+		return 1;
+	}else{
+		return llpsend(f, size, WMP_TYPE_FIELD);
+	}
 }
 
 
@@ -484,7 +539,31 @@ char getSimulatedRssiRX(char * f){
 rxInfo llreceive(char *f, int timeout) {
 	int r = 0;
 	rxInfo ret;
+	if (use_coord){
+		sem_wait(sem_rx);
+		memcpy(f,shm,1500);
+		ret.size = 1500;
+		ret.error = 0;
+		ret.proto = 0x6969;
+		ret.rate = 10;
+		ret.has_lq = 1;
+		ret.rssi = f[0];
+		sem_post(sem_ack);
+		return ret;
+	}
+
 	struct timeval tv;
+
+	Token_Hdr * hh = (Token_Hdr * ) f;
+
+
+	if (use_coord){
+		//fprintf(stderr,"Node %d waiting rx auth\n", wmpGetNodeId());
+		//fprintf(stderr,"Node %d wait rx type: %d\n", wmpGetNodeId(),hh->type);
+		sem_wait(sem_rx);
+	}
+
+
 	if (!use_lo && use_mon) {
 		return pcap_sniff_packet(f, timeout);
 	} else {
@@ -502,16 +581,29 @@ rxInfo llreceive(char *f, int timeout) {
 			int rlen = recvfrom(s, buffer, MTU, 0, 0, 0);
 			ret.proto = ntohs(eh->h_proto);
 			memcpy(f, buffer + ETHER_HDR_LEN, rlen - ETHER_HDR_LEN);
+
 			ret.size = rlen - ETHER_HDR_LEN;
 			ret.error = 0;
 			ret.rate = 10;
-			ret.has_lq = 0;
-			//ret.rssi = getSimulatedRssiRX(f);
-			return ret;
+			ret.has_lq = 1;
+
+			ret.rssi = 72;
 		} else {
 			ret.error = 1;
 			return ret;
 		}
+
+		if (use_coord){
+//			if (ret.error==1){
+//				//fprintf(stderr,"Reposting sem_rx\n");
+//				sem_post(sem_rx);
+//			}else{
+				//fprintf(stderr,"Node %d posting rx ack (type:%d)\n", wmpGetNodeId(), hh->type);
+				sem_post(sem_ack);
+//			}
+		}
+
+		return ret;
 	}
 }
 

@@ -13,7 +13,7 @@ recompile:
 LDADD=-L$(TOP_DIR)/lib-$(WMP_WITH_PLATFORM) -lm -lz
 
 if WMP_PLATFORM_USLINUX
-LDADD+= -lpthread -lrt -lrt-wmp -lrt -lpcap
+LDADD+= -lpthread -lrt -lrt-wmp -lrt -lpcap -lm
 endif
 
 if WMP_PLATFORM_KSLINUX

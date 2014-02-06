@@ -254,6 +254,8 @@ int wmpGetFlowControl(void);
 unsigned int wmpGetSerial(void);
 unsigned int wmpGetLoopId(void);
 
+void setBeluga(int isbeluga);
+
 int wmpPushData           (unsigned int port, char  * p, unsigned int   size, unsigned int   dest, signed char priority);
 int wmpPopData            (unsigned int port, char ** p, unsigned int * size, unsigned char * src, signed char * priority);
 int wmpPopDataTimeout     (unsigned int port, char ** p, unsigned int * size, unsigned char * src, signed char * priority, int to);

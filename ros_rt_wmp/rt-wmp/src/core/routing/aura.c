@@ -60,7 +60,7 @@ int aura_get(int id){
 }
 
 void aura_discard_unnecessary(int dest){
-	char path[32], necessary[32];
+	char path[64], necessary[64];
 	int i,j;
 
 	memset(necessary,0,sizeof(necessary));
@@ -89,7 +89,15 @@ void aura_discard_unnecessary(int dest){
 
 int aura_get_next(wmpFrame * p, aura_t * type){
 	char nb[32];
-	int n_nb = getNeighbors(lqm_get_ptr(),status.id,nb);
+
+	/////////////////MERGINGXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+	//int n_nb = getNeighbors(lqm_get_ptr(),status.id,nb);
+	lqm_backup();
+	int n_nb = getNeighbors(lqm_prune(lqm_get_ptr()),status.id,nb);
+	lqm_restore();
+
+
 	int i, best_val = 1000, best_id = -1;
 	for (i = 0; i< n_nb ;i++){
 		int elem = aura_vec[(int)nb[i]];
@@ -108,6 +116,7 @@ int aura_get_next(wmpFrame * p, aura_t * type){
 		*type = aura_auth;
 		return best_id;
 	}else{
+		fprintf(stderr,"ERRORRRRRR node:%d serial: %d \n",wmpGetNodeId(), p->hdr.serial);
                 //WMP_ERROR(stderr,"Value:%d serial:%u\n",best_val,(int) p->hdr.serial);
 		return -1;
 	}

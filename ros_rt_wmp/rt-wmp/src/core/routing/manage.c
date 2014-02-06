@@ -63,13 +63,17 @@ static int confirmed(unsigned int ack, unsigned short ack_hash, short ack_part){
 
 int create_new_token(wmpFrame * t) {
 	int i = 0;
-	if (status.power_save && t->hdr.waiting <= 1 && status.lastRecvdType != MESSAGE ){
-		if (t->hdr.sleep > 0){
-			wmpSendAck(t);
-			t->hdr.sleep = 0;
-			return RECEIVE;
-		}
-	}
+
+//XXX:MERGING
+//	if (status.power_save && t->hdr.waiting <= 1 && status.lastRecvdType != MESSAGE ){
+//		if (t->hdr.sleep > 0){
+//			wmpSendAck(t);
+//			t->hdr.sleep = 0;
+//			return RECEIVE;
+//		}
+//	}
+
+
 	t->hdr.sleep = ms_to_us(500);
 	t->hdr.serial = status.highestSerial;
 	t->hdr.to = UNDEF;
@@ -119,8 +123,14 @@ int evaluate_token(wmpFrame * t) {
 
 	delay = ms_to_us(delay);
 
+	int most_urgent_is_mine = 0;
+	int enough_time_for_other_message = 0;
+
 	if (delay < t->hdr.sleep){
-		 t->hdr.sleep = delay;
+		most_urgent_is_mine = 1;
+		t->hdr.sleep = delay;
+	}else{
+		enough_time_for_other_message = (t->hdr.sleep > ms_to_us(12));
 	}
 
 	/* Update the age and the lr (last received) field*/
@@ -254,19 +264,36 @@ int evaluate_token(wmpFrame * t) {
 	if (last_one > 0) {
 
 		/* Force WC */
-		//XXX: status.N_NODES > 2
-		if (status.id != t->tkn.beginner ) {//&& t->tkn.ack_hash != 0
-			nstat_clearReached(t->tkn.beginner);
-			return EVALUATE_TOKEN;
+		//XXX: ANALISYS status.N_NODES > 2
+
+//XXX: MERGING
+		//force wc
+		if (0){
+			if (status.id != t->tkn.beginner ) {//&& t->tkn.ack_hash != 0
+				nstat_clearReached(t->tkn.beginner);
+				//////fprintf(stderr,"Node %d et3\n", wmpGetNodeId());
+
+				return EVALUATE_TOKEN;
+			}
 		}
 
 		/* I'm the last one */
+		enough_time_for_other_message=1;
 		if (t->tkn.idMaxPri >= 0) {
-
+			if (enough_time_for_other_message){
+				return CREATE_AUTHORIZATION;
+			}else{
+				if (t->tkn.idMaxPri == status.id){
+					return CREATE_AUTHORIZATION;
+				}
+			}
 			/* if there is a message to transmit */
-			return CREATE_AUTHORIZATION;
+			fprintf(stderr,"AAA NT1 Node %d %d %d \n", wmpGetNodeId(),enough_time_for_other_message,t->tkn.idMaxPri == status.id);
+			return NEW_TOKEN;
 		} else {
 			/* Noone have to transmit nothing - Start a new PAP */
+			////fprintf(stderr,"Node %d nt3\n", wmpGetNodeId());
+
 			return NEW_TOKEN;
 		}
 	} else {
@@ -293,9 +320,9 @@ int evaluate_token(wmpFrame * t) {
 			char ** pruned_lqm;
 
 			lqm_backup();
-
-			pruned_lqm = lqm_prune(lqm_get_ptr());
-			lqm_copy_to(lqm_get_ptr(), pruned_lqm);
+///MERGING
+//			pruned_lqm = lqm_prune(lqm_get_ptr());
+//			lqm_copy_to(lqm_get_ptr(), pruned_lqm);
 
 		}
 
@@ -494,6 +521,8 @@ int evaluate_message(wmpFrame * t) {
 		aura_store_msg(&t->msg);
 	}
 
+
+	///XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ANALYSIS: ¿por qué está aquí?
 	aura_discard_unnecessary(t->msg.dest);
 
 	mBitsSet(t->msg.reached,status.id);
@@ -553,10 +582,16 @@ int evaluate_message(wmpFrame * t) {
 			return SEND_MESSAGE;
 		}
 	}
-	if (status.power_save && t->hdr.burst > 1 && t->hdr.sleep > ms_to_us(5)){ //XXX:number
+
+	////fprintf(stderr,"one9\n");
+
+	if (status.beluga && status.power_save && t->hdr.burst > 1 && t->hdr.sleep > ms_to_us(12)){ //XXX:number XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 		signed char msg_src = t->msg.src;
 		unsigned short ack_hash = t->msg.msg_hash;
-		signed char ack_part_id = t->msg.part_id;
+
+		/////////BUUUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGG DANI
+
+		short ack_part_id = t->msg.part_id;
 		t->hdr.from = status.id;
 		t->hdr.type = AUTHORIZATION;
 		t->hdr.retries = 0;
@@ -568,10 +603,11 @@ int evaluate_message(wmpFrame * t) {
 		return EVALUATE_AUTHORIZATION;
 	}else{
 		unsigned short ack_hash = t->msg.msg_hash;
-		signed char ack_part_id = t->msg.part_id;
+		short ack_part_id = t->msg.part_id;
 		t->msg.reached = 0;
 		t->tkn.ack_hash = ack_hash;
 		t->tkn.ack_part = ack_part_id;
+		//fprintf(stderr,"AAA NT6 Node %d \n", wmpGetNodeId());
 		return NEW_TOKEN;
 	}
 }

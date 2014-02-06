@@ -244,7 +244,7 @@ int wmpInit(void) {
 		state = rtnCode;
 		status.serial = p->hdr.serial;
 
-		//fprintf(stderr, "sTAE:%d\n",rtnCode);
+		//fprintf(stderr, "Node %d sTAE:%d\n",status.id, rtnCode);
 		switch (rtnCode) {
 		case RECEIVE:
 			rtnCode = wmpReceive(q);
@@ -296,11 +296,11 @@ int wmpInit(void) {
 			rtnCode = wmpSend(p);
 			break;
 		case SEND_AUTHORIZATION:
-			encode_routing_info(p);
+			//encode_routing_info(p);
 			rtnCode = wmpSend(p);
 			break;
 		case SEND_MESSAGE:
-			encode_routing_info(p);
+			//encode_routing_info(p);
 			rtnCode = wmpSend(p);
 			break;
 		case ENQUEUE_MESSAGE:

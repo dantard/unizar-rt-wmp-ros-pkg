@@ -47,7 +47,20 @@ static THREAD_SEM_T isconn;
 
 static char (*fp) (char);
 
+int logs = 0;
+
 char f_lqm(char val) {
+
+	if (logs){
+		if (val <= 1){
+			return 0;
+		}
+		double v1 = (double) val;
+		v1 = fabs(log(v1/100.0))*10.0;
+		v1 = v1>127?127:v1;
+		return (char) v1;
+	}
+
 	/* val is a % value (0-100) */
 	if (val == 0){
 		return 0;

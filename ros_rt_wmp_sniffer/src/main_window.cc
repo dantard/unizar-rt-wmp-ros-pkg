@@ -91,6 +91,13 @@ std::string nts(char val) {
 	oss << (int) val;
 	return oss.str();
 };
+
+std::string nts(short val) {
+	std::ostringstream oss;
+	oss << val;
+	return oss.str();
+};
+
 std::string nts(unsigned char val) {
 	std::ostringstream oss;
 	oss << (int) val;
@@ -1451,8 +1458,8 @@ void main_window::update_frame_labels(wmpFrame * f) {
 		row_child_append("Max Priority", nts((int)f->tkn.maxPri));
 		row_child_append("Id Max Pri", nts((int)f->tkn.idMaxPri));
 		row_child_append("Age", nts((int) f->tkn.age));
-		row_child_append("Ack Hash", nts((int) f->tkn.ack_hash));
-		row_child_append("Ack Part", nts((int) f->tkn.ack_part));
+		row_child_append("Ack Hash", nts(f->tkn.ack_hash));
+		row_child_append("Ack Part", nts(f->tkn.ack_part));
 
 		//row_child_append("Loop Beginner", nts((int) f->hdr.loop_beginner));
 

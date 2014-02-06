@@ -15,8 +15,10 @@
 #include "core/include/dijkstra.h"
 #include "core/include/lqm.h"
 
+
+///MERGING AURA FULL=3
 typedef enum {
-	aura_auth=1, aura_msg=2, aura_full = 3
+	aura_auth=1, aura_msg=2, aura_full = 13
 } aura_t;
 
 

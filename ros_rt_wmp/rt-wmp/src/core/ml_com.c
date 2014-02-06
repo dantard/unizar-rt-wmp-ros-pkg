@@ -219,7 +219,7 @@ int ml_receive(wmpFrame *f, int timeout) {
 				}
 				return RECEIVE_OK;
 			} else {
-				WMP_MSG(stderr, "*** Warning ::: Foreign network detected (id:%d)\n", f->hdr.net_id);
+				WMP_MSG(stderr, "*** Warning ::: Foreign network detected (id:%d instead of id:%d)\n", f->hdr.net_id,status.net_id);
 				continue;
 			}
 		} else{

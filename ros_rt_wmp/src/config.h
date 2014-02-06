@@ -41,10 +41,14 @@
 /* INCLUDE DATA TYPE HERE */
 #include <std_msgs/Float64.h>
 #include <roscpp_tutorials/TwoInts.h>
+#include <theora_image_transport/Packet.h>
+#include <audio_common_msgs/AudioData.h>
 
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
-TOPIC("number", std_msgs::Float64, "0", "1", 11);
+
+TOPIC("video/theora", theora_image_transport::Packet, "0", "2", 1);
+TOPIC("audio", audio_common_msgs::AudioData, "0", "2", 2);
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
 
 END_TOPIC_DEFINITION

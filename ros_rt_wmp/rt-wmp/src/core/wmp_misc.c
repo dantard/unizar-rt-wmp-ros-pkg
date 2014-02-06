@@ -249,14 +249,15 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->y = 0;
 	s->active_search = 1;
 	s->lastRecvdType = -1;
-	s->w100 = 25;
-	s->w3 = 30;
+	s->w100 = 30;
+	s->w3 = 35;
 	s->w2 = 40;
 	s->w1 = 80;
 	s->power_save = 1;
 	s->secure = 1;
 	s->max_msg_size = 65535;
 	s->num_ports = 32;
+	s->beluga = 0;
 }
 
 

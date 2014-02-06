@@ -57,6 +57,10 @@ void mobile_avg_new_value(MobileAverage*e, char val){
 	int avg = 0;
 	e->seen=getRawActualTimeus();
 	if (!e->initialized){
+		if (status.rssi_rising_factor <=0){
+			status.rssi_rising_factor=1;
+		}
+
 		int end = (e->n_elements/status.rssi_rising_factor);
 		for (i=0 ; i < end ; i++){
 			e->elem[i]=val;

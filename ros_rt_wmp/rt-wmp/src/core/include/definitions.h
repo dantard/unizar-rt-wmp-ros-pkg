@@ -169,7 +169,7 @@ typedef struct  {
 	int secure;
 	int max_msg_size;
 	int num_ports;
-
+	int beluga;
 }Status;
 
 

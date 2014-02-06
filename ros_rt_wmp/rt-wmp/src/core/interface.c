@@ -149,3 +149,8 @@ unsigned int wmpGetSerial(void){
 unsigned int wmpGetLoopId(void){
 	return status.loop_id;
 }
+
+void setBeluga(int isbeluga){
+	status.beluga = isbeluga;
+}
+
