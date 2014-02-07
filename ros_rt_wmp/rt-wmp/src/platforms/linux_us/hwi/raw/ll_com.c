@@ -75,7 +75,7 @@
 
 static	sem_t * sem_tx, * sem_rx, * sem_ack;
 
-static int s, rx, freq, txpower, dl, use_mon = 1, use_coord = 1;
+static int s, rx, freq, txpower, dl, use_mon = 1, use_coord = 0;
 static struct ethhdr *eh;
 static struct sockaddr_ll socket_address;
 static char DEV[20], ESSID[32], param[20], val[20], buffer[2500], *eth_head,

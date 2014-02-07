@@ -43,12 +43,13 @@
 #include <roscpp_tutorials/TwoInts.h>
 #include <theora_image_transport/Packet.h>
 #include <audio_common_msgs/AudioData.h>
-
+#include <geometry_msgs/Twist.h>
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
 
-TOPIC("video/theora", theora_image_transport::Packet, "0", "2", 1);
-TOPIC("audio", audio_common_msgs::AudioData, "0", "2", 2);
+TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1);
+TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
+TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1", 10);
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
 
 END_TOPIC_DEFINITION
