@@ -64,14 +64,13 @@ static int confirmed(unsigned int ack, unsigned short ack_hash, short ack_part){
 int create_new_token(wmpFrame * t) {
 	int i = 0;
 
-//XXX:MERGING
-//	if (status.power_save && t->hdr.waiting <= 1 && status.lastRecvdType != MESSAGE ){
-//		if (t->hdr.sleep > 0){
-//			wmpSendAck(t);
-//			t->hdr.sleep = 0;
-//			return RECEIVE;
-//		}
-//	}
+	if (status.power_save && t->hdr.waiting <= 1 && status.lastRecvdType != MESSAGE ){
+		if (t->hdr.sleep > 0){
+			wmpSendAck(t);
+			t->hdr.sleep = 0;
+			return RECEIVE;
+		}
+	}
 
 
 	t->hdr.sleep = ms_to_us(500);
@@ -288,12 +287,9 @@ int evaluate_token(wmpFrame * t) {
 				}
 			}
 			/* if there is a message to transmit */
-			fprintf(stderr,"AAA NT1 Node %d %d %d \n", wmpGetNodeId(),enough_time_for_other_message,t->tkn.idMaxPri == status.id);
 			return NEW_TOKEN;
 		} else {
 			/* Noone have to transmit nothing - Start a new PAP */
-			////fprintf(stderr,"Node %d nt3\n", wmpGetNodeId());
-
 			return NEW_TOKEN;
 		}
 	} else {
@@ -317,16 +313,14 @@ int evaluate_token(wmpFrame * t) {
 				}
 			}
 		} else if (status.use_prune) {
+			/* Prune LQM and copy */
 			char ** pruned_lqm;
-
 			lqm_backup();
-///MERGING
-//			pruned_lqm = lqm_prune(lqm_get_ptr());
-//			lqm_copy_to(lqm_get_ptr(), pruned_lqm);
-
+			pruned_lqm = lqm_prune(lqm_get_ptr());
+			lqm_copy_to(lqm_get_ptr(), pruned_lqm);
 		}
 
-		/* Busco aquel vecino con probabilidad más alta */
+		/* Find best neighbor using probability or not */
 		if (status.use_prob) {
 			int best_prob = 0;
 			lqm_compute_prob(lqm_get_ptr());
@@ -355,7 +349,9 @@ int evaluate_token(wmpFrame * t) {
 				}
 			}
 		}
+
 		if (status.use_prim || status.use_prune) {
+			/* restore LQM */
 			lqm_restore();
 		}
 
@@ -386,6 +382,7 @@ int evaluate_token(wmpFrame * t) {
 			return SEND_TOKEN;
 		}
 	}
+	return UNDEF;
 }
 
 int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
@@ -405,8 +402,6 @@ int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
 	} else {
 		nstat_setReached(t->hdr.to);
 		status.retries = 0;
-		//printk(KERN_INFO "TET TO:%d \n", t->hdr.to);
-
 		rssi_reset(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, 0);
 		t->hdr.sleep = 0;
@@ -423,8 +418,6 @@ int manage_authorization_expired_timeout(wmpFrame * t) {/* Authorization timeout
 		return RETRY;
 	} else {
 		status.retries = 0;
-		//printk(KERN_INFO "MAT TO:%d \n", t->hdr.to);
-
 		rssi_reset(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, 0);
 		t->hdr.sleep = 0;
@@ -441,8 +434,6 @@ int manage_message_expired_timeout(wmpFrame * t) {/* Authorization timeout expir
 		return RETRY;
 	} else {
 		status.retries = 0;
-		//printk(KERN_INFO "MET TO:%d \n", t->hdr.to);
-
 		rssi_reset(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, 0);
 		t->hdr.sleep = 0;
@@ -475,7 +466,6 @@ static signed char getNext(wmpFrame * t) {
 		char path[32];
 		lqm_compute_prob(lqm_get_ptr());
 		next = lqm_prob_get_path(status.id, dest, path);
-		//fprintf(stderr,"Next: %d\n",next);
 	}
 
 	if (next == UNDEF || mBitsIsSet(reached, next)) {
@@ -573,9 +563,7 @@ int evaluate_message(wmpFrame * t) {
 
 			aura_add(type, t->hdr.to);
 
-			t->msg.age += wmp_calculate_frame_duration_ms(status.rate,
-					wmp_get_frame_total_lenght(t));
-			//fprintf(stderr,"Age2:%d %d %d status.rate\n",t->msg.age,wmp_get_frame_total_lenght(t), status.rate);
+			t->msg.age += wmp_calculate_frame_duration_ms(status.rate, wmp_get_frame_total_lenght(t));
 			wmp_print_append(t);
 			wmp_print("%d ",wmpGetNodeId());
 
@@ -583,13 +571,9 @@ int evaluate_message(wmpFrame * t) {
 		}
 	}
 
-	////fprintf(stderr,"one9\n");
-
-	if (status.beluga && status.power_save && t->hdr.burst > 1 && t->hdr.sleep > ms_to_us(12)){ //XXX:number XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	if (status.beluga && status.power_save && t->hdr.burst > 1 && t->hdr.sleep > ms_to_us(12)){ //XXX: replace number
 		signed char msg_src = t->msg.src;
 		unsigned short ack_hash = t->msg.msg_hash;
-
-		/////////BUUUUUUUUUUUUUUUUUUUUGGGGGGGGGGGGGGGG DANI
 
 		short ack_part_id = t->msg.part_id;
 		t->hdr.from = status.id;
@@ -601,13 +585,13 @@ int evaluate_message(wmpFrame * t) {
 		t->aut.ack_hash = ack_hash;
 		t->aut.ack_part = ack_part_id;
 		return EVALUATE_AUTHORIZATION;
+
 	}else{
 		unsigned short ack_hash = t->msg.msg_hash;
 		short ack_part_id = t->msg.part_id;
 		t->msg.reached = 0;
 		t->tkn.ack_hash = ack_hash;
 		t->tkn.ack_part = ack_part_id;
-		//fprintf(stderr,"AAA NT6 Node %d \n", wmpGetNodeId());
 		return NEW_TOKEN;
 	}
 }
