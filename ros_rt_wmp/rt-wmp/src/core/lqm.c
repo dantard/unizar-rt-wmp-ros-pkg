@@ -283,28 +283,7 @@ void print_lqm3(char* txt, char **lqm){
    WMP_ERROR(stderr,"@%s@\n%s#\n",txt,q);
 }
 
-///XXX:TEMP
-
-
 char ** lqm_prune(char ** mlqm) {
-   int i, j, val_ij, val_ji, found;
-   char fake[16] = {0, 10, 99, 10, 10, 0, 10, 99, 99, 10, 0, 99, 10, 99, 99, 0};
-
-   for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			if (i==j){
-				lqm_pruned[i][j] = mlqm[i][j];
-			}else{
-				//fprintf(stderr,"i:%d j:%d -> %d\n",i,j,fake[i*size + j]);
-				lqm_pruned[i][j] = fake[i*size+j];
-			}
-		}
-	}
-   return lqm_pruned;
-}
-
-
-char ** lqm_prune2(char ** mlqm) {
    int i, j, val_ij, val_ji, found;
 
 	if (!isConnected(lqm)) {
