@@ -257,7 +257,7 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->secure = 1;
 	s->max_msg_size = 65535;
 	s->num_ports = 32;
-	s->beluga = 0;
+	s->beluga = 1;
 }
 
 
