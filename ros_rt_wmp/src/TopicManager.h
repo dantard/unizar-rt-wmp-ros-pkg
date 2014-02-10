@@ -47,7 +47,8 @@ protected:
 	std::map<std::string, info_t> flows_map;
 	ros::Subscriber sub;
 	int counter;
-
+	ros::Publisher loop_publisher;
+	unsigned int queue_size, period;
 public:
 
 	TopicManager(ros::NodeHandle * n, int port, std::string name,
@@ -59,7 +60,17 @@ public:
 		setDestination(destination);
 		init();
 	}
-
+	TopicManager(ros::NodeHandle * n, int port, std::string name,
+			std::string source, std::string destination, unsigned char priority, bool broadcast, int _queue_size, int _period) :
+		Manager(n, port, name, priority) {
+		amIstatic = true;
+		setBroadcast(broadcast);
+		setSource(source);
+		setDestination(destination);
+		init();
+		queue_size = _queue_size;
+		period = _period;
+	}
 	TopicManager(ros::NodeHandle * n, int port, std::string name, std::string source, unsigned char priority, bool broadcast) :
 		Manager(n, port, name, priority) {
 		amIstatic = false;
@@ -68,11 +79,37 @@ public:
 		init();
 	}
 
+	std::vector<T> buffer;
+	virtual void pub_loop() {
+		bool initied = false;
+		while (ros::ok()){
+			if (buffer.size() < queue_size && !initied){
+				usleep(5000);
+				continue;
+			}
+			initied = true;
+			fprintf(stderr,"Buffer.size: %d %s\n",buffer.size(), name.c_str());
+			if (buffer.size()>0){
+				loop_publisher.publish(buffer.front());
+				buffer.erase(buffer.begin());
+			}
+			while(buffer.size() > queue_size ){
+				buffer.erase(buffer.begin());
+			}
+			usleep(period);
+		}
+	}
+
+
 	virtual void startRX(){
 		ROSWMP_DEBUG(stderr,"am I dest? %d", amIdst);
 		if (amIdst) {
 			ROSWMP_DEBUG(stderr,"Queue subscribed (%s) port : %d", name.c_str(), port);
 			boost::thread(boost::bind(&Manager::run, this));
+			if (queue_size > 0){
+				boost::thread(boost::bind(&TopicManager::pub_loop, this));
+			}
+
 		}
 	}
 
@@ -99,6 +136,8 @@ public:
 			n->setParam(decimation, 1);
 		}
 		counter = 1;
+		queue_size = 0;
+		period = 0;
 	}
 
 	bool shouldDecimate(){
@@ -183,6 +222,7 @@ public:
 		return true;
 	}
 
+
 	virtual void run() {
 		T pm;
 		while (ros::ok()) {
@@ -216,12 +256,17 @@ public:
 
 
 			if (flows_map.find(hash.str()) == flows_map.end()) {
-				flows_map[hash.str()].publisher = n->advertise<T> (hash.str(),10);
+				loop_publisher = flows_map[hash.str()].publisher = n->advertise<T> (hash.str(),10);
 				flows_map[hash.str()].publisher.publish(pm);
 				sleep(1);
 			}
 
-			flows_map[hash.str()].publisher.publish(pm);
+			if (queue_size > 0){
+				buffer.push_back(pm);
+			}else{
+				flows_map[hash.str()].publisher.publish(pm);
+			}
+
 			ROSWMP_DEBUG(stderr, "Published (port:%d)\n!", port);
 		}
 	}
