@@ -244,7 +244,7 @@ int wmpInit(void) {
 		state = rtnCode;
 		status.serial = p->hdr.serial;
 
-		//fprintf(stderr, "Node %d sTAE:%d\n",status.id, rtnCode);
+		fprintf(stderr, "%d ", rtnCode);
 		switch (rtnCode) {
 		case RECEIVE:
 			rtnCode = wmpReceive(q);
