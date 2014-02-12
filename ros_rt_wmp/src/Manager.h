@@ -217,7 +217,7 @@ public:
 		return sbuffer.num_bytes;
 	}
 	void setDecimation(int i){
-		decimation = i;
+		n->setParam(decimation, i);
 	}
 };
 

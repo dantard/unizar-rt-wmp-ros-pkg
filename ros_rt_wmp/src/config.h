@@ -53,8 +53,6 @@ QOS_TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1, 5, 83000)
 TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1", 10);
-
-
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
 
 END_TOPIC_DEFINITION

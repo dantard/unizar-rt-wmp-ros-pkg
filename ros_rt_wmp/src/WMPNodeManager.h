@@ -104,7 +104,7 @@ public:
 		ROSWMP_DEBUG(stderr, "Local service called with command %d, %s\n",req.command, req.param3.c_str());
 		//fprintf (stderr, "Local service called with command %d, %s node %d \n",req.command, req.param3.c_str(), wmpGetNodeId());
 
-		if (stuffs.find(req.param3) == stuffs.end()) {
+		if (stuffs.find(req.param3) == stuffs.end() && req.command != STOP) {
 			res.result = -1;
 			res.info = "ERROR: Inexistent topic/service";
 			return true;
@@ -115,26 +115,36 @@ public:
 			return true;
 		}
 		Manager * m = stuffs[req.param3];
-		if (!m->isHost()){
+		if (m==NULL || !m->isHost()){
 			res.result = -1;
 			res.info = "ERROR: The specified node is not source/host of this topic/service";
 			return true;
 		}
-
-		if (req.command == TOPIC_STOP) {
+		if (req.command == STOP) {
+			res.info = "OK: COMMAND_LIST > 0:COMMAND_LIST, 1:TOPIC_STOP, 2:TOPIC_START, 3:TOPIC_DECIMATE, 4:TOPIC_JUSTONE, 5:TOPIC_SET_PRIORITY, 6:TOPIC_GET_PRIORITY";
+		}else if (req.command == TOPIC_STOP) {
+			res.info = "OK:TOPIC_STOP";
 			m->stop();
 		} else if (req.command == TOPIC_START) {
+			res.info = "OK:TOPIC_START";
 			m->start();
 		}else if (req.command == TOPIC_DECIMATE) {
 			m->setDecimation(req.param1);
+			res.result = req.param1;
+			res.info = "OK:TOPIC_DECIMATE";
 		}else if (req.command == TOPIC_JUSTONE) {
 			m->justOne();
+			res.info = "OK:TOPIC_JUSTONE";
 		}else if (req.command == SET_PRIORITY) {
 			m->setPriority(req.param1);
+			res.result = req.param1;
+			res.info = "OK:TOPIC_SET_PRIORITY";
 		}else if (req.command == GET_PRIORITY) {
 			res.result = m->getPriority();
+			res.info = "OK:TOPIC_GET_PRIORITY";
+		}else{
+			res.info = "KO:UNKNOWN COMMAND";
 		}
-		res.info = "OK";
 		return true;
 	}
 };
