@@ -147,11 +147,13 @@ public:
 	bool shouldDecimate(){
 		int val;
 		n->getParamCached(decimation, val);
-		if (val < 1){
-			n->setParam(decimation, 1);
-			val = 1;
+
+		if (val <= 0){
+			n->setParam(decimation, 0);
+			return true;
 		}
-		if (counter == val){
+
+		if (counter >= val){
 			counter = 1;
 			return false;
 		}else{
