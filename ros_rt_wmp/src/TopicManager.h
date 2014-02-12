@@ -234,6 +234,12 @@ public:
 		return true;
 	}
 
+	virtual void reconnect(){
+		sub.shutdown();
+		std::ostringstream s;
+		s << n->getNamespace() << "/tx/" << name;
+		sub = n->subscribe(s.str(), 10, &TopicManager::callback, this);
+	}
 
 	virtual void run() {
 		T pm;

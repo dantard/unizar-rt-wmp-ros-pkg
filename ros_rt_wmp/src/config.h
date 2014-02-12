@@ -45,6 +45,7 @@
 #include <audio_common_msgs/AudioData.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/Image.h>
 
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
@@ -54,7 +55,7 @@ TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1", 10);
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
-
+DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "0", 10);
 END_TOPIC_DEFINITION
 
 #endif

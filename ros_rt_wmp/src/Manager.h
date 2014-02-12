@@ -76,7 +76,7 @@ protected:
 	boost::shared_array<uint8_t> dbuff;
 
 	enum wmp_commands_t {
-		STOP, TOPIC_STOP, TOPIC_START, TOPIC_DECIMATE, TOPIC_JUSTONE, SET_PRIORITY, GET_PRIORITY
+		STOP, TOPIC_STOP, TOPIC_START, TOPIC_DECIMATE, TOPIC_JUSTONE, SET_PRIORITY, GET_PRIORITY, RECONNECT
 	};
 public:
 	ros::NodeHandle * n;
@@ -219,6 +219,12 @@ public:
 	void setDecimation(int i){
 		n->setParam(decimation, i);
 	}
+
+	virtual void reconnect(){
+
+	}
+
+
 };
 
 #endif /* MANAGER_H_ */

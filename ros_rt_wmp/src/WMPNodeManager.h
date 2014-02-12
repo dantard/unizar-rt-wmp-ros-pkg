@@ -121,7 +121,7 @@ public:
 			return true;
 		}
 		if (req.command == STOP) {
-			res.info = "OK: COMMAND_LIST > 0:COMMAND_LIST, 1:TOPIC_STOP, 2:TOPIC_START, 3:TOPIC_DECIMATE, 4:TOPIC_JUSTONE, 5:TOPIC_SET_PRIORITY, 6:TOPIC_GET_PRIORITY";
+			res.info = "OK: COMMAND_LIST > 0:COMMAND_LIST, 1:TOPIC_STOP, 2:TOPIC_START, 3:TOPIC_DECIMATE, 4:TOPIC_JUSTONE, 5:TOPIC_SET_PRIORITY, 6:TOPIC_GET_PRIORITY, 7:RECONNECT";
 		}else if (req.command == TOPIC_STOP) {
 			res.info = "OK:TOPIC_STOP";
 			m->stop();
@@ -142,7 +142,12 @@ public:
 		}else if (req.command == GET_PRIORITY) {
 			res.result = m->getPriority();
 			res.info = "OK:TOPIC_GET_PRIORITY";
-		}else{
+		}else if (req.command == RECONNECT) {
+			m->reconnect();
+			res.result = 0;
+			res.info = "OK:RECONNECT";
+		}
+		else{
 			res.info = "KO:UNKNOWN COMMAND";
 		}
 		return true;
