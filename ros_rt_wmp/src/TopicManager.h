@@ -122,7 +122,11 @@ public:
 
 		if (amIsrc) {
 			std::ostringstream s;
-			s << n->getNamespace() << "/tx/" << name;
+			if (dests.size()>0){
+				s << n->getNamespace() << "/tx/" << name;
+			}else{
+				s << n->getNamespace() << "/in/" << name;
+			}
 			sub = n->subscribe(s.str(), 10, &TopicManager::callback, this);
 			ROSWMP_DEBUG(stderr,"Callback subscribed (%s)\n", s.str().c_str());
 
