@@ -49,6 +49,8 @@ BEGIN_TOPIC_DEFINITION
 
 TOPIC("video/theora", theora_image_transport::Packet, "0", "2", 1);
 TOPIC("audio", audio_common_msgs::AudioData, "0", "2", 2);
+DECIMATE_TOPIC("test", std_msgs::Float64, "0", 2);
+
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
 
 END_TOPIC_DEFINITION

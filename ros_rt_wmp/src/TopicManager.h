@@ -168,8 +168,20 @@ public:
 //			}
 //			fprintf(stderr, "Post compress :%d\n", size);
 
+		}else{
+			std::ostringstream hash;
+			hash << n->getNamespace() << "/decimated/" << name;
+			ROSWMP_DEBUG(stderr, "Received %s on Manager\n", hash.str().c_str());
+			if (flows_map.find(hash.str()) == flows_map.end()) {
+				flows_map[hash.str()].publisher = n->advertise<T> (hash.str(),10);
+				flows_map[hash.str()].publisher.publish(message);
+				sleep(1);
+			}
+			flows_map[hash.str()].publisher.publish(message);
+			ROSWMP_DEBUG(stderr, "Published (port:%d)\n!", port);
 		}
 	}
+
 	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri ){
 		char * p;
 		int idx = wmpPopData(port, &p, &size, &src1, &pri);

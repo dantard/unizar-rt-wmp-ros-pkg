@@ -73,6 +73,10 @@
 #define SHAPESHIFTER(name,src,dest)              m = new ShapeShifterManager (n, port, std::string(name), src, dest,false); \
 								                 w->addManager(name, m); port++;
 
+
+#define DECIMATE_TOPIC(name, type, src, decimation)          m = new TopicManager<type> (n, port, std::string(name), src, "", 0, false); \
+								                 m->setDecimation(decimation); w->addManager(name, m); port++;
+
 #define BEGIN_TOPIC_DEFINITION                   void define_objects(ros::NodeHandle * n, WMPNodeManager * w){ Manager * m; int port = 4;
 
 #define END_TOPIC_DEFINITION }
