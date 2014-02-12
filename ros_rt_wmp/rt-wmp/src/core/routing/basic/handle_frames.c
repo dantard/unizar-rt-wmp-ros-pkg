@@ -74,7 +74,7 @@ void decode_routing_info(wmpFrame *p){
 				if (i!=j) {
 					if (j == wmpGetNodeId() && i == p->hdr.from && (*cp) == 0){
 						/* is for me */
-						lqm_set_val(i,j,12);//rssi_get_averaged_rssi(i);
+						lqm_set_val(i,j,rssi_get_averaged_rssi(i));
 					}else{
 						/* not try value */
 						lqm_set_val(i,j,*cp);
