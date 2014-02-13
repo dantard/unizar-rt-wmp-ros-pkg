@@ -254,6 +254,8 @@ ieee80211_rx_monitor(struct ieee80211_local *local, struct sk_buff *origskb,
 
 
 	/* DANILO */
+	//printk(KERN_ERR "proto:%d data:%x %x %x %x %d", origskb->protocol,origskb->data[0],origskb->data[1],origskb->data[2],origskb->data[3],origskb->data[4]);
+
 	if (rt_wmp_is_active()){
 		struct sk_buff * skb3;
 		skb3 = skb_copy_expand(origskb, needed_headroom, 0, GFP_ATOMIC);
@@ -1817,6 +1819,16 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 #endif
 
 		if (skb) {	
+			//printk(KERN_ERR "proto3:%d signal: %d data:%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", skb->protocol,status->signal,skb->data[0],skb->data[1],skb->data[2],skb->data[3],skb->data[4],skb->data[5],skb->data[6],skb->data[7],skb->data[8],skb->data[9],skb->data[10],skb->data[11],skb->data[12],skb->data[13],skb->data[14],skb->data[15],skb->data[16],skb->data[17],skb->data[18],skb->data[19]);
+
+			/* DANILO */
+			if (skb->data[12] == 0x69 && skb->data[13] == 0x69){
+				//printk(KERN_ERR "proto4:%d signal: %d data:%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", skb->protocol,status->signal,skb->data[0],skb->data[1],skb->data[2],skb->data[3],skb->data[4],skb->data[5],skb->data[6],skb->data[7],skb->data[8],skb->data[9],skb->data[10],skb->data[11],skb->data[12],skb->data[13],skb->data[14],skb->data[15],skb->data[16],skb->data[17],skb->data[18],skb->data[19]);
+				skb->data[14] = status->signal + 98;
+				skb->ip_summed = CHECKSUM_UNNECESSARY;
+			}
+			/* DANILO */
+
 			skb->protocol = eth_type_trans(skb, dev);
 			memset(skb->cb, 0, sizeof(skb->cb));
 			netif_receive_skb(skb);

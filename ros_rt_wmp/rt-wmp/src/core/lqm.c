@@ -420,3 +420,31 @@ int lqm_prob_get_path(int src, int dest, char * path) {
 int lqm_prob_get_val(int src, int dest) {
 	return A0[src][dest];
 }
+
+static char fake[32*32];
+static int fake_set = 0;
+
+void lqm_set_fake(char * fake_lqm){
+	int i = 0;
+	for (i = 0; i< size*size; i++){
+		fake[i] = (fake_lqm[i] - '0')*10;
+	}
+	fake_set = 1;
+}
+
+int lqm_fake_is_set(){
+	return fake_set;
+}
+
+void lqm_put_fake() {
+   int i, j;
+   for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			if (i==j){
+
+			}else{
+				lqm[i][j] = fake[i*size+j];
+			}
+		}
+   }
+}

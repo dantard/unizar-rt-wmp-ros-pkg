@@ -216,7 +216,7 @@ public:
 		}else{
 			std::ostringstream hash;
 			hash << n->getNamespace() << "/decimated/" << name;
-			fprintf(stderr, "Received %s on Manager\n", hash.str().c_str());
+			ROSWMP_DEBUG(stderr, "Received %s on Manager\n", hash.str().c_str());
 			if (flows_map.find(hash.str()) == flows_map.end()) {
 				flows_map[hash.str()].publisher = n->advertise<T> (hash.str(),10);
 				flows_map[hash.str()].publisher.publish(message);
@@ -241,10 +241,9 @@ public:
 	}
 
 	virtual void reconnect(){
+		std::string s = sub.getTopic();
 		sub.shutdown();
-		std::ostringstream s;
-		s << n->getNamespace() << "/tx/" << name;
-		sub = n->subscribe(s.str(), 10, &TopicManager::callback, this);
+		sub = n->subscribe(s, 10, &TopicManager::callback, this);
 	}
 
 	virtual void run() {

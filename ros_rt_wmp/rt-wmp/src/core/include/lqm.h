@@ -62,5 +62,11 @@ int lqm_prob_get_path(int src, int dest, char * path);
 void lqm_compute_prob(char ** lqm);
 int lqm_prob_get_path(int src, int dest, char * path);
 int lqm_prob_get_val(int src, int dest);
+static char fake[32*32];
+
+void lqm_set_fake(char * fake_lqm);
+void lqm_put_fake();
+int lqm_fake_is_set();
+
 #endif /*LQM_H_*/
 

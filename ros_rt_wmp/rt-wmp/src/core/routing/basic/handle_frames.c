@@ -43,25 +43,6 @@
 
 int timer_initied=0;
 
-//XXX:TEMP
-
-char ** lqm_put_fake(char ** mlqm) {
-   int i, j, val_ij, val_ji, found;
-   char fake[16] = {0, 10, 99, 10, 10, 0, 10, 99, 99, 10, 0, 99, 10, 99, 99, 0};
-   int size = wmpGetNumOfNodes();
-   for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			if (i==j){
-
-			}else{
-				mlqm[i][j] = fake[i*size+j];
-			}
-		}
-   }
-   return mlqm;
-}
-
-
 void decode_routing_info(wmpFrame *p){
 	//wmp_print_lqm(lqm_get_ptr(),"before decode",wmpGetNumOfNodes());
 	/*if is a TOKEN update local LQM and unset new_token*/
@@ -102,7 +83,9 @@ void decode_routing_info(wmpFrame *p){
 	}
 #endif
 
-	lqm_put_fake(lqm_get_ptr());
+	if (lqm_fake_is_set()){
+		lqm_put_fake(lqm_get_ptr());
+	}
 
 
 	lqm_calculate_distances();

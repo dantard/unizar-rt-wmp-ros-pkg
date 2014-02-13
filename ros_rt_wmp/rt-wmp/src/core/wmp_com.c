@@ -80,6 +80,7 @@ char getSimulatedRssi(char to){
 void wmpUpdateRssi(wmpFrame *p){
 	int i;
 	/* Calculate RSSI */
+
 	p->hdr.rssi= fp(p->hdr.rssi);
 	rssi_new_frame(p->hdr.from, p->hdr.rssi);
 

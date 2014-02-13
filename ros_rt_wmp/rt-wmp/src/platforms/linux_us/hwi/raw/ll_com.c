@@ -585,9 +585,8 @@ rxInfo llreceive(char *f, int timeout) {
 			ret.size = rlen - ETHER_HDR_LEN;
 			ret.error = 0;
 			ret.rate = 10;
-			ret.has_lq = 1;
-
-			ret.rssi = 72;
+			ret.has_lq = 0;
+			//ret.rssi = f[0];
 		} else {
 			ret.error = 1;
 			return ret;
