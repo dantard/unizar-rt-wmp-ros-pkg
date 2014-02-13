@@ -89,8 +89,8 @@ void mobile_avg_new_value(MobileAverage*e, char val){
 
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
-	if (e->node_id == 2){
-		fprintf(stderr,"id:%d loop_id: %d last_loop: %d consecutive_loops: %d", e->node_id, loop_id, e->last_loop, e->consecutive_loops);
+	if (e->node_id == 2 && wmpGetNodeId()==3){
+		fprintf(stderr,"id:%d loop_id: %d last_loop: %d consecutive_loops: %d\n", e->node_id, loop_id, e->last_loop, e->consecutive_loops);
 	}
 
 	if (loop_id - e->last_loop == 0 || loop_id - e->last_loop == 1){
