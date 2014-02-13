@@ -297,11 +297,9 @@ char ** lqm_prune(char ** mlqm) {
 	}
 
 	//Quito el link más debil y veo si la red sigue conexa, luego el segundo más débil etc...
-
-
 	found = 1;
 	while (found) {
-		int umbral = 15, sel_i = 0, sel_j = 0;
+		int umbral = status.prune_threshold, sel_i = 0, sel_j = 0;
 		found = 0;
 		for (i = 0; i < size; i++) {
 			for (j = 0; j < size; j++) {

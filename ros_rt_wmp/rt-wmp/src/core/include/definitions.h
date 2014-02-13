@@ -170,6 +170,7 @@ typedef struct  {
 	int max_msg_size;
 	int num_ports;
 	int beluga;
+	int prune_threshold;
 }Status;
 
 

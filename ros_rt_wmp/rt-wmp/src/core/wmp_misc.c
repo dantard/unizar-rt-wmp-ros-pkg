@@ -213,6 +213,9 @@ int apply_config(Status * status, char * param, char * val) {
 	}else if (strcmp(param, "CPU_DELAY_US") == 0) {
 		status->cpu_delay = atoi(val);
 		return 1;
+	}else if (strcmp(param, "PRUNE_THRESHOLD") == 0) {
+		status->prune_threshold = atoi(val);
+		return 1;
 	}
 	return 0;
 
@@ -258,6 +261,7 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->max_msg_size = 65535;
 	s->num_ports = 32;
 	s->beluga = 1;
+	s->prune_threshold = 25;
 }
 
 
