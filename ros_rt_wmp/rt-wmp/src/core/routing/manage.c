@@ -277,7 +277,6 @@ int evaluate_token(wmpFrame * t) {
 		}
 
 		/* I'm the last one */
-		enough_time_for_other_message=1;
 		if (t->tkn.idMaxPri >= 0) {
 			if (enough_time_for_other_message){
 				return CREATE_AUTHORIZATION;
@@ -461,7 +460,12 @@ static signed char getNext(wmpFrame * t) {
 	int i, j, dest = UNDEF, cost;
 
 	if (t->hdr.type == MESSAGE) {
-		dest = t->msg.dest;
+		for (i = 0; i < status.N_NODES; i++) {
+			if (mBitsIsSet(t->msg.dest,i)){
+				dest = i;
+				break;
+			}
+		}
 		reached = t->msg.reached;
 	} else if (t->hdr.type == AUTHORIZATION) {
 		dest = t->aut.dest;
@@ -503,33 +507,30 @@ static signed char getNext(wmpFrame * t) {
 }
 
 int evaluate_message(wmpFrame * t) {
-	int i, more = 0;
 
-	if (mBitsIsSet(t->msg.type, BURST)){
+	int i, more = 0;
+	if (mBitsIsSet(t->msg.type, BURST)) {
 		aura_clear();
 	}
+
 	if (t->hdr.from != status.id) {
-		if (mBitsIsSet(t->msg.type, AURA_MSG)){
+		if (mBitsIsSet(t->msg.type, AURA_MSG)) {
 			aura_add(aura_msg, t->hdr.from);
-		}else{
+		} else {
 			aura_add(aura_auth, t->hdr.from);
 		}
 	}
 
-	if (mBitsIsSet(t->msg.type,AURA_MSG)){
+	if (mBitsIsSet(t->msg.type,AURA_MSG)) {
 		aura_store_msg(&t->msg);
 	}
-
-
-	///XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ANALYSIS: ¿por qué está aquí?
 	aura_discard_unnecessary(t->msg.dest);
 
-	mBitsSet(t->msg.reached,status.id);
-	/* new */
+	mBitsSet(t->msg.reached, status.id);
 
-	if (mBitsIsSet(t->msg.type,AURA_MSG)){
-		if (mBitsIsSet(t->msg.dest,status.id)) {//is for me
-			mBitsUnset(t->msg.dest,status.id);
+	if (mBitsIsSet(t->msg.type,AURA_MSG)) {
+		if (mBitsIsSet(t->msg.dest,status.id)) { //is for me
+			mBitsUnset(t->msg.dest, status.id);
 
 			enqueue_message(t);
 			mBitsSet(t->hdr.ack, wmpGetNodeId());
@@ -537,31 +538,47 @@ int evaluate_message(wmpFrame * t) {
 			/* Flow control */
 			if (wmp_queue_rx_get_room() > 5) {
 				mBitsSet(t->hdr.fc, wmpGetNodeId());
-			}else{
+			} else {
 				mBitsUnset(t->hdr.fc, wmpGetNodeId());
 			}
 		}
 	}
 
-	for (i = 0; i<status.N_NODES ;i++){
+	/* If more is true the messages was for me
+	 * and there are other destinations
+	 * -OR- it wasn't for me */
+
+	for (i = 0; i < status.N_NODES; i++) {
 		more = more || mBitsIsSet(t->msg.dest,i);
 	}
 
-	if (more){
+//XXX:
+	int use_aura_efficient_multicast = 0;
+	/* IF the message is unicast and more != 0, it wasn't for me */
+	if (more) {
+
 		aura_t type;
-		int next = aura_get_next(t,&type);
+		int next;
 
-		if (type == aura_auth){
+		if (use_aura_efficient_multicast){
+			next = aura_get_next(t, &type);
+		}else{
+			next = getNext(t);
+			type = aura_msg;
+		}
 
-			mBitsUnset(t->msg.type,AURA_MSG);
+		if (type == aura_auth) {
 
-		} else{
-			mBitsSet(t->msg.type,AURA_MSG);
+			mBitsUnset(t->msg.type, AURA_MSG);
+
+		} else {
+			mBitsSet(t->msg.type, AURA_MSG);
 			aura_restore_msg(&t->msg);
-			if (next < 0 || mBitsIsSet(t->msg.reached,next)) {
-				t->msg.reached = 0;
-				return NEW_TOKEN;
-			}
+//XXX:
+//			if (next < 0 || mBitsIsSet(t->msg.reached,next)) {
+//				t->msg.reached = 0;
+//				return NEW_TOKEN;
+//			}
 		}
 
 		if (next >= 0) {
@@ -572,13 +589,15 @@ int evaluate_message(wmpFrame * t) {
 
 			aura_add(type, t->hdr.to);
 
-			t->msg.age += wmp_calculate_frame_duration_ms(status.rate, wmp_get_frame_total_lenght(t));
+			t->msg.age += wmp_calculate_frame_duration_ms(status.rate,
+					wmp_get_frame_total_lenght(t));
 			wmp_print_append(t);
-			wmp_print("%d ",wmpGetNodeId());
+			wmp_print("%d ", wmpGetNodeId());
 
 			return SEND_MESSAGE;
 		}
 	}
+
 
 	if (status.beluga && status.power_save && t->hdr.burst > 1 && t->hdr.sleep > ms_to_us(12)){ //XXX: replace number
 		signed char msg_src = t->msg.src;

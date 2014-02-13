@@ -99,8 +99,9 @@ char mobile_avg_get_averaged_value(MobileAverage * e){
 	if (val == 0 && e->avgd_value > 0){
 		val = 1;
 	}
-	//fprintf(stderr,"Node %d: e->avg is %d, conf is %d val is %d\n",e->node_id,e->avgd_value, mobile_avg_confiability_get(e), val);
-
+	if (mobile_avg_confiability_get(e) < 95){
+		fprintf(stderr,"Node %d: e->avg is %d, conf is %d val is %d\n",e->node_id,e->avgd_value, mobile_avg_confiability_get(e), val);
+	}
 	return (char) val;
 };
 
