@@ -93,13 +93,13 @@ void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 		fprintf(stderr,"id:%d loop_id: %d last_loop: %d consecutive_loops: %d\n", e->node_id, loop_id, e->last_loop, e->consecutive_loops);
 	}
 
-	if (loop_id - e->last_loop == 0 || loop_id - e->last_loop == 1){
+	if (mobile_avg_confiability_get(e) == 0 && ((loop_id - e->last_loop) == 0 || (loop_id - e->last_loop == 1))){
 		e->consecutive_loops ++;
 	}else{
 		e->consecutive_loops = 0;
 	}
 	e->last_loop = loop_id;
-	if (e->consecutive_loops == 50){
+	if (e->consecutive_loops == 150){
 		mobile_avg_confiability_reset(e);
 	}
 }
