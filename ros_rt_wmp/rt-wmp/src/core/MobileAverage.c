@@ -99,7 +99,7 @@ void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 		e->consecutive_loops = 0;
 	}
 	e->last_loop = loop_id;
-	if (e->consecutive_loops == 150){
+	if (e->consecutive_loops == 500){
 		mobile_avg_confiability_reset(e);
 	}
 }
