@@ -148,6 +148,9 @@ int mobile_avg_confiability_get(MobileAverage * e){
 }
 
 void mobile_avg_confiability_new_value(MobileAverage * e, char val){
+	if (val == 0){
+		e->consecutive_loops = 0;
+	}
 	e->conf[e->c_idx] = val;
 	e->c_idx++;
 	e->c_idx = e->c_idx<50?e->c_idx:0;
