@@ -169,8 +169,8 @@ int apply_config(Status * status, char * param, char * val) {
 		status->N_NODES = atoi(val);
 		return 1;
 	} else if (strcmp(param, "TIMEOUT") == 0) {
-		return 1;
 		status->TIMEOUT = atoi(val);
+		return 1;
 	} else if (strcmp(param, "HOLD_TIME") == 0) {
 		status->hold_time = atoi(val);
 		return 1;
