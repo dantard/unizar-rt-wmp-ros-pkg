@@ -94,8 +94,8 @@ void wmpUpdateRssi(wmpFrame *p){
 	/* if I received a frame but the other says does not hear me, I suppose it
 	 * hear me
 	 */
+	rssi_new_loop(p->hdr.from, p->hdr.loop_id);
 	lqm_set_val(status.id,p->hdr.from,rssi_get_averaged_rssi(p->hdr.from));
-
 }
 
 void wmpSendDrop(wmpFrame * p){

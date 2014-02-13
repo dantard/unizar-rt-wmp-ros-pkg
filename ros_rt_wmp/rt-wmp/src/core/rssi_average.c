@@ -63,6 +63,9 @@ void rssi_new_frame(unsigned char id, char val){
 void rssi_confiability_new_value(unsigned char id, char val){
 	mobile_avg_confiability_new_value(rssi[id],val);
 }
+void rssi_new_loop(unsigned char id, long loop_id){
+	mobile_avg_new_loop(rssi[id],loop_id);
+}
 
 void rssi_reset(unsigned char id){
 	if (id >= 0 && id < status.N_NODES){
