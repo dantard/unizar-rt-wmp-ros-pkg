@@ -132,6 +132,8 @@ int wmpUpdateReceivedRssi(wmpFrame* q){
 }
 
 int wmpUpdateAcknowkedgedRssi(wmpFrame* q){
+
+	rssi_confiability_new_value(q->hdr.from, 1);
 	wmpUpdateRssi(q);
 	return DECODE_ROUTING_INFO_ON_WACK;
 }

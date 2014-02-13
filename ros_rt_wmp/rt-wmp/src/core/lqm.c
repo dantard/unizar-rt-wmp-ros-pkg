@@ -419,6 +419,9 @@ int lqm_prob_get_val(int src, int dest) {
 	return A0[src][dest];
 }
 
+
+
+/* FAKE LQM */
 static char fake[32*32];
 static int fake_set = 0;
 

@@ -49,6 +49,7 @@ void rssi_new_frame(unsigned char id, char val);
 void rssi_reset(unsigned char id);
 char rssi_get_averaged_rssi(unsigned char id);
 unsigned long rssi_get_age(unsigned char id);
+void rssi_confiability_new_value(unsigned char id, char val);
 
 
 #endif /*RSSI_AVERAGE_H_*/

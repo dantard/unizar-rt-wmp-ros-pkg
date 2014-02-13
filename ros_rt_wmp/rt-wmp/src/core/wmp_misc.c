@@ -261,7 +261,7 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->max_msg_size = 65535;
 	s->num_ports = 32;
 	s->beluga = 1;
-	s->prune_threshold = 25;
+	s->prune_threshold = 32;
 }
 
 

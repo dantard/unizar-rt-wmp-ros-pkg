@@ -43,13 +43,19 @@ extern Status status;
 void mobile_avg_free(MobileAverage * e){
 	FREE(e->elem);
 }
-void mobile_avg_init(MobileAverage * e, int n_elements){
+void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
+	int i;
 	e->elem=(char *) MALLOC(n_elements*sizeof(char));
 	e->n_elements=n_elements;
 	e->seen=0;
 	e->idx=0;
 	e->initialized=0;
 	e->avgd_value=0; /* or 0 better */
+	e->node_id = node_id;
+	for (i = 0; i< 50; i++){
+		e->conf[i] = 1;
+	}
+	e->c_idx = 0;
 };
 
 void mobile_avg_new_value(MobileAverage*e, char val){
@@ -88,7 +94,14 @@ void mobile_avg_reset(MobileAverage* e) {
 
 
 char mobile_avg_get_averaged_value(MobileAverage * e){
-	return e->avgd_value;
+
+	int val = e->avgd_value * mobile_avg_confiability_get(e) / 100;
+	if (val == 0 && e->avgd_value > 0){
+		val = 1;
+	}
+	//fprintf(stderr,"Node %d: e->avg is %d, conf is %d val is %d\n",e->node_id,e->avgd_value, mobile_avg_confiability_get(e), val);
+
+	return (char) val;
 };
 
 unsigned long mobile_avg_get_age(MobileAverage * e){
@@ -96,6 +109,29 @@ unsigned long mobile_avg_get_age(MobileAverage * e){
 };
 
 
+/* CONFIABILITY*/
+
+void mobile_avg_confiability_reset(MobileAverage * e){
+	int i;
+	for (i = 0; i< 50; i++){
+		e->conf[i] = 1;
+	}
+}
+
+int mobile_avg_confiability_get(MobileAverage * e){
+	int i, sum = 0;
+	for (i = 0; i< 50; i++){
+			sum+= e->conf[i];
+	}
+	return sum*2;
+}
+
+void mobile_avg_confiability_new_value(MobileAverage * e, char val){
+	e->conf[e->c_idx] = val;
+	e->c_idx++;
+	e->c_idx = e->c_idx<50?e->c_idx:0;
+	//fprintf(stderr,"Node %d: is %d\n", e->node_id, mobile_avg_confiability_get(e));
+}
 
 
 

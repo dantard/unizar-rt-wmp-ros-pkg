@@ -404,6 +404,9 @@ int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
 		status.retries = 0;
 		rssi_reset(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, 0);
+
+		rssi_confiability_new_value(t->hdr.to,0);
+
 		t->hdr.sleep = 0;
 		return EVALUATE_TOKEN;
 	}
@@ -420,6 +423,9 @@ int manage_authorization_expired_timeout(wmpFrame * t) {/* Authorization timeout
 		status.retries = 0;
 		rssi_reset(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, 0);
+
+		rssi_confiability_new_value(t->hdr.to,0);
+
 		t->hdr.sleep = 0;
 		return NEW_TOKEN;
 	}
@@ -436,6 +442,9 @@ int manage_message_expired_timeout(wmpFrame * t) {/* Authorization timeout expir
 		status.retries = 0;
 		rssi_reset(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, 0);
+
+		rssi_confiability_new_value(t->hdr.to,0);
+
 		t->hdr.sleep = 0;
 		return NEW_TOKEN;
 	}

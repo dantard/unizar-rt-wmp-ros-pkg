@@ -43,7 +43,7 @@ void initMobileAverage(int RSSI_AVERAGE_ELEMENTS){
 	rssi=(MobileAverage**) MALLOC(status.N_NODES*sizeof(MobileAverage*));
 	for (i=0;i<status.N_NODES;i++){
 		rssi[i]=(MobileAverage *) MALLOC(sizeof(MobileAverage));
-		mobile_avg_init(rssi[i],RSSI_AVERAGE_ELEMENTS);
+		mobile_avg_init(rssi[i],RSSI_AVERAGE_ELEMENTS, i);
 	}
 }
 
@@ -58,6 +58,10 @@ void freeMobileAverage(){
 
 void rssi_new_frame(unsigned char id, char val){
 	mobile_avg_new_value(rssi[id],val);
+}
+
+void rssi_confiability_new_value(unsigned char id, char val){
+	mobile_avg_confiability_new_value(rssi[id],val);
 }
 
 void rssi_reset(unsigned char id){
