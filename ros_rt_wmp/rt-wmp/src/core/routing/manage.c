@@ -717,8 +717,21 @@ int create_message(wmpFrame * t) {
 	return EVALUATE_MESSAGE;
 }
 
+FILE * p = 0;
+
+
+
 int enqueue_message(wmpFrame * t) {
-    static longMsg_t m;
+
+	if (p==0){
+		p = fopen("rt-wmp-messages.dat","w+");
+	}
+	if (t->msg.part_id==-1){
+		fprintf(p,"00000000%d %3d %d %d %4d %llu\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus());
+		fflush(p);
+	}
+
+	static longMsg_t m;
     m.src = t->msg.src;
 	m.priority = t->msg.priority;
 	m.dest = t->msg.dest;
