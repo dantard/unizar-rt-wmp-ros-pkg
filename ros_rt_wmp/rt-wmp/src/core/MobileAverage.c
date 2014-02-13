@@ -56,6 +56,7 @@ void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
 		e->conf[i] = 1;
 	}
 	e->c_idx = 0;
+	e->consecutive_loops = 0;
 };
 
 void mobile_avg_new_value(MobileAverage*e, char val){
@@ -86,19 +87,33 @@ void mobile_avg_new_value(MobileAverage*e, char val){
 	}
 };
 
+
+void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
+	if (loop_id - e->last_loop == 0 || loop_id - e->last_loop == 1){
+		e->consecutive_loops ++;
+	}else{
+		e->consecutive_loops = 0;
+	}
+	if (e->consecutive_loops == 50){
+		mobile_avg_confiability_reset(e);
+	}
+}
+
 void mobile_avg_reset(MobileAverage* e) {
 	//XXX
 	e->initialized = 0;
 	e->avgd_value = 0;
+	mobile_avg_confiability_reset(e);
+	e->consecutive_loops = 0;
 };
 
 
 char mobile_avg_get_averaged_value(MobileAverage * e){
 
 	int val = e->avgd_value * mobile_avg_confiability_get(e) / 100;
-	if (val == 0 && e->avgd_value > 0){
-		val = 1;
-	}
+//	if (val == 0 && e->avgd_value > 0){
+//		val = 1;
+//	}
 	if (mobile_avg_confiability_get(e) < 95){
 		fprintf(stderr,"Node %d: e->avg is %d, conf is %d val is %d\n",e->node_id,e->avgd_value, mobile_avg_confiability_get(e), val);
 	}

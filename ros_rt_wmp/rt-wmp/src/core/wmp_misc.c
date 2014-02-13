@@ -243,8 +243,8 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->enable_message_reschedule = 1;
 	s->net_id=0;
 	s->use_prim = 0;
-	s->use_prune = 1;
-	s->use_prob = 0;
+	s->use_prune = 0;
+	s->use_prob = 1;
 	s->highestSerial = 0;
 	s->wait_implicit_ack_from = -1;
 	s->pow = -1;
