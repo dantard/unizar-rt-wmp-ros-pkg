@@ -267,7 +267,7 @@ int evaluate_token(wmpFrame * t) {
 
 //XXX: MERGING
 		//force wc
-		if (0){
+		if (1){
 			if (status.id != t->tkn.beginner ) {//&& t->tkn.ack_hash != 0
 				nstat_clearReached(t->tkn.beginner);
 				//////fprintf(stderr,"Node %d et3\n", wmpGetNodeId());
