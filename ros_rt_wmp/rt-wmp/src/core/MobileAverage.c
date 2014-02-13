@@ -103,7 +103,7 @@ void mobile_avg_reset(MobileAverage* e) {
 	//XXX
 	e->initialized = 0;
 	e->avgd_value = 0;
-	mobile_avg_confiability_reset(e);
+	//mobile_avg_confiability_reset(e);
 	e->consecutive_loops = 0;
 };
 
