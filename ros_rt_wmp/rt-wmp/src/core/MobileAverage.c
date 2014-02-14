@@ -111,11 +111,11 @@ void mobile_avg_reset(MobileAverage* e) {
 char mobile_avg_get_averaged_value(MobileAverage * e){
 
 	int val = e->avgd_value * e->pdr * e->rxr / 100 / 100;
-	if (val == 0 && e->avgd_value > 0 && e->pdr > 0 && e->rxr > 0){
-		val = 1;
-	}
+//	if (val == 0 && e->avgd_value > 0 && e->pdr > 0 && e->rxr > 0){
+//		val = 1;
+//	}
 
-	fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
+	//fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
 
 	return (char) val;
 };
