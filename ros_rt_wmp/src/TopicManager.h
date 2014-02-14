@@ -187,6 +187,9 @@ public:
 
 	virtual void callback(const boost::shared_ptr<T const> & message) {
 
+		std::cerr << "port of " << name << " is: " << port <<std::endl;
+
+
 		if (!justone && (stopped || shouldDecimate())) {
 			return;
 		}
