@@ -105,8 +105,13 @@ public:
 		ROSWMP_DEBUG(stderr,"am I dest? %d", amIdst);
 		if (amIdst) {
 			ROSWMP_DEBUG(stderr,"Queue subscribed (%s) port : %d", name.c_str(), port);
+
+			std::cerr << "StartRX of  " << name << std::endl;
+
 			boost::thread(boost::bind(&Manager::run, this));
 			if (queue_size > 0){
+				std::cerr << "pub_loop of" << name << std::endl;
+
 				boost::thread(boost::bind(&TopicManager::pub_loop, this));
 			}
 
@@ -197,6 +202,10 @@ public:
 			ROSWMP_DEBUG(stderr,"Serializing size %d\n",n);
 			int bc_dest = computeBroadcastDest();
 			ROSWMP_DEBUG(stderr, "Push BC Message, size %d dest %d name %s\n", n + sizeof(flow_t),bc_dest,name.c_str());
+
+			std::cerr << "port of " << name << " is: " << port <<std::endl;
+
+
 			wmpPushData(port, sbuff, n + sizeof(flow_t), bc_dest, priority);
 
 //			int size = n;
@@ -229,7 +238,12 @@ public:
 
 	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri ){
 		char * p;
+		std::cerr << "port of" << name << "port: " << port <<std::endl;
+
 		int idx = wmpPopData(port, &p, &size, &src1, &pri);
+
+
+
 		size = size - sizeof(flow_t);
 		if (!deserialize<T> (p + sizeof(flow_t), size, pm)) {
 			ROS_ERROR("Deserialize error\n");
@@ -248,7 +262,11 @@ public:
 
 	virtual void run() {
 		T pm;
+		std::cerr << "run of " << name << std::endl;
+
+
 		while (ros::ok()) {
+			std::cerr << "run of2 " << name << std::endl;
 
 			signed char pri;
 			unsigned int size;

@@ -755,7 +755,7 @@ int enqueue_message(wmpFrame * t) {
 		p = fopen("rt-wmp-messages.dat","w+");
 	}
 	if (t->msg.part_id==-1){
-		fprintf(p,"00000000%d %3d %d %d %4d %llu\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus());
+		fprintf(stderr,"00000000%d %3d %d %d %4d %llu\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus());
 		fflush(p);
 	}
 
