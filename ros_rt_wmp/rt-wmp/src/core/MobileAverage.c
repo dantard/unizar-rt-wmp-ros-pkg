@@ -40,9 +40,13 @@
 
 extern Status status;
 
+unsigned char CONF_ELEM;
+unsigned short LOOP_WINDOW;
+
 void mobile_avg_free(MobileAverage * e){
 	FREE(e->elem);
 }
+
 void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
 	int i;
 	e->elem=(char *) MALLOC(n_elements*sizeof(char));
@@ -52,11 +56,13 @@ void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
 	e->initialized=0;
 	e->avgd_value=0; /* or 0 better */
 	e->node_id = node_id;
-	for (i = 0; i< 50; i++){
+	for (i = 0; i< CONF_ELEM; i++){
 		e->conf[i] = 1;
 	}
 	e->c_idx = 0;
 	e->consecutive_loops = 0;
+	CONF_ELEM = 50;
+	LOOP_WINDOW = 4500/(4*wmpGetNumOfNodes()-5);
 };
 
 void mobile_avg_new_value(MobileAverage*e, char val){
@@ -88,39 +94,17 @@ void mobile_avg_new_value(MobileAverage*e, char val){
 };
 
 
-void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
-	if (e->node_id == 2 && wmpGetNodeId()==3){
-		fprintf(stderr,"id:%d loop_id: %d last_loop: %d consecutive_loops: %d\n", e->node_id, loop_id, e->last_loop, e->consecutive_loops);
-	}
-
-	if (mobile_avg_confiability_get(e) == 0 && ((loop_id - e->last_loop) == 0 || (loop_id - e->last_loop == 1))){
-		e->consecutive_loops ++;
-	}else{
-		e->consecutive_loops = 0;
-	}
-	e->last_loop = loop_id;
-	if (e->consecutive_loops == 500){
-		mobile_avg_confiability_reset(e);
-	}
-}
-
 void mobile_avg_reset(MobileAverage* e) {
-	//XXX
 	e->initialized = 0;
 	e->avgd_value = 0;
-	//mobile_avg_confiability_reset(e);
-	//e->consecutive_loops = 0;
 };
 
 
 char mobile_avg_get_averaged_value(MobileAverage * e){
 
-	int val = e->avgd_value * mobile_avg_confiability_get(e) / 100;
-//	if (val == 0 && e->avgd_value > 0){
-//		val = 1;
-//	}
-	if (mobile_avg_confiability_get(e) < 95){
-		fprintf(stderr,"Node %d: e->avg is %d, conf is %d val is %d\n",e->node_id,e->avgd_value, mobile_avg_confiability_get(e), val);
+	int val = e->avgd_value * e->pdr / 100;
+	if (e->pdr < 85){
+		fprintf(stderr,"Node %d has e->avg of %d, conf of %d, val is %d\n",e->node_id,e->avgd_value, e->pdr, val);
 	}
 	return (char) val;
 };
@@ -134,17 +118,9 @@ unsigned long mobile_avg_get_age(MobileAverage * e){
 
 void mobile_avg_confiability_reset(MobileAverage * e){
 	int i;
-	for (i = 0; i< 50; i++){
+	for (i = 0; i< CONF_ELEM/2; i++){
 		e->conf[i] = 1;
 	}
-}
-
-int mobile_avg_confiability_get(MobileAverage * e){
-	int i, sum = 0;
-	for (i = 0; i< 50; i++){
-			sum+= e->conf[i];
-	}
-	return sum*2;
 }
 
 void mobile_avg_confiability_new_value(MobileAverage * e, char val){
@@ -154,8 +130,29 @@ void mobile_avg_confiability_new_value(MobileAverage * e, char val){
 	e->conf[e->c_idx] = val;
 	e->c_idx++;
 	e->c_idx = e->c_idx<50?e->c_idx:0;
-	//fprintf(stderr,"Node %d: is %d\n", e->node_id, mobile_avg_confiability_get(e));
+	int i, sum = 0;
+	for (i = 0; i< CONF_ELEM; i++){
+			sum+= e->conf[i];
+	}
+	e->pdr = sum*100/CONF_ELEM;
 }
 
+void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 
+	if (e->pdr == 0 && ((loop_id - e->last_loop) == 0 || (loop_id - e->last_loop == 1))){
+		e->consecutive_loops ++;
+	}else{
+		e->consecutive_loops = 0;
+	}
+	e->last_loop = loop_id;
+	if (e->consecutive_loops> 0 && e->consecutive_loops % 50 ==0){
+		fprintf(stderr,"Node %d has e->consecutive_loops of %d\n",e->consecutive_loops);
+	}
+
+
+
+	if (e->consecutive_loops >= LOOP_WINDOW){
+		mobile_avg_confiability_reset(e);
+	}
+}
 

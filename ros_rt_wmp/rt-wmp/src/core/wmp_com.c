@@ -95,6 +95,7 @@ void wmpUpdateRssi(wmpFrame *p){
 	 * hear me
 	 */
 	rssi_new_loop(p->hdr.from, p->hdr.loop_id);
+
 	lqm_set_val(status.id,p->hdr.from,rssi_get_averaged_rssi(p->hdr.from));
 }
 
@@ -133,7 +134,7 @@ int wmpUpdateReceivedRssi(wmpFrame* q){
 
 int wmpUpdateAcknowkedgedRssi(wmpFrame* q){
 
-	rssi_confiability_new_value(q->hdr.from, 1);
+	rssi_confiability_increment(q->hdr.from);
 	wmpUpdateRssi(q);
 	return DECODE_ROUTING_INFO_ON_WACK;
 }

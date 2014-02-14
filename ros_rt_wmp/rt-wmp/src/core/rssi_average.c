@@ -60,9 +60,15 @@ void rssi_new_frame(unsigned char id, char val){
 	mobile_avg_new_value(rssi[id],val);
 }
 
-void rssi_confiability_new_value(unsigned char id, char val){
-	mobile_avg_confiability_new_value(rssi[id],val);
+void rssi_confiability_decrement(unsigned char id){
+	mobile_avg_confiability_new_value(rssi[id],0);
+	mobile_avg_confiability_new_value(rssi[id],0);
 }
+
+void rssi_confiability_increment(unsigned char id){
+	mobile_avg_confiability_new_value(rssi[id],1);
+}
+
 void rssi_new_loop(unsigned char id, long loop_id){
 	mobile_avg_new_loop(rssi[id],loop_id);
 }
