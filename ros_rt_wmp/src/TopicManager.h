@@ -152,12 +152,13 @@ public:
 	bool shouldDecimate(){
 		int val;
 		n->getParamCached(decimation, val);
+		fprintf(stderr,"Decim1: %d \n", val);
 
 		if (val <= 0){
 			n->setParam(decimation, 0);
 			return true;
 		}
-
+		fprintf(stderr,"Decim: %d \n", val);
 		if (counter >= val){
 			counter = 1;
 			return false;
