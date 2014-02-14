@@ -91,7 +91,6 @@ public:
 		stopped = false;
 		dbuff.reset(new unsigned char[MAX_DATA_SIZE]);
 		justone = false;
-		std::cerr << "Manager of " << name << std::endl;
 	}
 
 	void setBroadcast(bool bc){
@@ -115,8 +114,6 @@ public:
 	}
 
 	void setDestination(std::string destination) {
-		std::cerr << "Setdest of " << name << std::endl;
-
 		dests.clear();
 		std::vector<std::string> strs;
 		boost::split(strs, destination, boost::is_any_of(" ,n/"));
@@ -125,12 +122,8 @@ public:
 				int id = atoi(strs.at(i).c_str());
 				if (id == wmpGetNodeId()) {
 					amIdst = true;
-					std::cerr << "Amidest of (true) " << name << std::endl;
-
 					//dests.push_back(id);//XXX: AGGIUNTO 5 nov 2012
 				} else {
-					std::cerr << "Amidest of (false) " << name << std::endl;
-
 					dests.push_back(id);
 				}
 				//std::cerr << id << " dest" << std::endl;
