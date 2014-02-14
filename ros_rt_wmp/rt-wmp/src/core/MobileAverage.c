@@ -141,6 +141,7 @@ void mobile_avg_confiability_new_value(MobileAverage * e, char val){
 }
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
+	fprintf(stderr,"new loop %d\n",loop_id);
 
 	if (e->pdr == 0 && ((loop_id - e->last_loop) == 0 || (loop_id - e->last_loop == 1))){
 		e->consecutive_loops ++;
