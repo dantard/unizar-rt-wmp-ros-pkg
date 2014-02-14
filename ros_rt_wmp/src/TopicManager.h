@@ -88,11 +88,12 @@ public:
 				continue;
 			}
 			initied = true;
-			fprintf(stderr,"Buffer.size: %d %s\n",buffer.size(), name.c_str());
+
 			if (buffer.size()>0){
 				loop_publisher.publish(buffer.front());
 				buffer.erase(buffer.begin());
 			}
+
 			while(buffer.size() > queue_size ){
 				buffer.erase(buffer.begin());
 			}
@@ -106,12 +107,8 @@ public:
 		if (amIdst) {
 			ROSWMP_DEBUG(stderr,"Queue subscribed (%s) port : %d", name.c_str(), port);
 
-			std::cerr << "StartRX of  " << name << std::endl;
-
 			boost::thread(boost::bind(&Manager::run, this));
 			if (queue_size > 0){
-				std::cerr << "pub_loop of" << name << std::endl;
-
 				boost::thread(boost::bind(&TopicManager::pub_loop, this));
 			}
 
@@ -154,13 +151,12 @@ public:
 		if (!n->getParamCached(decimation, val)){
 			val = 1;
 		}
-		fprintf(stderr,"Decim1: %d \n", val);
 
 		if (val <= 0){
 			n->setParam(decimation, 0);
 			return true;
 		}
-		fprintf(stderr,"Decim: %d \n", val);
+
 		if (counter >= val){
 			counter = 1;
 			return false;
@@ -190,19 +186,12 @@ public:
 
 	virtual void callback(const boost::shared_ptr<T const> & message) {
 
-		std::cerr << "port of " << name << " is: " << port <<std::endl;
-
-		int a = shouldDecimate();
-
-		std::cerr << "justone:" << justone << " stopped: " << stopped << "decimate:" << a << std::endl;
-
-
-		if (!justone && (stopped || a)) {
+		if (!justone && (stopped || shouldDecimate())) {
 			return;
 		}
-		std::cerr << "justone:" << justone << " stopped: " << stopped << "decimate:" << a << std::endl;
 
 		justone = false;
+
 		if (!amIstatic){
 			fillDestination(message);
 		}
@@ -212,10 +201,8 @@ public:
 			int n = serialize<T>((char*)(sbuff + sizeof(flow_t)), message);
 			ROSWMP_DEBUG(stderr,"Serializing size %d\n",n);
 			int bc_dest = computeBroadcastDest();
+
 			ROSWMP_DEBUG(stderr, "Push BC Message, size %d dest %d name %s\n", n + sizeof(flow_t),bc_dest,name.c_str());
-
-			std::cerr << "port of " << name << " iso: " << port << "dest: " + bc_dest << "size:" << n<<std::endl;
-
 
 			wmpPushData(port, sbuff, n + sizeof(flow_t), bc_dest, priority);
 
@@ -243,27 +230,22 @@ public:
 				sleep(1);
 			}
 			flows_map[hash.str()].publisher.publish(message);
-			std::cerr << "Republish something" << std::endl;
-
-
 			ROSWMP_DEBUG(stderr, "Published (port:%d)\n!", port);
 		}
 	}
 
-	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri ){
+	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri) {
 		char * p;
-		std::cerr << "port of" << name << "port: " << port <<std::endl;
-
 		int idx = wmpPopData(port, &p, &size, &src1, &pri);
 
-
-
 		size = size - sizeof(flow_t);
-		if (!deserialize<T> (p + sizeof(flow_t), size, pm)) {
-			ROS_ERROR("Deserialize error\n");
-			wmpPopDataDone(idx);
-			return false;
-		}
+		try {
+			if (!deserialize<T>(p + sizeof(flow_t), size, pm)) {
+				ROS_ERROR("Deserialize error\n");
+				wmpPopDataDone(idx);
+				return false;
+			}
+		} catch (...) {}
 		wmpPopDataDone(idx);
 		return true;
 	}
@@ -276,17 +258,12 @@ public:
 
 	virtual void run() {
 		T pm;
-		std::cerr << "run of " << name << std::endl;
-
 
 		while (ros::ok()) {
-			std::cerr << "run of2 " << name << std::endl;
 
 			signed char pri;
 			unsigned int size;
 			unsigned char src1;
-
-			fprintf(stderr,"Popping\n");
 
 			if (!popMessage(pm, size, src1, pri)) {
 				continue;

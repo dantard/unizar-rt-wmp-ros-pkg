@@ -57,7 +57,7 @@ TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5);
 TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1", 10);
 SERVICE("/add_two_ints", roscpp_tutorials::TwoInts, 0, 10);
-DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "0", 10);
+DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 2);
 END_TOPIC_DEFINITION
 
 #endif
