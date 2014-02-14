@@ -115,7 +115,7 @@ char mobile_avg_get_averaged_value(MobileAverage * e){
 		val = 1;
 	}
 	//if (e->pdr < 85){
-	//fprintf(stderr,"Node %d has e->avg of %d, conf of %d, rxr is %d, val is %d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
+	fprintf(stderr,"Node %d has e->avg of %d, conf of %d, rxr is %d, val is %d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
 	//}
 	return (char) val;
 };
@@ -191,8 +191,8 @@ void mobile_avg_compute(MobileAverage * e){
 	if (sum == LOOP_WINDOW && e->pdr < 50){
 //		e->consecutive++;
 //		if (e->consecutive){
-			e->consecutive = 0;
-//			mobile_avg_confiability_new_value(e,1);
+//			e->consecutive = 0;
+		mobile_avg_confiability_new_value(e,1);
 	}
 //	}else{
 //		e->consecutive = 0;
