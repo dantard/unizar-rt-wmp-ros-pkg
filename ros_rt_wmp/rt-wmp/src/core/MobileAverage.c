@@ -139,6 +139,7 @@ void mobile_avg_loop_zero(MobileAverage * e){
 	for (i = 0; i< LOOP_WINDOW; i++){
 		e->loops[i] = 0;
 	}
+	e->rxr = 0;
 	e->l_idx = 0;
 }
 
