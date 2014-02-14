@@ -86,7 +86,9 @@ void wmpUpdateRssi(wmpFrame *p){
 
 	//status.retries=0;
 	for (i=0;i<status.N_NODES;i++){
-		if (i==status.id) continue;
+		if (i==status.id) {
+			continue;
+		}
 		if (rssi_get_averaged_rssi(i)>0 && rssi_get_age(i)> status.hold_time){
 			rssi_reset(i);
 		}

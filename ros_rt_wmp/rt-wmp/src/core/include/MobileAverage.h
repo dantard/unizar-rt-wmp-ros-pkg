@@ -49,7 +49,10 @@ typedef struct{
 	int c_idx;
 	unsigned long long seen;
 	int valid;
+
 	char conf[255];
+	char loops[255];
+
 	char node_id;
 	long last_loop;
 	int consecutive_loops;
