@@ -61,7 +61,10 @@ typedef struct{
 
 	char node_id;
 	long last_loop;
-	int consecutive_loops;
+
+	int net_loop_id;
+	int node_pulse;
+
 } MobileAverage ;
 
 void mobile_avg_init(MobileAverage * e, int n_elements, int node_id);

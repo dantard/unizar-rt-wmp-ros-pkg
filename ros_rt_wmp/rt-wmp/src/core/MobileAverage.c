@@ -155,23 +155,34 @@ void mobile_avg_confiability_new_value(MobileAverage * e, char val){
 	}
 	e->pdr = sum*100/CONF_ELEM>=0?sum*100/CONF_ELEM:0;
 
-	if (sum == 0){
-		mobile_avg_loop_zero(e);
+//	if (sum == 0){
+//		mobile_avg_loop_zero(e);
+//	}
+}
+
+void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
+	if (loop_id != e->net_loop_id){
+		e->l_idx ++;
+		e->l_idx = e->l_idx < LOOP_WINDOW? e->l_idx:0;
+		e->loops[e->l_idx] = 0;
+		mobile_avg_compute(e);
+		e->net_loop_id = loop_id;
 	}
 }
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 	int i, sum = 0;
-
 	if (  ((loop_id - e->last_loop) == 0) || ((loop_id - e->last_loop) == 1)    ){
 		e->loops[e->l_idx] = 1;
 	}else{
 		e->loops[e->l_idx] = 0;
 	}
-	e->l_idx ++;
-	e->l_idx = e->l_idx < LOOP_WINDOW? e->l_idx:0;
 	e->last_loop = loop_id;
+	mobile_avg_compute(e);
+}
 
+void mobile_avg_compute(MobileAverage * e){
+	int i, sum = 0;
 	for (i = 0; i< LOOP_WINDOW; i++){
 			sum+= e->loops[i];
 	}
@@ -180,4 +191,3 @@ void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 		mobile_avg_confiability_reset(e);
 	}
 }
-
