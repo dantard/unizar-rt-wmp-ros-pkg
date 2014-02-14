@@ -65,7 +65,7 @@ void *fthread_tx (void * param){
 //		wmpPushData(port,buff,len,dest,priority);
 //		wmpPushData(port,buff,len,dest,priority);
 //		break;
-		usleep(10000);
+		usleep(100000);
 		idx++;
 	}
 }
