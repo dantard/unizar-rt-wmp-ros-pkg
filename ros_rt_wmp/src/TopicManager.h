@@ -190,6 +190,10 @@ public:
 		std::cerr << "port of " << name << " is: " << port <<std::endl;
 
 		int a = shouldDecimate();
+
+		std::cerr << "justone:" << justone << " stopped: " << stopped << "decimate:" << a << std::endl;
+
+
 		if (!justone && (stopped || a)) {
 			return;
 		}
