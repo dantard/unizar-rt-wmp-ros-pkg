@@ -243,6 +243,9 @@ public:
 				sleep(1);
 			}
 			flows_map[hash.str()].publisher.publish(message);
+			std::cerr << "Republish something" << std::endl;
+
+
 			ROSWMP_DEBUG(stderr, "Published (port:%d)\n!", port);
 		}
 	}
