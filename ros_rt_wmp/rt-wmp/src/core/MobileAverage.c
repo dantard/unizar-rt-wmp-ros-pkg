@@ -115,7 +115,7 @@ char mobile_avg_get_averaged_value(MobileAverage * e){
 		val = 1;
 	}
 	//if (e->pdr < 85){
-	fprintf(stderr,"Node %d has e->avg of %d, conf of %d, rxr is %d, val is %d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
+	//fprintf(stderr,"Node %d has e->avg of %d, conf of %d, rxr is %d, val is %d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
 	//}
 	return (char) val;
 };
