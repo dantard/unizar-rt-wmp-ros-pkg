@@ -134,6 +134,13 @@ void mobile_avg_confiability_reset(MobileAverage * e){
 		e->conf[i] = 1;
 	}
 }
+void mobile_avg_loop_zero(MobileAverage * e){
+	int i;
+	for (i = 0; i< LOOP_WINDOW; i++){
+		e->loops[i] = 0;
+	}
+	e->l_idx = 0;
+}
 
 void mobile_avg_confiability_new_value(MobileAverage * e, char val){
 	int i, sum = 0;
@@ -146,6 +153,10 @@ void mobile_avg_confiability_new_value(MobileAverage * e, char val){
 			sum+= e->conf[i];
 	}
 	e->pdr = sum*100/CONF_ELEM>=0?sum*100/CONF_ELEM:0;
+
+	if (sum == 0){
+		mobile_avg_loop_zero(e);
+	}
 }
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
