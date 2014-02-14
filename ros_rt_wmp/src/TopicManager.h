@@ -151,7 +151,9 @@ public:
 
 	bool shouldDecimate(){
 		int val;
-		n->getParamCached(decimation, val);
+		if (!n->getParamCached(decimation, val)){
+			val = 1;
+		}
 		fprintf(stderr,"Decim1: %d \n", val);
 
 		if (val <= 0){
