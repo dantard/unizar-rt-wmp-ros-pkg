@@ -189,10 +189,11 @@ public:
 
 		std::cerr << "port of " << name << " is: " << port <<std::endl;
 
-
-		if (!justone && (stopped || shouldDecimate())) {
+		int a = shouldDecimate();
+		if (!justone && (stopped || a)) {
 			return;
 		}
+		std::cerr << "justone:" << justone << " stopped: " << stopped << "decimate:" << a << std::endl;
 
 		justone = false;
 		if (!amIstatic){
@@ -206,7 +207,7 @@ public:
 			int bc_dest = computeBroadcastDest();
 			ROSWMP_DEBUG(stderr, "Push BC Message, size %d dest %d name %s\n", n + sizeof(flow_t),bc_dest,name.c_str());
 
-			std::cerr << "port of " << name << " is: " << port << "dest: " + bc_dest << "size:" << n<<std::endl;
+			std::cerr << "port of " << name << " iso: " << port << "dest: " + bc_dest << "size:" << n<<std::endl;
 
 
 			wmpPushData(port, sbuff, n + sizeof(flow_t), bc_dest, priority);
