@@ -187,7 +187,14 @@ void mobile_avg_compute(MobileAverage * e){
 			sum+= e->loops[i];
 	}
 	e->rxr = sum*100/LOOP_WINDOW>=0?sum*100/LOOP_WINDOW:0;
-	if (e->pdr == 0 && sum == LOOP_WINDOW){
-		mobile_avg_confiability_reset(e);
+
+	if (sum == LOOP_WINDOW && e->pdr < 50){
+		e->consecutive++;
+		if (e->consecutive>LOOP_WINDOW){
+			e->consecutive = 0;
+			mobile_avg_confiability_new_value(e,1);
+		}
+	}else{
+		e->consecutive = 0;
 	}
 }
