@@ -151,7 +151,7 @@ void mobile_avg_confiability_new_value(MobileAverage * e, char val){
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 	int i, sum = 0;
 
-	if (e->pdr == 0 && ((loop_id - e->last_loop) == 0 || (loop_id - e->last_loop == 1))){
+	if (  ((loop_id - e->last_loop) == 0) || ((loop_id - e->last_loop) == 1)    ){
 		e->loops[e->l_idx] = 1;
 	}else{
 		e->loops[e->l_idx] = 0;
