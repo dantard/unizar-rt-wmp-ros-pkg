@@ -360,6 +360,7 @@ int queue_rx_pop_data(queue_t * q, unsigned int delay, unsigned int port, char *
 		WMP_ERROR(stderr,
 				" *** (RT-WMP) Pop port number (%d) out of range (%d), discarding\n", port, q->num_ports);
 		exclusive_on(q);
+
 		return -1;
 	}
 

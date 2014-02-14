@@ -236,16 +236,20 @@ public:
 
 	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri) {
 		char * p;
+
 		int idx = wmpPopData(port, &p, &size, &src1, &pri);
+		if (idx == -1 ){
+			wmpPopDataDone(idx);
+			return false;
+		}
 
 		size = size - sizeof(flow_t);
-		try {
-			if (!deserialize<T>(p + sizeof(flow_t), size, pm)) {
-				ROS_ERROR("Deserialize error\n");
-				wmpPopDataDone(idx);
-				return false;
-			}
-		} catch (...) {}
+		if (!deserialize<T>(p + sizeof(flow_t), size, pm)) {
+			ROS_ERROR("Deserialize error\n");
+			wmpPopDataDone(idx);
+			return false;
+		}
+
 		wmpPopDataDone(idx);
 		return true;
 	}
@@ -298,6 +302,7 @@ public:
 			}else{
 				flows_map[hash.str()].publisher.publish(pm);
 			}
+			fprintf(stdout,"%s\r",name);
 
 			ROSWMP_DEBUG(stderr, "Published (port:%d)\n!", port);
 		}

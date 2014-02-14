@@ -185,8 +185,11 @@ public:
 	}
 
 	template <typename Q> bool deserialize(char * p, int size, Q & pm){
+
 		memcpy(dbuff.get(), p, size);
+
 		ROSWMP_DEBUG(stderr, "DESERIALIZE SIZE: %d %s \n",size,name.c_str());
+
 		try {
 			ros::SerializedMessage smsg(dbuff, size);
 			ros::serialization::deserializeMessage<Q>(smsg, pm);
