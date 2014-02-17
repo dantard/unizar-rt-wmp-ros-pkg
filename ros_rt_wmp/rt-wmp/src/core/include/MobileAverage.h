@@ -48,10 +48,11 @@ typedef struct{
 	int idx;
 
 	int c_idx;
-	signed char conf[255];
+	int conf[255];
 
 	int l_idx;
-	signed char loops[255];
+	int loops[255];
+	int consecutive_loops_ok;
 
 	int pdr;
 	int rxr;
@@ -74,7 +75,7 @@ void mobile_avg_new_value(MobileAverage*e, char val);
 void mobile_avg_reset(MobileAverage* e);
 char mobile_avg_get_averaged_value(MobileAverage * e);
 unsigned long mobile_avg_get_age(MobileAverage * e);
-void mobile_avg_confiability_new_value(MobileAverage * e, char val);
+void mobile_avg_confiability_new_value(MobileAverage * e, int val);
 void mobile_avg_new_loop(MobileAverage* e, long loop_id);
 
 #endif /*RSSI_H_*/
