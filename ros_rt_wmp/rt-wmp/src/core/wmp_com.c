@@ -323,6 +323,7 @@ void wmpSendAck(wmpFrame * p){
 int vigilant_sleep(wmpFrame * p, wmpFrame * q){
 	int rtn;
 	status.highestSerial = q->hdr.serial;
+
 	rtn=ml_receive(q, q->hdr.sleep/1000); ///XXXX should be q
 	if (rtn==EXPIRED){
 		p->hdr.sleep = 0;

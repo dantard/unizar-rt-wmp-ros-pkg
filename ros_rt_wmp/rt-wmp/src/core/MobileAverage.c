@@ -152,12 +152,12 @@ void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 	int i, sum = 0;
-	if (((loop_id - e->last_loop) == 0) || ((loop_id - e->last_loop) == 1)){
+
+	if ((loop_id - e->net_loop_id) == 0){// || ((loop_id - e->last_loop) == 1)){
 		e->loops[e->l_idx] = 1;
 	}else{
 		e->loops[e->l_idx] = 0;
 	}
-	e->last_loop = loop_id;
 
 	mobile_avg_compute(e);
 

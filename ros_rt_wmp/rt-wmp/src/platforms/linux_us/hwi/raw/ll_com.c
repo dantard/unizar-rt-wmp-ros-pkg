@@ -564,7 +564,6 @@ rxInfo llreceive(char *f, int timeout) {
 		sem_wait(sem_rx);
 	}
 
-
 	if (!use_lo && use_mon) {
 		return pcap_sniff_packet(f, timeout);
 	} else {
@@ -578,10 +577,6 @@ rxInfo llreceive(char *f, int timeout) {
 		} else {
 			r = 1;
 		}
-
-//		if (r  && rand()%5 ==0){
-//			r = 0;
-//		}
 
 		if (r) {
 			int rlen = recvfrom(s, buffer, MTU, 0, 0, 0);

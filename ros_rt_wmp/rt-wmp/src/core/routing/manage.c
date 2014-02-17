@@ -234,7 +234,6 @@ int evaluate_token(wmpFrame * t) {
 					t->hdr.retries = 0;
 					t->hdr.type = TOKEN;
 					t->hdr.sleep = 0;
-					fprintf(stderr,"st1\n");
 					return SEND_TOKEN;
 				}
 			}
@@ -254,7 +253,6 @@ int evaluate_token(wmpFrame * t) {
 		t->hdr.sleep = 0;
 		status.highestSerial+=status.id*5;
 		/* I have the token but cannot see nothing */
-		fprintf(stderr,"nt2\n");
 		return NEW_TOKEN;
 	}
 
@@ -274,8 +272,6 @@ int evaluate_token(wmpFrame * t) {
 		if (1){
 			if (status.id != t->tkn.beginner && t->hdr.from != status.id) {//&& t->tkn.ack_hash != 0
 				nstat_clearReached(t->tkn.beginner);
-				//////fprintf(stderr,"Node %d et3\n", wmpGetNodeId());
-				fprintf(stderr,"et1\n");
 				return EVALUATE_TOKEN;
 			}
 		}
@@ -290,11 +286,9 @@ int evaluate_token(wmpFrame * t) {
 				}
 			}
 			/* if there is a message to transmit */
-			fprintf(stderr,"nt2\n");
 			return NEW_TOKEN;
 		} else {
 			/* Noone have to transmit nothing - Start a new PAP */
-			fprintf(stderr,"nt3\n");
 			return NEW_TOKEN;
 		}
 	} else {
@@ -331,7 +325,6 @@ int evaluate_token(wmpFrame * t) {
 			lqm_compute_prob(lqm_get_ptr());
 			for (i = 0; i < status.N_NODES; i++) {
 				if (i != status.id) {
-					fprintf(stderr,"nstat_isReached(%d)=%d\n",i,nstat_isReached(i));
 					if (!nstat_isReached(i) && !nstat_isLost(i)) {
 						if (lqm_prob_get_val(status.id, i) > best_prob) {
 							best_prob = lqm_prob_get_val(status.id, i);
@@ -368,7 +361,7 @@ int evaluate_token(wmpFrame * t) {
 			if (status.lr == UNDEF) {
 				t->hdr.sleep = 0;
 				status.highestSerial+=status.id*5;
-				fprintf(stderr,"nt4\n");
+
 				return NEW_TOKEN;
 			} else {
 				/* Going back */
@@ -377,7 +370,6 @@ int evaluate_token(wmpFrame * t) {
 				t->hdr.type = TOKEN;
 				//TODO: Study this situation
 				status.lr = UNDEF;
-				fprintf(stderr,"st5\n");
 				return SEND_TOKEN;
 			}
 			/* Execution cannot reach this point */
@@ -387,7 +379,6 @@ int evaluate_token(wmpFrame * t) {
 			t->hdr.to = selected;
 			t->hdr.retries = 0;
 			t->hdr.type = TOKEN;
-			fprintf(stderr,"st6 selected: %d\n", selected);
 			return SEND_TOKEN;
 		}
 	}
@@ -407,24 +398,15 @@ int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
 		status.retries++;
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
-		fprintf(stderr,"retry\n");
 
 		return RETRY;
 	} else {
-		fprintf(stderr,"retry-> nstat_isReached(%d)=%d\n",t->hdr.to,nstat_isReached(t->hdr.to));
-
 		nstat_setReached(t->hdr.to);
-
-		fprintf(stderr,"retry2-> nstat_isReached(%d)=%d\n",t->hdr.to,nstat_isReached(t->hdr.to));
-
 		status.retries = 0;
 		rssi_reset(t->hdr.to);
-
 		rssi_confiability_decrement(t->hdr.to);
 		lqm_set_val(status.id, t->hdr.to, rssi_get_averaged_rssi(t->hdr.to));
-
 		t->hdr.sleep = 0;
-		fprintf(stderr,"Set reached, et\n");
 		return EVALUATE_TOKEN;
 	}
 }
