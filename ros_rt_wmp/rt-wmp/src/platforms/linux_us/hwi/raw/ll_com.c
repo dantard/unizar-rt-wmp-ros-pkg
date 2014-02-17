@@ -371,9 +371,10 @@ int initLowLevelCom() {
 		initshmem();
 		char name[64];
 		sprintf(name, "sem_rx_%d", wmpGetNodeId());
-		sem_rx = sem_open(name, O_CREAT, S_IRUSR | S_IWUSR, 0);
-		sem_tx = sem_open("sem_tx", O_CREAT, S_IRUSR | S_IWUSR, 0);
-		sem_ack = sem_open("sem_ack", O_CREAT, S_IRUSR | S_IWUSR, 0);
+//XXX:UNCOMMENT FOR COORDINATOR
+//		sem_rx = sem_open(name, O_CREAT, S_IRUSR | S_IWUSR, 0);
+//		sem_tx = sem_open("sem_tx", O_CREAT, S_IRUSR | S_IWUSR, 0);
+//		sem_ack = sem_open("sem_ack", O_CREAT, S_IRUSR | S_IWUSR, 0);
 		return 1;
 	}
 
