@@ -40,9 +40,11 @@
 
 extern Status status;
 
-unsigned char CONF_ELEM;
+unsigned char CONFIABILITY_WINDOW;
 unsigned short LOOP_WINDOW;
+unsigned short LOOP_CONFIABILITY_PARAM;
 
+#define HUNDRED_PERCENT 100
 void mobile_avg_free(MobileAverage * e){
 	FREE(e->elem);
 }
@@ -50,8 +52,9 @@ void mobile_avg_free(MobileAverage * e){
 void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
 	int i;
 
-	CONF_ELEM = 50;
+	CONFIABILITY_WINDOW = 50;
 	LOOP_WINDOW = 50;
+	LOOP_CONFIABILITY_PARAM = 10;
 
 	e->elem=(char *) MALLOC(n_elements*sizeof(char));
 	e->n_elements=n_elements;
@@ -61,7 +64,7 @@ void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
 	e->avgd_value=0; /* or 0 better */
 	e->node_id = node_id;
 
-	for (i = 0; i< CONF_ELEM; i++){
+	for (i = 0; i< CONFIABILITY_WINDOW; i++){
 		e->conf[i] = 1;
 	}
 	e->c_idx = 0;
@@ -115,7 +118,7 @@ char mobile_avg_get_averaged_value(MobileAverage * e){
 //		val = 1;
 //	}
 
-	fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d\n",e->node_id,e->avgd_value, e->pdr, e->rxr, val);
+	fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d, consec_loops:%d \n",e->node_id,e->avgd_value, e->pdr, e->rxr, val,e->consecutive_loops_ok);
 
 	return (char) val;
 };
@@ -131,13 +134,13 @@ void mobile_avg_confiability_new_value(MobileAverage * e, int val){
 	int i, sum = 0;
 	e->conf[e->c_idx] = val;
 	e->c_idx++;
-	e->c_idx = e->c_idx<CONF_ELEM?e->c_idx:0;
+	e->c_idx = e->c_idx<CONFIABILITY_WINDOW?e->c_idx:0;
 
-	for (i = 0; i< CONF_ELEM; i++){
+	for (i = 0; i< CONFIABILITY_WINDOW; i++){
 			sum+= e->conf[i];
 	}
 
-	e->pdr = sum*100/CONF_ELEM>=0?sum*100/CONF_ELEM:0;
+	e->pdr = sum*100/CONFIABILITY_WINDOW>=0?sum*100/CONFIABILITY_WINDOW:0;
 }
 
 void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
@@ -161,12 +164,12 @@ void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 
 	mobile_avg_compute(e);
 
-	if (e->rxr == LOOP_WINDOW){
+	if (e->rxr == HUNDRED_PERCENT){
 		e->consecutive_loops_ok++;
 	}else{
 		e->consecutive_loops_ok = 0;
 	}
-	if (e->consecutive_loops_ok == 5){//XXX:number
+	if (e->consecutive_loops_ok == LOOP_WINDOW){//XXX:number
 		mobile_avg_confiability_new_value(e,1);
 		e->consecutive_loops_ok = 0;
 	}
