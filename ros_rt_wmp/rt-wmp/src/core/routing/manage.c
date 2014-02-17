@@ -217,7 +217,7 @@ int evaluate_token(wmpFrame * t) {
 		/* I'll send the frame (N.B. Used to see if I'm re-evaluating a frame or not)*/
 		t->hdr.from = status.id;
 
-	}
+	} //end: if ((t->hdr.from != status.id) || (t->hdr.type == FRESH_TOKEN))
 
 	/*control if I have to search someone --> does not depend on LQM*/
 	for (i = 0; i < status.N_NODES; i++) {
@@ -272,7 +272,7 @@ int evaluate_token(wmpFrame * t) {
 //XXX: MERGING
 		//force wc
 		if (1){
-			if (status.id != t->tkn.beginner ) {//&& t->tkn.ack_hash != 0
+			if (status.id != t->tkn.beginner && t->hdr.from != status.id) {//&& t->tkn.ack_hash != 0
 				nstat_clearReached(t->tkn.beginner);
 				//////fprintf(stderr,"Node %d et3\n", wmpGetNodeId());
 				fprintf(stderr,"et1\n");
