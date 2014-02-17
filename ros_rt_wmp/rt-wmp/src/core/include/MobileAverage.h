@@ -48,10 +48,10 @@ typedef struct{
 	int idx;
 
 	int c_idx;
-	char conf[255];
+	signed char conf[255];
 
 	int l_idx;
-	char loops[255];
+	signed char loops[255];
 
 	int pdr;
 	int rxr;
