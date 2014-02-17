@@ -331,6 +331,7 @@ int evaluate_token(wmpFrame * t) {
 			lqm_compute_prob(lqm_get_ptr());
 			for (i = 0; i < status.N_NODES; i++) {
 				if (i != status.id) {
+					fprintf(stderr,"nstat_isReached(%d)=%d\n",i,nstat_isReached(i));
 					if (!nstat_isReached(i) && !nstat_isLost(i)) {
 						if (lqm_prob_get_val(status.id, i) > best_prob) {
 							best_prob = lqm_prob_get_val(status.id, i);
@@ -386,7 +387,7 @@ int evaluate_token(wmpFrame * t) {
 			t->hdr.to = selected;
 			t->hdr.retries = 0;
 			t->hdr.type = TOKEN;
-			fprintf(stderr,"st6\n");
+			fprintf(stderr,"st6 selected: %d\n", selected);
 			return SEND_TOKEN;
 		}
 	}
@@ -410,7 +411,12 @@ int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
 
 		return RETRY;
 	} else {
+		fprintf(stderr,"retry-> nstat_isReached(%d)=%d\n",t->hdr.to,nstat_isReached(t->hdr.to));
+
 		nstat_setReached(t->hdr.to);
+
+		fprintf(stderr,"retry2-> nstat_isReached(%d)=%d\n",t->hdr.to,nstat_isReached(t->hdr.to));
+
 		status.retries = 0;
 		rssi_reset(t->hdr.to);
 
