@@ -104,7 +104,7 @@ int main(int argc, char* argv[]){
 		fprintf(stderr,"Use: %s id num_of_nodes size beluga\n",argv[0]);
 		return 0;
 	}
-	wmpSetup(atoi(argv[1]), atoi(argv[2]))
+	wmpSetup(atoi(argv[1]), atoi(argv[2]));
 	wmpRun();
 
 	m_size = atoi(argv[3]);
