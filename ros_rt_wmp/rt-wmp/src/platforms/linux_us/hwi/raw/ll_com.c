@@ -591,7 +591,11 @@ rxInfo llreceive(char *f, int timeout) {
 			ret.error = 0;
 			ret.rate = 10;
 			ret.has_lq = 0;
-			//ret.rssi = f[0];
+			int rssi = f[0];
+			rssi = rssi*125/100;
+			rssi = rssi>99?99:rssi;
+			rssi = rssi<1?1:rssi;
+			f[0] = (char) rssi;
 		} else {
 			ret.error = 1;
 			return ret;
