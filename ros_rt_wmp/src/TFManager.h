@@ -183,7 +183,7 @@ public:
 					if (size > 0) {
 						int dest = computeBroadcastDest();
 
-						wmpPushData(port, sbuff, size, dest, 99);
+						wmpPushData(port, sbuff, size, dest, flow_prio);
 					}
 				}
 			}
