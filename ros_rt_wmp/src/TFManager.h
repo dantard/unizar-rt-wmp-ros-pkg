@@ -85,8 +85,7 @@ public:
 		if (amIsrc){
 			sub = n->subscribe(name, 10, &TFManager::callback, this);
 			boost::thread(boost::bind(&TFManager::run, this));
-			ROS_INFO("TF Tx subscribed (%s)",name.c_str());
-			fprintf(stderr,"TF SUBSCR\n");
+			ROS_INFO("Subscribed to TF (%s)",name.c_str());
 		}
 		if (amIdst){
 			boost::thread(boost::bind(&TFManager::waitNetData, this));
@@ -99,13 +98,13 @@ public:
 		std::vector< geometry_msgs::TransformStamped > ros_vec;
 		ros_vec = message->transforms;
 
-		fprintf(stderr,"TF CB\n");
-
 		std::string tf_prefix;
 		bool found = n->getParamCached("/tf_prefix",tf_prefix);
 
 		if (!found){
-			ROS_WARN("Please specify a tf_prefix present: %s",tf_prefix.c_str());
+			ROS_WARN_ONCE("Parameter /tf_prefix NOT set, problems ahead...");
+		}else{
+			ROS_INFO_ONCE("Parameter /tf_prefix: %s",tf_prefix.c_str());
 		}
 		if (ros_vec.at(0).header.frame_id.find(tf_prefix)!=std::string::npos or ros_vec.at(0).child_frame_id.find(tf_prefix) != std::string::npos){
 			std::string s = ros_vec.at(0).header.frame_id + "-" + ros_vec.at(0).child_frame_id;
@@ -128,14 +127,14 @@ public:
 
 		while (1){
 			int offset = 0;
-			fprintf(stderr,"Popping msg\n");
+			ROSWMP_DEBUG(stderr,"Popping msg\n");
 			int id = wmpPopData(port,&rxbuff,&size,&src,&priority);
-			fprintf(stderr,"Popped msg of size: %d\n",size);
+			ROSWMP_DEBUG(stderr,"Popped msg of size: %d\n",size);
 			flow_t * fw = (flow_t *) rxbuff;
 			int npaks = fw->npaks;
 			for (int i = 0; i < npaks ; i++){
 				fw = (flow_t *) (rxbuff + offset);
-				fprintf(stderr,"Publish %dth TF data fw->len = %d offset = %d size: %d, port %d \n", i, fw->len, offset, size,port );
+				ROSWMP_DEBUG(stderr,"Publish %dth TF data fw->len = %d offset = %d size: %d, port %d \n", i, fw->len, offset, size,port );
 				//m.deserialize((uint8_t*) (buff + offset + sizeof(flow_t)));
 				if (!deserialize<tf::tfMessage>(rxbuff + offset + sizeof(flow_t),fw->len,m)){
 					break;
@@ -183,6 +182,7 @@ public:
 
 					if (size > 0) {
 						int dest = computeBroadcastDest();
+
 						wmpPushData(port, sbuff, size, dest, 99);
 					}
 				}
