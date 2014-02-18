@@ -179,7 +179,6 @@ public:
 					}
 					flow_t * fw = (flow_t *) (sbuff);
 					fw->npaks = npaks;
-
 					if (size > 0) {
 						int dest = computeBroadcastDest();
 
