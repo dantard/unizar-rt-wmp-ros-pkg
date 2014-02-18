@@ -42,7 +42,6 @@ extern Status status;
 
 unsigned char CONFIABILITY_WINDOW;
 unsigned short LOOP_WINDOW;
-unsigned short LOOP_CONFIABILITY_PARAM;
 
 #define HUNDRED_PERCENT 100
 void mobile_avg_free(MobileAverage * e){
@@ -52,9 +51,8 @@ void mobile_avg_free(MobileAverage * e){
 void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
 	int i;
 
-	CONFIABILITY_WINDOW = 50;
+	CONFIABILITY_WINDOW = 100;
 	LOOP_WINDOW = 50;
-	LOOP_CONFIABILITY_PARAM = 10;
 
 	e->elem=(char *) MALLOC(n_elements*sizeof(char));
 	e->n_elements=n_elements;
@@ -127,7 +125,6 @@ unsigned long mobile_avg_get_age(MobileAverage * e){
    return (DO_DIV64(getRawActualTimeus(),1000) - DO_DIV64(e->seen,1000)) ;
 };
 
-
 /* CONFIABILITY*/
 
 void mobile_avg_confiability_new_value(MobileAverage * e, int val){
@@ -139,9 +136,10 @@ void mobile_avg_confiability_new_value(MobileAverage * e, int val){
 	for (i = 0; i< CONFIABILITY_WINDOW; i++){
 			sum+= e->conf[i];
 	}
-
 	e->pdr = sum*100/CONFIABILITY_WINDOW>=0?sum*100/CONFIABILITY_WINDOW:0;
 }
+
+/* LOOPS */
 
 void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
 	if (loop_id != e->net_loop_id){
@@ -154,13 +152,8 @@ void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
 }
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
-	int i, sum = 0;
 
-	if ((loop_id - e->net_loop_id) == 0){// || ((loop_id - e->last_loop) == 1)){
-		e->loops[e->l_idx] = 1;
-	}else{
-		e->loops[e->l_idx] = 0;
-	}
+	e->loops[e->l_idx] = 1;
 
 	mobile_avg_compute(e);
 
@@ -169,7 +162,7 @@ void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 	}else{
 		e->consecutive_loops_ok = 0;
 	}
-	if (e->consecutive_loops_ok == LOOP_WINDOW){//XXX:number
+	if (e->consecutive_loops_ok == LOOP_WINDOW){
 		mobile_avg_confiability_new_value(e,1);
 		e->consecutive_loops_ok = 0;
 	}

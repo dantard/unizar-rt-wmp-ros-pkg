@@ -51,6 +51,7 @@ char rssi_get_averaged_rssi(unsigned char id);
 unsigned long rssi_get_age(unsigned char id);
 void rssi_confiability_increment(unsigned char id);
 void rssi_confiability_decrement(unsigned char id);
+void rssi_new_loop(unsigned char id, long loop_id);
 
 
 #endif /*RSSI_AVERAGE_H_*/

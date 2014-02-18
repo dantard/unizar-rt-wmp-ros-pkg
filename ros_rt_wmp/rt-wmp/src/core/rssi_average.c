@@ -70,10 +70,10 @@ void rssi_confiability_increment(unsigned char id){
 
 void rssi_new_loop(unsigned char id, long loop_id){
 	int i;
-	for (i=0; i< wmpGetNumOfNodes();i++){
-		mobile_avg_new_loop_tick(rssi[i],loop_id);
+	for (i = 0; i < wmpGetNumOfNodes(); i++) {
+		mobile_avg_new_loop_tick(rssi[i], loop_id);
 	}
-	mobile_avg_new_loop(rssi[id],loop_id);
+	mobile_avg_new_loop(rssi[id], loop_id);
 }
 
 void rssi_reset(unsigned char id){
