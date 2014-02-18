@@ -68,7 +68,7 @@
 #define WMP_SERVICE(name,type)                   m = new WMPServiceManager<type> (n, port, std::string(name)); \
 								                 w->addManager(name, m); port+=2;
 
-#define TOPIC_TF(src,dest)            			 m = new TFManager(n, port, src, dest, false) ; \
+#define TOPIC_TF(src,dest, prio)       			 m = new TFManager(n, port, src, dest, prio, false) ; \
 						                         w->addManager("/tf", m); port++;
 
 #define DYNAMIC_TOPIC_TF(src)         			 m = new TFManager(n, port, src, false) ; \
