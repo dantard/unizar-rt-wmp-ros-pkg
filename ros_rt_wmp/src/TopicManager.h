@@ -302,7 +302,7 @@ public:
 			}else{
 				flows_map[hash.str()].publisher.publish(pm);
 			}
-			fprintf(stdout,"Publishing: %s                         \r",name.c_str());
+			///XXX: fprintf(stdout,"Publishing: %s                         \r",name.c_str());
 			fflush(stdout);
 
 			ROSWMP_DEBUG(stderr, "Published (port:%d)\n!", port);

@@ -58,7 +58,7 @@ TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5);
 TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1", 10);
 
-TOPIC_TF("1","0", 3);
+TOPIC_TF("0","1", 3);
 
 DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 2);
 

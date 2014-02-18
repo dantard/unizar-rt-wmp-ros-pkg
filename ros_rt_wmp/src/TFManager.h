@@ -86,6 +86,7 @@ public:
 			sub = n->subscribe(name, 10, &TFManager::callback, this);
 			boost::thread(boost::bind(&TFManager::run, this));
 			ROS_INFO("TF Tx subscribed (%s)",name.c_str());
+			fprintf(stderr,"TF SUBSCR\n");
 		}
 		if (amIdst){
 			boost::thread(boost::bind(&TFManager::waitNetData, this));
@@ -96,7 +97,10 @@ public:
 	void callback(const boost::shared_ptr<tf::tfMessage const> & message) {
 		pthread_mutex_lock(&mtx);
 		std::vector< geometry_msgs::TransformStamped > ros_vec;
-//		message->get_transforms_vec (ros_vec);
+		ros_vec = message->transforms;
+
+		fprintf(stderr,"TF CB\n");
+
 		std::string tf_prefix;
 		bool found = n->getParamCached("/tf_prefix",tf_prefix);
 
@@ -124,14 +128,14 @@ public:
 
 		while (1){
 			int offset = 0;
-			ROSWMP_DEBUG(stderr,"Popping msg\n");
+			fprintf(stderr,"Popping msg\n");
 			int id = wmpPopData(port,&rxbuff,&size,&src,&priority);
-			ROSWMP_DEBUG(stderr,"Popped msg of size: %d\n",size);
+			fprintf(stderr,"Popped msg of size: %d\n",size);
 			flow_t * fw = (flow_t *) rxbuff;
 			int npaks = fw->npaks;
 			for (int i = 0; i < npaks ; i++){
 				fw = (flow_t *) (rxbuff + offset);
-				ROSWMP_DEBUG(stderr,"Publish %dth TF data fw->len = %d offset = %d size: %d\n", i, fw->len, offset, size);
+				fprintf(stderr,"Publish %dth TF data fw->len = %d offset = %d size: %d, port %d \n", i, fw->len, offset, size,port );
 				//m.deserialize((uint8_t*) (buff + offset + sizeof(flow_t)));
 				if (!deserialize<tf::tfMessage>(rxbuff + offset + sizeof(flow_t),fw->len,m)){
 					break;

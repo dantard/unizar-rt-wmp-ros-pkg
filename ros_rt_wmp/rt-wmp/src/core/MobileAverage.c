@@ -116,7 +116,7 @@ char mobile_avg_get_averaged_value(MobileAverage * e){
 //		val = 1;
 //	}
 
-	fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d, consec_loops:%d \n",e->node_id,e->avgd_value, e->pdr, e->rxr, val,e->consecutive_loops_ok);
+	//fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d, consec_loops:%d \n",e->node_id,e->avgd_value, e->pdr, e->rxr, val,e->consecutive_loops_ok);
 
 	return (char) val;
 };
