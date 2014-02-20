@@ -116,6 +116,7 @@ int main(int argc, char** argv) {
 
 	ros::NodeHandle n(ns);
 
+	message_publisher = n.advertise<ros_rt_wmp_msgs::WMPMessageInfo>("messages",1,true);
 	WMPNodeManager w(&n, 2, std::string("wmp_control"));
 
 	define_objects(&n,&w);
@@ -124,7 +125,6 @@ int main(int argc, char** argv) {
 	if (wmpIsKernelSpace()){
 		printf("Node %s with id %d of %d is running.\n",name, wmpGetNodeId(), wmpGetNumOfNodes());
 	}
-	message_publisher = n.advertise<ros_rt_wmp_msgs::WMPFrames>("messages",1,true);
 	wmpSetMessageCallback(message_callback);
 
 	ros::spin();
