@@ -74,7 +74,8 @@ void message_callback(wmpFrame * q){
 	v.serial = q->hdr.serial;
 	v.loop_id = q->hdr.loop_id;
 	v.header.stamp = ros::Time::now();
-	v.src = q->hdr.from;
+	v.src = q->msg.src;
+	v.from = q->hdr.from;
 	v.dest = q->msg.dest;
 	v.message_part_id  = q->msg.part_id;
 	v.age = q->msg.age;
