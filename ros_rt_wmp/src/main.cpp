@@ -78,7 +78,9 @@ void message_callback(wmpFrame * q){
 	v.dest = q->msg.dest;
 	v.message_part_id  = q->msg.part_id;
 	v.age = q->msg.age;
-	publisher.publish(v);
+	v.prio = q->msg.priority;
+	v.size = q->msg.len;
+	message_publisher.publish(v);
 }
 
 int main(int argc, char** argv) {

@@ -1,9 +1,12 @@
 Header header
+uint8 from
+uint8 src
 uint32 serial
 uint32 loop_id
-int32 age
-uint8 rx_rssi
-uint8 src
-uint8 from
 uint32 dest
+uint8 rx_rssi
+int32 age
+int8 prio
+int32 size
+int32 priority
 int32 message_part_id
