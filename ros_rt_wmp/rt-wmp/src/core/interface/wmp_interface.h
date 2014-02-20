@@ -40,7 +40,7 @@
 #include <stdarg.h>
 #include "wmp_config.h"
 #include "Msg.h"
-
+#include "../include/frames.h"
 
 
 /* Queues*/
@@ -271,5 +271,6 @@ void wmpForceBurst(int port);
 int  wmpGetLatestDistances(char * dist);
 
 char lqm_get_val(int i, int j);
+void wmpSetMessageCallback( void (*f) (wmpFrame *));
 #endif
 

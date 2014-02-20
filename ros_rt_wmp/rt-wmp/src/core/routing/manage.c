@@ -748,6 +748,11 @@ int create_message(wmpFrame * t) {
 FILE * p = 0;
 
 
+static void (*msg_cb) (Message *)=0;
+
+void wmpSetMessageCallback( void (*f) (wmpFrame *)){
+	msg_cb = f;
+}
 
 int enqueue_message(wmpFrame * t) {
 
@@ -757,6 +762,10 @@ int enqueue_message(wmpFrame * t) {
 	if (t->msg.part_id==-1){
 		fprintf(p,"00000000%d %3d %d %d %4d %llu\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus());
 		fflush(p);
+	}
+
+	if (msg_cb != 0){
+		msg_cb(t);
 	}
 
 	static longMsg_t m;
@@ -772,4 +781,6 @@ int enqueue_message(wmpFrame * t) {
 	wmp_queue_rx_push_part(&m);
 	return NEW_TOKEN;
 }
+
+
 

@@ -46,6 +46,7 @@
 #include "TFManager.h"
 #include "WMPNodeManager.h"
 #include "argon.h"
+#include <ros_rt_wmp_msgs/WMPMessageInfo.h>
 
 extern "C" {
 #include "core/include/frames.h"
@@ -53,7 +54,9 @@ extern "C" {
 }
 #define FRAME_INFO
 
+static ros::Publisher message_publisher;
 static ros::Publisher publisher;
+
 void received(int *rtnCode, wmpFrame *p, wmpFrame*q) {
 	static ros_rt_wmp_msgs::WMPFrames v;
 	v.rssi = q->hdr.rssi;
@@ -62,6 +65,19 @@ void received(int *rtnCode, wmpFrame *p, wmpFrame*q) {
 	v.loop_id = q->hdr.loop_id;
 	v.header.stamp = ros::Time::now();
 	v.source = q->hdr.from;
+	publisher.publish(v);
+}
+
+void message_callback(wmpFrame * q){
+	static ros_rt_wmp_msgs::WMPMessageInfo v;
+	v.rx_rssi = q->hdr.rssi;
+	v.serial = q->hdr.serial;
+	v.loop_id = q->hdr.loop_id;
+	v.header.stamp = ros::Time::now();
+	v.src = q->hdr.from;
+	v.dest = q->msg.dest;
+	v.message_part_id  = q->msg.part_id;
+	v.age = q->msg.age;
 	publisher.publish(v);
 }
 
@@ -108,6 +124,9 @@ int main(int argc, char** argv) {
 	if (wmpIsKernelSpace()){
 		printf("Node %s with id %d of %d is running.\n",name, wmpGetNodeId(), wmpGetNumOfNodes());
 	}
+	message_publisher = n.advertise<ros_rt_wmp_msgs::WMPFrames>("messages",1,true);
+	wmpSetMessageCallback(message_callback);
+
 	ros::spin();
 	return 0;
 
