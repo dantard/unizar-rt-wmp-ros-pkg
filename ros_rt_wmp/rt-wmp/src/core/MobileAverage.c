@@ -141,6 +141,16 @@ void mobile_avg_confiability_new_value(MobileAverage * e, int val){
 
 /* LOOPS */
 
+void mobile_avg_compute(MobileAverage * e){
+	int i, sum = 0;
+	for (i = 0; i< LOOP_WINDOW; i++){
+		sum+= e->loops[i];
+	}
+
+	e->rxr = sum*100/LOOP_WINDOW>=0?sum*100/LOOP_WINDOW:0;
+}
+
+
 void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
 	if (loop_id != e->net_loop_id){
 		e->l_idx ++;
@@ -168,11 +178,4 @@ void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
 	}
 }
 
-void mobile_avg_compute(MobileAverage * e){
-	int i, sum = 0;
-	for (i = 0; i< LOOP_WINDOW; i++){
-		sum+= e->loops[i];
-	}
 
-	e->rxr = sum*100/LOOP_WINDOW>=0?sum*100/LOOP_WINDOW:0;
-}
