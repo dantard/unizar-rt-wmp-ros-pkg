@@ -748,7 +748,7 @@ int create_message(wmpFrame * t) {
 FILE * p = 0;
 
 
-static void (*msg_cb) (Message *)=0;
+static void (*msg_cb) (wmpFrame *)=0;
 
 void wmpSetMessageCallback( void (*f) (wmpFrame *)){
 	msg_cb = f;
