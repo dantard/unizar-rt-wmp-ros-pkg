@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.4.6)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
-cmake_policy(SET CMP0015 NEW)
+cmake_policy(SET CMP0015 NEW )
 
 rosbuild_init()
 
