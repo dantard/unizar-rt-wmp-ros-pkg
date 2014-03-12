@@ -221,6 +221,8 @@ int wmpInit(void) {
 	return TRUE;
 }
 
+FILE * fp = 0;
+
 #ifndef __KERNEL__
 	void* main_loop(void* param) {
 #else
@@ -243,8 +245,12 @@ int wmpInit(void) {
 #endif
 		state = rtnCode;
 		status.serial = p->hdr.serial;
+		if (fp==0){
+			fp = fopen("rt-wmp-states.dat","a+");
+		}
+		fprintf(fp,"%d %d %d",rtnCode, p->hdr.from, p->hdr.to);
+		fflush(fp);
 
-		//fprintf(stderr, "%d ", rtnCode);
 		switch (rtnCode) {
 		case RECEIVE:
 			rtnCode = wmpReceive(q);
