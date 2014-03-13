@@ -49,6 +49,8 @@ protected:
 	int counter;
 	ros::Publisher loop_publisher;
 	unsigned int queue_size, period;
+	T * emergency;
+	bool isQoS, isWatchdog, topic_initied;
 public:
 
 	TopicManager(ros::NodeHandle * n, int port, std::string name,
@@ -70,7 +72,22 @@ public:
 		init();
 		queue_size = _queue_size;
 		period = _period;
+		isQoS = true;
 	}
+
+	TopicManager(ros::NodeHandle * n, int port, std::string name,
+			std::string source, std::string destination, unsigned char priority, int _period, T * _emergency) :
+		Manager(n, port, name, priority) {
+		amIstatic = true;
+		setSource(source);
+		setDestination(destination);
+		init();
+		period = _period;
+		emergency = _emergency;
+		isWatchdog = true;
+	}
+
+
 	TopicManager(ros::NodeHandle * n, int port, std::string name, std::string source, unsigned char priority, bool broadcast) :
 		Manager(n, port, name, priority) {
 		amIstatic = false;
@@ -97,7 +114,7 @@ public:
 			while(buffer.size() > queue_size ){
 				buffer.erase(buffer.begin());
 			}
-			usleep(period);
+			usleep(period*1000);
 		}
 	}
 
@@ -108,10 +125,9 @@ public:
 			ROSWMP_DEBUG(stderr,"Queue subscribed (%s) port : %d", name.c_str(), port);
 
 			boost::thread(boost::bind(&Manager::run, this));
-			if (queue_size > 0){
+			if (isQoS > 0){
 				boost::thread(boost::bind(&TopicManager::pub_loop, this));
 			}
-
 		}
 	}
 
@@ -144,6 +160,9 @@ public:
 		counter = 1;
 		queue_size = 0;
 		period = 0;
+		isQoS = false;
+		isWatchdog = false;
+		topic_initied = false;
 	}
 
 	bool shouldDecimate(){
@@ -237,10 +256,24 @@ public:
 	virtual bool popMessage(T & pm, unsigned int & size, unsigned char & src1, signed char & pri) {
 		char * p;
 
-		int idx = wmpPopData(port, &p, &size, &src1, &pri);
+		int idx;
+		if (!isWatchdog || !topic_initied){
+			idx = wmpPopData(port, &p, &size, &src1, &pri);
+		}else{
+			idx = wmpPopDataTimeout(port, &p, &size, &src1, &pri, period);
+		}
+
 		if (idx == -1 ){
-			wmpPopDataDone(idx);
-			return false;
+			if (!isWatchdog){
+				wmpPopDataDone(idx);
+				return false;
+			}else{
+				wmpPopDataDone(idx);
+				pm = *emergency;
+				ROS_WARN("Whatchdog raised on topic %s\n", name.c_str());
+
+				return true;
+			}
 		}
 
 		size = size - sizeof(flow_t);
@@ -297,10 +330,11 @@ public:
 				sleep(1);
 			}
 
-			if (queue_size > 0){
+			if (isQoS > 0){
 				buffer.push_back(pm);
 			}else{
 				flows_map[hash.str()].publisher.publish(pm);
+				topic_initied = true;
 			}
 			///XXX: fprintf(stdout,"Publishing: %s                         \r",name.c_str());
 			fflush(stdout);

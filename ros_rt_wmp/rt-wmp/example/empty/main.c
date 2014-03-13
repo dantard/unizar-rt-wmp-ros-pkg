@@ -112,7 +112,7 @@ int main(int argc, char* argv[]){
 	setBeluga(beluga);
 
 	pthread_t th1, th2;
-	if (wmpGetNodeId()==(wmpGetNumOfNodes()-1)) 	{
+	if (wmpGetNodeId()==(wmpGetNumOfNodes()-1)){
 		pthread_create(&th1,0,fthread_tx,0);
 	}	
 	pthread_create(&th2,0,fthread_rx,0);

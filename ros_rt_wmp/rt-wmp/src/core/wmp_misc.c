@@ -232,7 +232,7 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->quiet=0;
 	s->mobile_average_elements=50;
 	s->acknow=-1;
-	s->TIMEOUT=100;
+	s->TIMEOUT=50;
 	s->rx_queue_elements=50;
 	s->tx_queue_elements=50;
 	s->rssi_rising_factor=3;

@@ -54,9 +54,9 @@ BEGIN_TOPIC_DEFINITION
 //QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 
 TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1);
-TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
+//TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5);
-TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1", 10);
+WHATCHDOG_TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1",10, 1000, new geometry_msgs::Twist());
 
 TOPIC_TF("1","0", 3);
 
