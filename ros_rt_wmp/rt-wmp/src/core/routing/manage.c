@@ -754,13 +754,27 @@ void wmpSetMessageCallback( void (*f) (wmpFrame *)){
 	msg_cb = f;
 }
 
+void getTimedFilename(char * str_time) {
+	struct tm *tm;
+	time_t t;
+	t = time(NULL);
+	tm = localtime(&t);
+	strftime(str_time, 256, "%H_%M_%S_%d_%m_%Y", tm);
+}
+
+
 int enqueue_message(wmpFrame * t) {
 
 	if (p==0){
-		p = fopen("rt-wmp-messages.dat","w+");
+		char filename[256];
+		char time[256];
+		getTimedFilename(time);
+		sprintf(filename,"rt-wmp-messages-%s.dat",time);
+		p = fopen(filename,"w+");
 	}
+
 	if (t->msg.part_id==-1){
-		fprintf(p,"00000000%d %3d %d %d %4d %llu\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus());
+		fprintf(p,"00000000%d %3d %d %d %4d %llu %d\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus(), t->msg.age);
 		fflush(p);
 	}
 
