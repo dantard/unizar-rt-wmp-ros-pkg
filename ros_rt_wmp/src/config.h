@@ -55,10 +55,10 @@ BEGIN_TOPIC_DEFINITION
 
 TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
-TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5);
-WHATCHDOG_TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1",10, 1000, new geometry_msgs::Twist());
+TOPIC("scan", sensor_msgs::LaserScan, "1,2", "0", 5);
+WHATCHDOG_TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1,2",10, 1000, new geometry_msgs::Twist());
 
-TOPIC_TF("1","0", 3);
+TOPIC_TF("1,2","0", 3);
 
 DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 2);
 
