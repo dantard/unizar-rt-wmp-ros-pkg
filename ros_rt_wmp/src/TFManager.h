@@ -56,6 +56,8 @@ class TFManager: public Manager {
 		ros::Time ts;
 	};
 	std::map<std::string, info_t> tf_map;
+	std::vector<std::string> transforms;
+
 	ros::Subscriber sub;
 	pthread_mutex_t mtx;
 public:
@@ -108,11 +110,28 @@ public:
 		}
 		if (ros_vec.at(0).header.frame_id.find(tf_prefix)!=std::string::npos or ros_vec.at(0).child_frame_id.find(tf_prefix) != std::string::npos){
 			std::string s = ros_vec.at(0).header.frame_id + "-" + ros_vec.at(0).child_frame_id;
-			tf_map[s].tfm = *message;
-			tf_map[s].sent = false;
-			tf_map[s].ts = ros::Time::now();
+
+			bool add = true;
+			if (transforms.size()!=0){
+				add = false;
+				for (unsigned i= 0; i<transforms.size(); i++){
+					bool from = (transforms.at(i).find(ros_vec.at(0).header.frame_id)!=std::string::npos);
+					bool to = (transforms.at(i).find(ros_vec.at(0).child_frame_id))!=std::string::npos;
+					if (from && to){
+						add = true;
+						break;
+					}
+				}
+			}
+
+			if (add){
+				//fprintf(stderr,"Node %d enqueing: %s\n", wmpGetNodeId(), s.c_str());
+				tf_map[s].tfm = *message;
+				tf_map[s].sent = false;
+				tf_map[s].ts = ros::Time::now();
+			}
 		}else{
-			ROSWMP_DEBUG(stderr,"Discarding foreign prefix %s", tf_prefix.c_str());
+			fprintf(stderr,"Discarding foreign prefix %s", tf_prefix.c_str());
 		}
 		pthread_mutex_unlock(&mtx);
 	}
@@ -148,6 +167,11 @@ public:
 			wmpPopDataDone(id);
 		}
 	}
+
+	void filter(std::string from){
+		transforms.push_back(from);
+	}
+
 	void run(){
 		while (1){
 			pthread_mutex_lock(&mtx);

@@ -42,7 +42,7 @@
 #include <std_msgs/Float64.h>
 #include <roscpp_tutorials/TwoInts.h>
 #include <theora_image_transport/Packet.h>
-#include <audio_common_msgs/AudioData.h>
+//#include <audio_common_msgs/AudioData.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Image.h>
@@ -52,13 +52,17 @@ BEGIN_TOPIC_DEFINITION
 
 //QOS_TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1, 5, 250000);
 //QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
+//TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
 
 TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 TOPIC("scan", sensor_msgs::LaserScan, "1,2", "0", 5);
-WHATCHDOG_TOPIC("cmd_vel", geometry_msgs::Twist, "0", "1,2",10, 1000, new geometry_msgs::Twist());
+WHATCHDOG_TOPIC("joy_twist_r1", geometry_msgs::Twist, "0", "1",10, 1000, new geometry_msgs::Twist());
+WHATCHDOG_TOPIC("joy_twist_r2", geometry_msgs::Twist, "0", "2",10, 1000, new geometry_msgs::Twist());
 
 TOPIC_TF("1,2","0", 3);
+TF_FILTER("/R2/odom->/R2/base_link");
+TF_FILTER("/R1/odom->/R1/base_link");
 
 DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 2);
 

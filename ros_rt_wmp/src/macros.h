@@ -74,6 +74,8 @@
 #define TOPIC_TF(src,dest, prio)       			 m = new TFManager(n, port, src, dest, prio, false) ; \
 						                         w->addManager("/tf", m); port++;
 
+#define TF_FILTER(name)       					 ((TFManager*) m)->filter(name);
+
 #define DYNAMIC_TOPIC_TF(src)         			 m = new TFManager(n, port, src, false) ; \
 						                         w->addManager("/tf", m); port++;
 
