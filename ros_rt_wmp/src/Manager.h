@@ -41,7 +41,7 @@
 #include <sstream>
 #include <vector>
 #include <boost/algorithm/string.hpp>
-
+#include <zlib.h>
 extern "C" {
 #include "core/interface/wmp_interface.h"
 #include "core/interface/Msg.h"
@@ -185,8 +185,13 @@ public:
 	}
 
 	template <typename Q> bool deserialize(char * p, int size, Q & pm){
-
-		memcpy(dbuff.get(), p, size);
+		unsigned long int uzsize =MAX_DATA_SIZE;
+		int res = uncompress(dbuff.get(),&uzsize,(const Bytef*)p,size);
+		if (res ==Z_OK){
+			size = uzsize;
+		}else{
+			memcpy(dbuff.get(), p, size);
+		}
 
 		ROSWMP_DEBUG(stderr, "DESERIALIZE SIZE: %d %s \n",size,name.c_str());
 
@@ -210,12 +215,27 @@ public:
 	}
 	template <typename P> int serialize(char * p, const boost::shared_ptr<P const> & pm){
 		ros::SerializedMessage sbuffer = ros::serialization::serializeMessage<P>(*pm);
+
+		unsigned long int zsize = MAX_DATA_SIZE;
+		int res = compress(p,&zsize,sbuffer.message_start,sbuffer.num_bytes);
+		if (res == Z_OK){
+			return zsize;
+		}
+
+
 		memcpy(p,sbuffer.message_start,sbuffer.num_bytes);
 		return sbuffer.num_bytes;
 	}
 
 	template <typename P> int serialize(char * p, P & pm){
 		ros::SerializedMessage sbuffer = ros::serialization::serializeMessage<P>(pm);
+
+		unsigned long int zsize = MAX_DATA_SIZE;
+		int res = compress(p,&zsize,sbuffer.message_start,sbuffer.num_bytes);
+		if (res == Z_OK){
+			return zsize;
+		}
+
 		memcpy(p,sbuffer.message_start,sbuffer.num_bytes);
 		return sbuffer.num_bytes;
 	}
