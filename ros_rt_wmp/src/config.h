@@ -67,9 +67,9 @@ TF_FILTER("/R2/odom->/R2/base_link");
 TF_FILTER("/R1/odom->/R1/base_link");
 TF_FILTER("/R3/odom->/R3/base_link");
 
-SERVICE("/R1/RunNavigation_r1",tunnel_navigation::RunNavigation,1, 12);
-SERVICE("RunNavigation_r2",tunnel_navigation::RunNavigation,2, 12);
-SERVICE("RunNavigation_r3",tunnel_navigation::RunNavigation,3, 12);
+SERVICE("RunNavigation",tunnel_navigation::RunNavigation,1, 12);
+SERVICE("RunNavigation",tunnel_navigation::RunNavigation,2, 12);
+SERVICE("RunNavigation",tunnel_navigation::RunNavigation,3, 12);
 
 DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 2);
 
