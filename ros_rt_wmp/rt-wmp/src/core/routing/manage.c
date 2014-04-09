@@ -269,7 +269,7 @@ int evaluate_token(wmpFrame * t) {
 
 //XXX: MERGING
 		//force wc
-		if (1){
+		if (0){
 			if (status.id != t->tkn.beginner && t->hdr.from != status.id) {//&& t->tkn.ack_hash != 0
 				nstat_clearReached(t->tkn.beginner);
 				return EVALUATE_TOKEN;
