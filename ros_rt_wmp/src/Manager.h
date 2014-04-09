@@ -186,14 +186,15 @@ public:
 
 	template <typename Q> bool deserialize(char * p, int size, Q & pm){
 
-		unsigned long int uzsize =MAX_DATA_SIZE;
+/*		unsigned long int uzsize =MAX_DATA_SIZE;
 		ROSWMP_DEBUG(stderr,"Before UNcompressing: %d\n",size);
 		int res = uncompress((Bytef *)dbuff.get(),&uzsize,(const Bytef*)p,size);
 		if (res ==Z_OK){
 			size = uzsize;
 		}
-		else
-			memcpy(dbuff.get(), p, size);
+		else*/
+
+		memcpy(dbuff.get(), p, size);
 
 		ROSWMP_DEBUG(stderr, "DESERIALIZE SIZE: %d %s \n",size,name.c_str());
 
@@ -218,6 +219,7 @@ public:
 	template <typename P> int serialize(char * p, const boost::shared_ptr<P const> & pm){
 		ros::SerializedMessage sbuffer = ros::serialization::serializeMessage<P>(*pm);
 
+/*
 		ROSWMP_DEBUG(stderr,"Before compressing: %d\n",sbuffer.num_bytes);
 		unsigned long int zsize = MAX_DATA_SIZE;
 		int res = compress((Bytef*)p,&zsize,(const Bytef *)sbuffer.message_start,sbuffer.num_bytes);
@@ -226,7 +228,7 @@ public:
 			return zsize;
 		}
 		ROSWMP_DEBUG(stderr,"Compression error \n");
-
+*/
 
 		memcpy(p,sbuffer.message_start,sbuffer.num_bytes);
 		return sbuffer.num_bytes;
@@ -235,7 +237,7 @@ public:
 	template <typename P> int serialize(char * p, P & pm){
 
 		ros::SerializedMessage sbuffer = ros::serialization::serializeMessage<P>(pm);
-
+/*
 		ROSWMP_DEBUG(stderr,"Before compressing: %d\n",sbuffer.num_bytes);
 		unsigned long int zsize = MAX_DATA_SIZE;
 		int res = compress((Bytef*)p,&zsize,(const Bytef*) sbuffer.message_start,sbuffer.num_bytes);
@@ -244,7 +246,7 @@ public:
 			return zsize;
 		}
 		ROSWMP_DEBUG(stderr,"Compression error \n");
-
+*/
 		memcpy(p,sbuffer.message_start,sbuffer.num_bytes);
 		return sbuffer.num_bytes;
 	}
