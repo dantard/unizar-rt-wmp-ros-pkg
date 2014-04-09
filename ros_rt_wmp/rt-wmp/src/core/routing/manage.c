@@ -399,6 +399,7 @@ int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
 
+		t->hdr.gretries++;
 		return RETRY;
 	} else {
 		nstat_setReached(t->hdr.to);
@@ -417,6 +418,8 @@ int manage_authorization_expired_timeout(wmpFrame * t) {/* Authorization timeout
 		status.retries++;
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
+
+		t->hdr.gretries++;
 		return RETRY;
 	} else {
 		status.retries = 0;
@@ -436,6 +439,8 @@ int manage_message_expired_timeout(wmpFrame * t) {/* Authorization timeout expir
 		status.retries++;
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
+
+		t->hdr.gretries++;
 		return RETRY;
 	} else {
 		status.retries = 0;
@@ -594,6 +599,13 @@ int evaluate_message(wmpFrame * t) {
 			wmp_print_append(t);
 			wmp_print("%d ", wmpGetNodeId());
 
+			for ( i = 0; i<status.N_NODES; i++){
+				if (t->msg.path[i] == -1){
+					t->msg.path[i] = status.id;
+					break;
+				}
+			}
+
 			return SEND_MESSAGE;
 		}
 	}
@@ -703,7 +715,7 @@ int create_authorization(wmpFrame * t) {
 
 int create_message(wmpFrame * t) {
    static longMsg_t * m;
-	int m_id = wmp_queue_tx_pop_part(&m);
+	int m_id = wmp_queue_tx_pop_part(&m), i;
 
 	t->hdr.burst = wmp_queue_tx_get_elem_burst(m_id);
 
@@ -726,6 +738,10 @@ int create_message(wmpFrame * t) {
 
 	t->msg.reached = 0;
 
+	for ( i = 0; i<status.N_NODES; i++){
+		t->msg.path[i] = -1;
+	}
+
 	mBitsSet(t->msg.type,AURA_MSG);
 	if (m->rescheduled){
 		mBitsSet(t->msg.type,RESCHEDULED);
@@ -745,9 +761,6 @@ int create_message(wmpFrame * t) {
 	return EVALUATE_MESSAGE;
 }
 
-FILE * p = 0;
-
-
 static void (*msg_cb) (wmpFrame *)=0;
 
 void wmpSetMessageCallback( void (*f) (wmpFrame *)){
@@ -764,19 +777,37 @@ void getTimedFilename(char * str_time) {
 
 
 int enqueue_message(wmpFrame * t) {
+	int i, j;
+	for ( i = 0; i<status.N_NODES; i++){
+		if (t->msg.path[i] == -1){
+			t->msg.path[i] = status.id;
+			break;
+		}
+	}
 
+
+
+	/* write messages */
+	static FILE * p = 0;
 	if (p==0){
 		char filename[256];
 		char time[256];
 		getTimedFilename(time);
-		sprintf(filename,"rt-wmp-messages-%s.dat",time);
+		sprintf(filename,"rt-wmp-messages-n%d-%s.dat",status.id,time);
 		p = fopen(filename,"w+");
 	}
-
-	if (t->msg.part_id==-1){
-		fprintf(p,"00000000%d %3d %d %d %4d %llu %d\n",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi,t->msg.len,getRawActualTimeus(), t->msg.age);
-		fflush(p);
+	fprintf(p,"%2d %3d %d %d %4d %llu %d %3d",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi, t->msg.len, getRawActualTimeus(), t->msg.age, t->hdr.gretries);
+	for (i = 0; i < status.N_NODES; i++) {
+		fprintf(p,"%2d ", t->msg.path[i]);
 	}
+	for (i = 0; i < status.N_NODES; i++) {
+		for (j = 0; j < status.N_NODES; j++) {
+			fprintf(p,"%3d ", lqm_get_val(i,j));
+		}
+	}
+	fprintf(p,"\n");
+	fflush(p);
+	/* write messages */
 
 	if (msg_cb != 0){
 		msg_cb(t);
