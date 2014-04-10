@@ -136,7 +136,7 @@ int evaluate_token(wmpFrame * t) {
 	/* Update the age and the lr (last received) field*/
 
 	/* XXX: SOMPORT */
-	nstat_setReached(status.id);
+	//nstat_setReached(status.id);
 
 
 	aura_clear();
@@ -262,7 +262,9 @@ int evaluate_token(wmpFrame * t) {
 	/*LQM is NOT empty --> Control if I'm the last one*/
 
 	last_one = 1;
+	wmp_print("LN:", last_one);
 	for (i = 0; i < status.N_NODES; i++) {
+		wmp_print("%d,%d ", i, nstat_isReached(i));
 		last_one = last_one && nstat_isReached(i);
 	}
 	wmp_print("LN %d ", last_one);
@@ -281,17 +283,20 @@ int evaluate_token(wmpFrame * t) {
 			}
 		}
 
+		//XXX:BUG
 		/* I'm the last one */
 		if (t->tkn.idMaxPri >= 0) {
-			if (enough_time_for_other_message){
-				return CREATE_AUTHORIZATION;
-			}else{
-				if (t->tkn.idMaxPri == status.id){
-					return CREATE_AUTHORIZATION;
-				}
-			}
-			/* if there is a message to transmit */
-			return NEW_TOKEN;
+/*XXX: SOMPORT BUG */
+//			if (enough_time_for_other_message){
+//				return CREATE_AUTHORIZATION;
+//			}else{
+//				if (t->tkn.idMaxPri == status.id){
+//					return CREATE_AUTHORIZATION;
+//				}
+//			}
+//			/* if there is a message to transmit */
+//			return NEW_TOKEN;
+			return CREATE_AUTHORIZATION;
 		} else {
 			/* Noone have to transmit nothing - Start a new PAP */
 			return NEW_TOKEN;
