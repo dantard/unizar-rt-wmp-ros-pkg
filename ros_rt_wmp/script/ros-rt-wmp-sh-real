@@ -1,0 +1,3 @@
+#!/bin/bash
+sleep 3
+rosrun ros_rt_wmp ros-rt-wmp --node-id $1 --num-nodes $2 /tf:=/R$1/tf /R0/R1/RunNavigation:=/R1/RunNavigation /R0/R2/RunNavigation:=/R2/RunNavigation /R0/R3/RunNavigation:=/R3/RunNavigation
