@@ -128,12 +128,15 @@ int evaluate_token(wmpFrame * t) {
 	if (delay < t->hdr.sleep){
 		most_urgent_is_mine = 1;
 		t->hdr.sleep = delay;
+
 	}else{
 		enough_time_for_other_message = (t->hdr.sleep > ms_to_us(12));
 	}
 
 	/* Update the age and the lr (last received) field*/
 
+	/* XXX: SOMPORT */
+	nstat_setReached(status.id);
 
 
 	aura_clear();
@@ -262,7 +265,9 @@ int evaluate_token(wmpFrame * t) {
 	for (i = 0; i < status.N_NODES; i++) {
 		last_one = last_one && nstat_isReached(i);
 	}
+	wmp_print("LN %d ", last_one);
 	if (last_one > 0) {
+
 
 		/* Force WC */
 		//XXX: ANALISYS status.N_NODES > 2
