@@ -51,6 +51,8 @@ extern "C" {
 #define MAX_DATA_SIZE	512000
 #define WMP_MESSAGE_SIZE  1000
 #define ROSWMP_DEBUG(output,...)   // fprintf(output, __VA_ARGS__); fprintf(output,"\n");
+#define COMPRESSION
+
 
 struct info_t {
 	ros::Publisher publisher;
@@ -186,13 +188,15 @@ public:
 
 	template <typename Q> bool deserialize(char * p, int size, Q & pm){
 
-/*		unsigned long int uzsize =MAX_DATA_SIZE;
+#ifdef COMPRESSION
+		unsigned long int uzsize =MAX_DATA_SIZE;
 		ROSWMP_DEBUG(stderr,"Before UNcompressing: %d\n",size);
 		int res = uncompress((Bytef *)dbuff.get(),&uzsize,(const Bytef*)p,size);
 		if (res ==Z_OK){
 			size = uzsize;
 		}
-		else*/
+		else
+#endif
 
 		memcpy(dbuff.get(), p, size);
 
@@ -219,7 +223,7 @@ public:
 	template <typename P> int serialize(char * p, const boost::shared_ptr<P const> & pm){
 		ros::SerializedMessage sbuffer = ros::serialization::serializeMessage<P>(*pm);
 
-/*
+#ifdef COMPRESSION
 		ROSWMP_DEBUG(stderr,"Before compressing: %d\n",sbuffer.num_bytes);
 		unsigned long int zsize = MAX_DATA_SIZE;
 		int res = compress((Bytef*)p,&zsize,(const Bytef *)sbuffer.message_start,sbuffer.num_bytes);
@@ -228,7 +232,7 @@ public:
 			return zsize;
 		}
 		ROSWMP_DEBUG(stderr,"Compression error \n");
-*/
+#endif
 
 		memcpy(p,sbuffer.message_start,sbuffer.num_bytes);
 		return sbuffer.num_bytes;
@@ -237,7 +241,8 @@ public:
 	template <typename P> int serialize(char * p, P & pm){
 
 		ros::SerializedMessage sbuffer = ros::serialization::serializeMessage<P>(pm);
-/*
+
+#ifdef COMPRESSION
 		ROSWMP_DEBUG(stderr,"Before compressing: %d\n",sbuffer.num_bytes);
 		unsigned long int zsize = MAX_DATA_SIZE;
 		int res = compress((Bytef*)p,&zsize,(const Bytef*) sbuffer.message_start,sbuffer.num_bytes);
@@ -246,7 +251,8 @@ public:
 			return zsize;
 		}
 		ROSWMP_DEBUG(stderr,"Compression error \n");
-*/
+#endif
+
 		memcpy(p,sbuffer.message_start,sbuffer.num_bytes);
 		return sbuffer.num_bytes;
 	}
