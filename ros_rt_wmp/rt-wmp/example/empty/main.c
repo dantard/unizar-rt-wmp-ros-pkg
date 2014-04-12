@@ -106,7 +106,6 @@ int main(int argc, char* argv[]){
 	}
 	wmpSetup(atoi(argv[1]), atoi(argv[2]));
 	wmpRun();
-
 	m_size = atoi(argv[3]);
 	int beluga = atoi(argv[4]);
 	setBeluga(beluga);
