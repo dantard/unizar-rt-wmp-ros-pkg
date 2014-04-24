@@ -227,7 +227,7 @@ int queue_push_part(queue_t * q,  longMsg_t * m) {
 			must_signal = 1;
 		}
 	} else {
-		WMP_ERROR(stderr, "*** (RT-WMP) NO SPACE to receive new message (queued elements:%d)\n", queue_rx_get_count(q,m->port));
+		fprintf(stderr,"*** (RT-WMP) WARNING: RX QUEUE FULL\n");
 		exclusive_off(q);
 		return -1;
 	}

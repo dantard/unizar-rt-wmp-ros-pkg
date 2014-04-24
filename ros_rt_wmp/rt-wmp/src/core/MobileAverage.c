@@ -111,7 +111,7 @@ void mobile_avg_reset(MobileAverage* e) {
 
 char mobile_avg_get_averaged_value(MobileAverage * e){
 
-	int val = e->avgd_value * e->pdr * e->rxr / 100 / 100;
+	int val = e->avgd_value;// * e->pdr * e->rxr / 100 / 100;
 //	if (val == 0 && e->avgd_value > 0 && e->pdr > 0 && e->rxr > 0){
 //		val = 1;
 //	}
