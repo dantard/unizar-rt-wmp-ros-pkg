@@ -90,7 +90,7 @@ static int extend_size_if_necessary(queue_t *q, int idx, int size){
 int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int size,
 		unsigned int dest, signed char priority) {
 	int i, nparts, must_signal = 0;
-	int a = wmpGetNodeId();
+	int node_id = wmpGetNodeId();
 	unsigned short ts = (unsigned short) (getRawActualTimeus() & 0x7F);
 
 	if (q->drop_next){
@@ -99,7 +99,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 	}
 	exclusive_on(q);
 
-	a = a << 11;
+	node_id = node_id << 11;
 	ts = ts << 5;
 
 	q->hash_idx++;
@@ -112,50 +112,64 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 		nparts++;	
 	}
 
+	int selected;
+	long long oldest;
 	for (i = 0; i < q->max_msg_num; i++) {
 		if (q->longMsg[i]->hash == 0) {
-
-			if (!extend_size_if_necessary(q, i, size)) {
-				exclusive_off(q);
-				return 0;
-			}
-
-			q->longMsg[i]->size = size;
-			q->longMsg[i]->dest = dest;
-			q->longMsg[i]->port = port;
-			q->longMsg[i]->priority = priority;
-			q->longMsg[i]->hash = a + ts +q->hash_idx;
-			//fprintf(stderr,"TX Hash:%d : %d, %d, %d\n", q->longMsg[i]->hash,a,ts,q->hash_idx);
-
-			q->longMsg[i]->ts = getRawActualTimeus();
-			q->longMsg[i]->msg_part_size = q->message_part_size;
-			q->longMsg[i]->num_parts = nparts;
-			q->longMsg[i]->parts_pointer = 0;
-			q->longMsg[i]->this_part_size = 0;
-
-			/* Force Burst */
-			if (q->force_burst == port) {
-				q->longMsg[i]->burst_hash = a + 2047;
-			} else {
-				q->longMsg[i]->burst_hash = q->longMsg[i]->hash;
-			}
-
-			memcpy(q->longMsg[i]->data, p, size);
-			q->elem++;
-			q->longMsg[i]->done = 1;
+			selected = i;
 			must_signal = 1;
 			break;
+		} else {
+			if (i == 0) {
+				oldest = q->longMsg[i]->ts;
+				selected = i;
+			} else {
+				if (q->longMsg[i]->ts < oldest) {
+					oldest = q->longMsg[i]->ts;
+					selected = i;
+				}
+			}
 		}
 	}
+
+	q->longMsg[selected]->hash = 0;
+
+	if (!extend_size_if_necessary(q, selected, size)) {
+		exclusive_off(q);
+		return 0;
+	}
+
+	q->longMsg[selected]->size = size;
+	q->longMsg[selected]->dest = dest;
+	q->longMsg[selected]->port = port;
+	q->longMsg[selected]->priority = priority;
+	q->longMsg[selected]->hash = node_id + ts +q->hash_idx;
+	q->longMsg[selected]->ts = getRawActualTimeus();
+	q->longMsg[selected]->msg_part_size = q->message_part_size;
+	q->longMsg[selected]->num_parts = nparts;
+	q->longMsg[selected]->parts_pointer = 0;
+	q->longMsg[selected]->this_part_size = 0;
+
+	/* Force Burst */
+	if (q->force_burst == port) {
+		q->longMsg[selected]->burst_hash = node_id + 2047;
+	} else {
+		q->longMsg[selected]->burst_hash = q->longMsg[selected]->hash;
+	}
+
+	memcpy(q->longMsg[selected]->data, p, size);
+	q->elem++;
+	q->longMsg[selected]->done = 1;
+
 	exclusive_off(q);
 	if (must_signal) {
 		for (i = 0; i < nparts; i++) {
 			SIGNAL(q->sem);
 		}
-		return 1;
 	}else{
-		return 0;
+		fprintf(stderr,"*** (RT-WMP) WARNING: OVERWRITING OLD DATA IN TX QUEUE\n");
 	}
+	return 1;
 }
 void queue_tx_force_burst(queue_t * q, int port) {
 	q->force_burst = port;
