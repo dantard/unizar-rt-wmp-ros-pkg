@@ -112,7 +112,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 		nparts++;	
 	}
 
-	int selected;
+	int selected = -1, idx = 0;
 	long long oldest;
 	for (i = 0; i < q->max_msg_num; i++) {
 		if (q->longMsg[i]->hash == 0) {
@@ -120,16 +120,24 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 			must_signal = 1;
 			break;
 		} else {
-			if (i == 0) {
-				oldest = q->longMsg[i]->ts;
-				selected = i;
-			} else {
-				if (q->longMsg[i]->ts < oldest) {
+			if (q->longMsg[i]->priority <= priority) {
+				if (idx == 0) {
 					oldest = q->longMsg[i]->ts;
 					selected = i;
+				} else {
+					if (q->longMsg[i]->ts < oldest) {
+						oldest = q->longMsg[i]->ts;
+						selected = i;
+					}
 				}
+				idx++;
 			}
 		}
+	}
+
+	if (selected == -1){
+		exclusive_off(q);
+		return 0;
 	}
 
 	q->longMsg[selected]->hash = 0;
@@ -166,9 +174,10 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 		for (i = 0; i < nparts; i++) {
 			SIGNAL(q->sem);
 		}
-	}else{
-		fprintf(stderr,"*** (RT-WMP) WARNING: OVERWRITING OLD DATA IN TX QUEUE\n");
 	}
+//	else{
+//		fprintf(stderr,"*** (RT-WMP) WARNING: OVERWRITING OLD DATA IN TX QUEUE\n");
+//	}
 	return 1;
 }
 void queue_tx_force_burst(queue_t * q, int port) {
