@@ -42,7 +42,7 @@
 template<class T> class WMPServiceManager: public ServiceManager<T> {
 public:
 	WMPServiceManager(ros::NodeHandle * n, int port, std::string name) :
-			ServiceManager<T>(n, port, name, 0) {
+			ServiceManager<T>(n, port, name, 99) {
 		n->deleteParam(ServiceManager<T>::param_dest);
 	}
 

@@ -116,6 +116,7 @@ public:
 		}
 		int priority = getPriority(req);
 		ROSWMP_DEBUG(stderr, "Sending request with priority: %d and host: %d", priority,host);
+
 		if (host >= 0){
 			wmpPushData(port, sbuff, n + sizeof(flow_t), 1 << host, priority);
 		} else{
