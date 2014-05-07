@@ -114,13 +114,27 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 
 	int selected = -1, idx = 0;
 	long long oldest;
+
+	int num_of_this_prio = 0;
+	for (i = 0; i < q->max_msg_num; i++) {
+		if (q->longMsg[i]->hash != 0 && q->longMsg[i]->priority == priority){
+			num_of_this_prio++;
+		}
+	}
+
+	if (num_of_this_prio > priority){
+		exclusive_off(q);
+		fprintf(stderr,"*** TOO MUCH OF PRIO %d, DISCARDING \n", priority);
+		return 0;
+	}
+
 	for (i = 0; i < q->max_msg_num; i++) {
 		if (q->longMsg[i]->hash == 0) {
 			selected = i;
 			must_signal = 1;
 			break;
 		} else {
-			if (0 && q->longMsg[i]->priority < priority) {
+			if (priority >  100 && priority > q->longMsg[i]->priority) {
 				if (idx == 0) {
 					oldest = q->longMsg[i]->ts;
 					selected = i;
