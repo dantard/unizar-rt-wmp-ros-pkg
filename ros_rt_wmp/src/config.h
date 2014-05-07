@@ -59,25 +59,32 @@ BEGIN_TOPIC_DEFINITION
 TOPIC_START_STOPPED("video/theora", theora_image_transport::Packet, "1", "0", 1);
 TOPIC("number", std_msgs::Float64, "1", "0", 65);
 
-TOPIC("scan", sensor_msgs::LaserScan, "1,2,3", "0", 5);
+TOPIC("scan", sensor_msgs::LaserScan, "1,2,3,4", "0", 5);
 
 WHATCHDOG_TOPIC("joy_twist_r1", geometry_msgs::Twist, "0", "1",51, 1000, new geometry_msgs::Twist());
 WHATCHDOG_TOPIC("joy_twist_r2", geometry_msgs::Twist, "0", "2",51, 1000, new geometry_msgs::Twist());
 WHATCHDOG_TOPIC("joy_twist_r3", geometry_msgs::Twist, "0", "3",51, 1000, new geometry_msgs::Twist());
+WHATCHDOG_TOPIC("joy_twist_r4", geometry_msgs::Twist, "0", "4",51, 1000, new geometry_msgs::Twist());
+
 
 TOPIC("mapGoal_twist_r1", geometry_msgs::Twist, "0", "1",10);
 TOPIC("mapGoal_twist_r2", geometry_msgs::Twist, "0", "2",10);
 TOPIC("mapGoal_twist_r3", geometry_msgs::Twist, "0", "3",10);
+TOPIC("mapGoal_twist_r4", geometry_msgs::Twist, "0", "4",10);
 
-TOPIC_TF("1,2,3","0", 3);
+
+TOPIC_TF("1,2,3,4","0", 3);
 
 TF_FILTER("/R2/odom->/R2/base_link");
 TF_FILTER("/R1/odom->/R1/base_link");
 TF_FILTER("/R3/odom->/R3/base_link");
+TF_FILTER("/R4/odom->/R4/base_link");
 
 SERVICE("RunNavigation",tunnel_navigation::RunNavigation,1, 50);
 SERVICE("RunNavigation",tunnel_navigation::RunNavigation,2, 50);
 SERVICE("RunNavigation",tunnel_navigation::RunNavigation,3, 50);
+SERVICE("RunNavigation",tunnel_navigation::RunNavigation,4, 50);
+
 
 DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 2);
 
