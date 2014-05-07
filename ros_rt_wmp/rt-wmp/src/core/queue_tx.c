@@ -136,6 +136,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 	}
 
 	if (selected == -1){
+		fprintf(stderr,"*** (RT-WMP) UNABLE TO FIND PLACE\n");
 		exclusive_off(q);
 		return 0;
 	}
@@ -175,9 +176,9 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 			SIGNAL(q->sem);
 		}
 	}
-//	else{
-//		fprintf(stderr,"*** (RT-WMP) WARNING: OVERWRITING OLD DATA IN TX QUEUE\n");
-//	}
+	else{
+		fprintf(stderr,"*** (RT-WMP) WARNING: OVERWRITING OLD DATA IN TX QUEUE\n");
+	}
 	return 1;
 }
 void queue_tx_force_burst(queue_t * q, int port) {
