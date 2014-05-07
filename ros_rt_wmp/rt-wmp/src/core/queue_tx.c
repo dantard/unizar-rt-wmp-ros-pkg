@@ -120,7 +120,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 			must_signal = 1;
 			break;
 		} else {
-			if (q->longMsg[i]->priority < priority) {
+			if (0 && q->longMsg[i]->priority < priority) {
 				if (idx == 0) {
 					oldest = q->longMsg[i]->ts;
 					selected = i;
