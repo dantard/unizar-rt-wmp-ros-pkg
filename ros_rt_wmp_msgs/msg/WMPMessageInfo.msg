@@ -8,5 +8,8 @@ uint8 rx_rssi
 int32 age
 int8 prio
 int32 size
-int32 priority
+int32 port
 int32 message_part_id
+int64 ts
+int8[] path
+int8[] lqm

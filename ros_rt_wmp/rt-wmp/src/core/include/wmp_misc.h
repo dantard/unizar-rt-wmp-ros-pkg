@@ -39,7 +39,7 @@
 #ifndef WMP_MISC__H
 #define WMP_MISC__H
 #include "definitions.h"
-#include "config/compiler.h"
+//#include "config/compiler.h"
 
 unsigned long long getActualDateus(void);
 unsigned long long getActualTimeus(void);

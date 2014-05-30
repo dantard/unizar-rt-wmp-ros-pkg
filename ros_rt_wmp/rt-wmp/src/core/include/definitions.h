@@ -171,6 +171,8 @@ typedef struct  {
 	int num_ports;
 	int beluga;
 	int prune_threshold;
+	char is_forced_lqm;
+	char forced_lqm[32*32];
 }Status;
 
 

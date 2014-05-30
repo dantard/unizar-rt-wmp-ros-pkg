@@ -93,6 +93,7 @@ public:
 		stopped = false;
 		dbuff.reset(new unsigned char[MAX_DATA_SIZE]);
 		justone = false;
+		fprintf(stderr,"Topic %s of node %s has priority %d\n",name.c_str(), ros::this_node::getName().c_str(),priority);
 	}
 
 	void setBroadcast(bool bc){

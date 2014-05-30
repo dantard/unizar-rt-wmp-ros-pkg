@@ -182,7 +182,11 @@ int lqm_get_num_hops(int i, int j){
 }
 
 void lqm_set_val(int i, int j, char val){
-	lqm[i][j]=val;
+	if (!status.is_forced_lqm){
+		lqm[i][j]=val;
+	}else{
+		lqm[i][j] = status.forced_lqm[i*wmpGetNumOfNodes()+j];
+	}
 }
 
 char** lqm_get_ptr(void){
@@ -386,7 +390,6 @@ void lqm_compute_prob(char ** lqm) {
 				if (A0[i][k] * A0[k][k] * A0[k][j] / 1000000 > A0[i][j]) {
 					Next[i][j] = Next[i][k];
 					A1[i][j] = A0[i][k] * A0[k][k] * A0[k][j] / 1000000;
-
 				} else {
 					A1[i][j] = A0[i][j];
 				}

@@ -153,4 +153,10 @@ unsigned int wmpGetLoopId(void){
 void setBeluga(int isbeluga){
 	status.beluga = isbeluga;
 }
-
+void wmpForceLQM(char * lqm){
+	int i;
+	status.is_forced_lqm = 1;
+	for (i = 0; i< wmpGetNumOfNodes()*wmpGetNumOfNodes(); i++){
+		status.forced_lqm[i] = lqm[i];
+	}
+}

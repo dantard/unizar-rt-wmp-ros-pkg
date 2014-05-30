@@ -75,10 +75,10 @@ struct sockaddr_in tx_addr, rx_addr;
 
 extern char iface[16];
 int  tx, rx, unit_size,filepos = 0, delay, DIST_MAX,
-	THRESHOLD = 500, num_nodes, clicked = 0,stop = 0;
+	THRESHOLD = 500, num_nodes, clicked = 0,stopped = 0;
 
 void stop_bridge() {
-	stop = 1;
+	stopped = 1;
 }
 
 void* bridge(void * param) {
@@ -91,7 +91,7 @@ void* bridge(void * param) {
 
 	unsigned long long started_at_us = getRawActualTimeus();
 
-	while (stop != 1) {
+	while (stopped != 1) {
 
 		simData_Hdr sd_hdr;
       	std::set<int> reached;
@@ -116,7 +116,7 @@ void* bridge(void * param) {
 
         time_us-=base_time_us;
        	if (nbytes <= 0){
-        	stop = 1;
+        	stopped = 1;
        		continue;
         }
 
@@ -165,7 +165,7 @@ int start_bridge(int num_nodes_p, int _sim) {
     io_reopen_file_to_write(num_nodes);
     pthread_mutex_init(&sem, NULL);
     WAIT(&sem);
-    stop = 0;
+    stopped = 0;
     pthread_t tid;
     pthread_create(&tid, NULL, bridge, NULL);
     return 1;

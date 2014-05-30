@@ -49,27 +49,31 @@
 #include <ros_rt_wmp_msgs/WMPMessageInfo.h>
 
 extern "C" {
-#include "core/include/frames.h"
-
+ #include "core/include/frames.h"
+ #include "core/include/wmp_misc.h"
 }
 #define FRAME_INFO
 
 static ros::Publisher message_publisher;
 static ros::Publisher publisher;
+static int nnodes, node_id;
 
-void received(int *rtnCode, wmpFrame *p, wmpFrame*q) {
-	static ros_rt_wmp_msgs::WMPFrames v;
-	v.rssi = q->hdr.rssi;
-	v.noise = q->hdr.noise;
-	v.serial = q->hdr.serial;
-	v.loop_id = q->hdr.loop_id;
-	v.header.stamp = ros::Time::now();
-	v.source = q->hdr.from;
-	publisher.publish(v);
-}
+//void received(int *rtnCode, wmpFrame *p, wmpFrame*q) {
+//	static ros_rt_wmp_msgs::WMPFrames v;
+//	v.rssi = q->hdr.rssi;
+//	v.noise = q->hdr.noise;
+//	v.serial = q->hdr.serial;
+//	v.loop_id = q->hdr.loop_id;
+//	v.header.stamp = ros::Time::now();
+//	v.source = q->hdr.from;
+//	publisher.publish(v);
+//}
 
 void message_callback(wmpFrame * q){
+	int i = 0;
 	static ros_rt_wmp_msgs::WMPMessageInfo v;
+	char lqm[nnodes*nnodes];
+
 	v.rx_rssi = q->hdr.rssi;
 	v.serial = q->hdr.serial;
 	v.loop_id = q->hdr.loop_id;
@@ -81,12 +85,62 @@ void message_callback(wmpFrame * q){
 	v.age = q->msg.age;
 	v.prio = q->msg.priority;
 	v.size = q->msg.len;
+	v.ts = getRawActualTimeus();
+	v.port = q->msg.port;
+
+	v.path.clear();
+	for (i = 0; i < nnodes; i++) {
+		v.path.push_back(q->msg.path[i]);
+	}
+
+	v.lqm.clear();
+	wmpGetLatestLQM(lqm);
+	for (i = 0; i < nnodes*nnodes; i++) {
+		v.lqm.push_back(lqm[i]);
+	}
+
 	message_publisher.publish(v);
 }
 
+
+void * publish_info( void *ptr ) {
+	while (ros::ok()) {
+		ros_rt_wmp_msgs::WMPInfo pm;
+		pm.serial = wmpGetSerial();
+		pm.loop_id = wmpGetLoopId();
+		pm.connected = wmpIsNetworkConnected();
+
+		for (int i = 0; i<wmpGetNumOfNodes(); i++){
+			for (int j = 0; j<wmpGetNumOfNodes(); j++){
+				pm.lqm.push_back(lqm_get_val(i,j));
+			}
+		}
+
+		int size = wmpGetNumOfNodes()*wmpGetNumOfNodes();
+		char distances[size];
+		wmpGetLatestDistances(distances);
+		for (int i = 0; i < size; i++) {
+			pm.dist.push_back(distances[i]);
+		}
+
+		publisher.publish(pm);
+		usleep(250000);
+	}
+	return NULL;
+}
+
+void fake_lqm_callback(const ros_rt_wmp_msgs::WMPInfo& msg) {
+	char lqm[nnodes*nnodes];
+	for (int i = 0; i < nnodes*nnodes; i++){
+		lqm[i] = msg.lqm[i];
+	}
+	wmpForceLQM(lqm);
+}
+
+
 int main(int argc, char** argv) {
 	char ns[32], name[32];
-	int nnodes, node_id, ans;
+	int ans;
 	argo_setCommentId(argo_addString(name, STR("node-name"), STR("")),
 			STR("Specify the name of the node"));
 	argo_setCommentId(argo_addString(ns, STR("namespace"), STR("")),
@@ -128,7 +182,19 @@ int main(int argc, char** argv) {
 	if (wmpIsKernelSpace()){
 		printf("Node %s with id %d of %d is running.\n",name, wmpGetNodeId(), wmpGetNumOfNodes());
 	}
+
+	/* Message Callback */
 	wmpSetMessageCallback(message_callback);
+
+	/* Publish Info */
+	pthread_t th;
+	std::ostringstream oss;
+	oss << n.getNamespace() << "/info";
+	publisher = n.advertise<ros_rt_wmp_msgs::WMPInfo>(oss.str(), 1);
+	pthread_create(&th,0,publish_info, 0);
+
+	/* Read Fake LQM */
+	ros::Subscriber fklqm = n.subscribe("/fake_lqm", 1,fake_lqm_callback);
 
 	ros::spin();
 	return 0;

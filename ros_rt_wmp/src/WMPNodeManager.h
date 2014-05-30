@@ -53,42 +53,12 @@ public:
 		nh = this->n;
 		service = n->advertiseService("wmp_control", &WMPNodeManager::manage,
 				this);
-		boost::thread(boost::bind(&WMPNodeManager::publishInfo, this));
+		//boost::thread(boost::bind(&WMPNodeManager::publishInfo, this));
 		createThreads();
 	}
 
 	virtual ~WMPNodeManager() {
 
-	}
-
-	void publishInfo() {
-
-		std::ostringstream oss;
-		oss << nh->getNamespace() << "/info";
-		ros::Publisher publisher = nh->advertise<ros_rt_wmp_msgs::WMPInfo>(oss.str(), 1);
-
-		while (ros::ok()) {
-			ros_rt_wmp_msgs::WMPInfo pm;
-			pm.serial = wmpGetSerial();
-			pm.loop_id = wmpGetLoopId();
-			pm.connected = wmpIsNetworkConnected();
-
-			for (int i = 0; i<wmpGetNumOfNodes(); i++){
-				for (int j = 0; j<wmpGetNumOfNodes(); j++){
-					pm.lqm.push_back(lqm_get_val(i,j));
-				}
-			}
-
-			int size = wmpGetNumOfNodes()*wmpGetNumOfNodes();
-			char distances[size];
-			wmpGetLatestDistances(distances);
-			for (int i = 0; i < size; i++) {
-				pm.dist.push_back(distances[i]);
-			}
-
-			publisher.publish(pm);
-			usleep(250000);
-		}
 	}
 
 	void addManager(std::string p, Manager * v) {
