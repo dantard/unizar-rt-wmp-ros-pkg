@@ -87,7 +87,6 @@ void decode_routing_info(wmpFrame *p){
 		lqm_put_fake(lqm_get_ptr());
 	}
 
-
 	lqm_calculate_distances();
 	//wmp_print_lqm(lqm_get_ptr(),"after3",wmpGetNumOfNodes());
 }
@@ -98,6 +97,10 @@ void decode_routing_info(wmpFrame *p){
 void encode_routing_info(wmpFrame * t){
 	int i,j;
 	/* Create frame, setting reached and lqm */
+
+	if (lqm_fake_is_set()){
+		lqm_put_fake(lqm_get_ptr());
+	}
 
 #ifdef WORST_LQM
 	for (i=0;i<status.N_NODES;i++){

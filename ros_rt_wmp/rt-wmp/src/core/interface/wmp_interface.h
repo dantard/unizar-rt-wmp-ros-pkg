@@ -273,6 +273,9 @@ int  wmpGetLatestDistances(char * dist);
 char lqm_get_val(int i, int j);
 void wmpSetMessageCallback( void (*f) (wmpFrame *));
 void wmpForceLQM(char * lqm);
+void wmpForcePath(char * path);
+int wmpSetParam(const char * txt, int val);
+int wmpGetParam(const char * txt);
 
 #endif
 

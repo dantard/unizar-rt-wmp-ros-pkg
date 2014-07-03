@@ -74,6 +74,43 @@ public:
 		ROSWMP_DEBUG(stderr, "Local service called with command %d, %s\n",req.command, req.param3.c_str());
 		//fprintf (stderr, "Local service called with command %d, %s node %d \n",req.command, req.param3.c_str(), wmpGetNodeId());
 
+		if (req.command == SET_FAKE_LQM) {
+			char lqm[req.param3.length()];
+			for (int i = 0; i< req.param3.length();i++){
+				lqm[i] = (req.param3.at(i)-48)*10;
+			}
+			wmpForceLQM(lqm);
+			res.result = 0;
+			res.info = "OK:FAKE_LQM_SET";
+			return true;
+		}else if (req.command == SET_PREDEFINED_FAKE_LQM) {
+			wmpForceLQM((char*)req.param3.c_str());
+			res.result = 0;
+			res.info = "OK:PREDEFINED_FAKE_LQM_SET";
+			return true;
+		}else if (req.command == SET_FAKE_PATH) {
+			char path[req.param3.length()];
+			for (int i = 0; i< req.param3.length();i++){
+				path[i] = (req.param3.at(i)-48);
+				fprintf(stderr,"Putting path:%d\n", path[i]);
+			}
+			wmpForcePath(path);
+			res.result = 0;
+			res.info = "OK:FAKE_PATH_SET";
+			return true;
+		}else if (req.command == SET_WMP_PARAM) {
+			res.result = wmpSetParam(req.param3.c_str(), req.param1);
+			res.info = res.result > 0? "OK: PARAM SET": "ERROR: PARAM NOT SET";
+			return true;
+		}else if (req.command == GET_WMP_PARAM) {
+			res.result = wmpGetParam(req.param3.c_str());
+			res.info = res.result >= 0? "OK: PARAM GET": "ERROR: PARAM NOT GOT";
+			return true;
+		}
+
+
+
+
 		if (stuffs.find(req.param3) == stuffs.end() && req.command != STOP) {
 			res.result = -1;
 			res.info = "ERROR: Inexistent topic/service";
@@ -116,8 +153,11 @@ public:
 			m->reconnect();
 			res.result = 0;
 			res.info = "OK:RECONNECT";
-		}
-		else{
+		} else if (req.command == RECONNECT) {
+			m->reconnect();
+			res.result = 0;
+			res.info = "OK:RECONNECT";
+		} else{
 			res.info = "KO:UNKNOWN COMMAND";
 		}
 		return true;

@@ -216,6 +216,9 @@ int apply_config(Status * status, char * param, char * val) {
 	}else if (strcmp(param, "PRUNE_THRESHOLD") == 0) {
 		status->prune_threshold = atoi(val);
 		return 1;
+	}else if (strcmp(param, "PERC99_THRESHOLD") == 0) {
+		status->prob_99_perc_rssi_min = atoi(val);
+		return 1;
 	}
 	return 0;
 
@@ -261,7 +264,9 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->max_msg_size = 65535;
 	s->num_ports = 32;
 	s->beluga = 1;
-	s->prune_threshold = 32;
+	s->prune_threshold = 10;
+	s->prob_99_perc_rssi_min = 70;
+	s->use_aura_efficient_multicast = 0;
 }
 
 

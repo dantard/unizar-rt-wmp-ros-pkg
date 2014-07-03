@@ -67,6 +67,11 @@ static char fake[32*32];
 void lqm_set_fake(char * fake_lqm);
 void lqm_put_fake();
 int lqm_fake_is_set();
+void lqm_fake_unset();
 
+
+int lqm_fake_path_is_set();
+void lqm_set_fake_path(char * ppath);
+char lqm_fake_path_get_next(char id_dest);
 #endif /*LQM_H_*/
 

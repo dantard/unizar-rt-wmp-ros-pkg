@@ -3,7 +3,12 @@
        This tag overrides the default definition with
        specific ROS_ROOT and ROS_PACKAGE_PATH values -->
   <machine name="local_alt" address="localhost" default="true" />
-  <node name="ros_rt_wmp_0" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 0 --num-nodes 3 --auto-namespace"/>
-  <node name="ros_rt_wmp_1" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 1 --num-nodes 3 --auto-namespace"/>
-  <node name="ros_rt_wmp_2" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 2 --num-nodes 3 --auto-namespace"/>
+  <node name="ros_rt_wmp_0" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 0 --num-nodes 6 --auto-namespace"/>
+  <node name="ros_rt_wmp_1" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 1 --num-nodes 6 --auto-namespace"/>
+  <node name="ros_rt_wmp_2" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 2 --num-nodes 6 --auto-namespace"/>
+  <node name="ros_rt_wmp_3" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 3 --num-nodes 6 --auto-namespace"/>
+  <node name="ros_rt_wmp_4" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 4 --num-nodes 6 --auto-namespace"/>
+  <node name="ros_rt_wmp_5" pkg="ros_rt_wmp" type="ros-rt-wmp" args ="--node-id 5 --num-nodes 6 --auto-namespace"/>
+
+
 </launch>

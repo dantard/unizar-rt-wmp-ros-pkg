@@ -46,7 +46,6 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Image.h>
-#include <tunnel_navigation/RunNavigation.h>
 
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
@@ -55,40 +54,14 @@ BEGIN_TOPIC_DEFINITION
 //QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 //TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
+TOPIC("audio", std_msgs::Float64, "0", "1", 2);
+//TOPIC_START_STOPPED("video/theora", theora_image_transport::Packet, "1", "0", 10);
+//TOPIC("scan", sensor_msgs::LaserScan, "1,2,3,4,5", "0", 12);
 
-TOPIC_START_STOPPED("video/theora", theora_image_transport::Packet, "1", "0", 10);
-
-TOPIC("scan", sensor_msgs::LaserScan, "1,2,3,4,5", "0", 12);
-
-WHATCHDOG_TOPIC("joy_twist_r1", geometry_msgs::Twist, "0", "1",15, 1000, new geometry_msgs::Twist());
-WHATCHDOG_TOPIC("joy_twist_r2", geometry_msgs::Twist, "0", "2",15, 1000, new geometry_msgs::Twist());
-WHATCHDOG_TOPIC("joy_twist_r3", geometry_msgs::Twist, "0", "3",15, 1000, new geometry_msgs::Twist());
-WHATCHDOG_TOPIC("joy_twist_r4", geometry_msgs::Twist, "0", "4",15, 1000, new geometry_msgs::Twist());
-WHATCHDOG_TOPIC("joy_twist_r5", geometry_msgs::Twist, "0", "5",15, 1000, new geometry_msgs::Twist());
+//SERVICE("RunNavigation",tunnel_navigation::RunNavigation,1, 101);
 
 
-TOPIC("mapGoal_twist_r1", geometry_msgs::Twist, "0", "1",15);
-TOPIC("mapGoal_twist_r2", geometry_msgs::Twist, "0", "2",15);
-TOPIC("mapGoal_twist_r3", geometry_msgs::Twist, "0", "3",15);
-TOPIC("mapGoal_twist_r4", geometry_msgs::Twist, "0", "4",15);
-TOPIC("mapGoal_twist_r5", geometry_msgs::Twist, "0", "5",15);
-
-TOPIC_TF("1,2,3,4,5","0", 12);
-
-TF_FILTER("/R2/odom->/R2/base_link");
-TF_FILTER("/R1/odom->/R1/base_link");
-TF_FILTER("/R3/odom->/R3/base_link");
-TF_FILTER("/R4/odom->/R4/base_link");
-TF_FILTER("/R5/odom->/R5/base_link");
-
-SERVICE("RunNavigation",tunnel_navigation::RunNavigation,1, 101);
-SERVICE("RunNavigation",tunnel_navigation::RunNavigation,2, 101);
-SERVICE("RunNavigation",tunnel_navigation::RunNavigation,3, 101);
-SERVICE("RunNavigation",tunnel_navigation::RunNavigation,4, 101);
-SERVICE("RunNavigation",tunnel_navigation::RunNavigation,5, 101);
-
-
-DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 3);
+//DECIMATE_TOPIC("image_raw", sensor_msgs::Image, "1", 3);
 
 END_TOPIC_DEFINITION
 

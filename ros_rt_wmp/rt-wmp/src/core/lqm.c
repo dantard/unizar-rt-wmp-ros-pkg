@@ -40,29 +40,29 @@
 #include "include/wmp_utils.h"
 #include "include/nstat.h"
 
-static char ** lqm, ** lqm_dist, ** lqm_copy, ** lqm_pruned;
-static int ** A0, ** A1, ** Next;
+static char ** lqm, **lqm_dist, **lqm_copy, **lqm_pruned;
+static int ** A0, **A1, **Next;
 static int size, net_connected = 0, informed = 0;
 static THREAD_SEM_T isconn;
 
-static char (*fp) (char);
+static char (*fp)(char);
 
 int logs = 0;
 
 char f_lqm(char val) {
 
-	if (logs){
-		if (val <= 1){
+	if (logs) {
+		if (val <= 1) {
 			return 0;
 		}
 		double v1 = (double) val;
-		v1 = fabs(log(v1/100.0))*10.0;
-		v1 = v1>127?127:v1;
+		v1 = fabs(log(v1 / 100.0)) * 10.0;
+		v1 = v1 > 127 ? 127 : v1;
 		return (char) v1;
 	}
 
 	/* val is a % value (0-100) */
-	if (val == 0){
+	if (val == 0) {
 		return 0;
 	} else if (val < status.w100)
 		return 100;
@@ -74,50 +74,48 @@ char f_lqm(char val) {
 		return 1;
 }
 
-
-void init_lqm(int m_size){
+void init_lqm(int m_size) {
 	int i;
-	size=m_size;
-	lqm=(char **) MALLOC(size*sizeof(char*));
-	for (i=0;i<size;i++){
-		lqm[i]=(char *) MALLOC(size*sizeof(char));
+	size = m_size;
+	lqm = (char **) MALLOC(size*sizeof(char*));
+	for (i = 0; i < size; i++) {
+		lqm[i] = (char *) MALLOC(size*sizeof(char));
 	}
 
 	/* init distance matrix */
-	lqm_dist=(char**) MALLOC(size*sizeof(char*));
-	for (i=0;i<size;i++){
-		lqm_dist[i]=(char *) MALLOC(size*sizeof(char));
-		memset(lqm_dist[i],-1,size*sizeof(char));
+	lqm_dist = (char**) MALLOC(size*sizeof(char*));
+	for (i = 0; i < size; i++) {
+		lqm_dist[i] = (char *) MALLOC(size*sizeof(char));
+		memset(lqm_dist[i], -1, size * sizeof(char));
 	}
 
 	/* init distance matrix */
-	lqm_copy=(char**) MALLOC(size*sizeof(char*));
-	for (i=0;i<size;i++){
-		lqm_copy[i]=(char *) MALLOC(size*sizeof(char));
+	lqm_copy = (char**) MALLOC(size*sizeof(char*));
+	for (i = 0; i < size; i++) {
+		lqm_copy[i] = (char *) MALLOC(size*sizeof(char));
 	}
-	lqm_pruned=(char**) MALLOC(size*sizeof(char*));
-	for (i=0;i<size;i++){
-		lqm_pruned[i]=(char *) MALLOC(size*sizeof(char));
-	}
-
-
-	A0=(int**) MALLOC(size*sizeof(int*));
-	for (i=0;i<size;i++){
-		A0[i]=(int *) MALLOC(size*sizeof(int));
-	}
-	A1=(int**) MALLOC(size*sizeof(int*));
-	for (i=0;i<size;i++){
-		A1[i]=(int *) MALLOC(size*sizeof(int));
+	lqm_pruned = (char**) MALLOC(size*sizeof(char*));
+	for (i = 0; i < size; i++) {
+		lqm_pruned[i] = (char *) MALLOC(size*sizeof(char));
 	}
 
-	Next=(int**) MALLOC(size*sizeof(int*));
-	for (i=0;i<size;i++){
-		Next[i]=(int *) MALLOC(size*sizeof(int));
+	A0 = (int**) MALLOC(size*sizeof(int*));
+	for (i = 0; i < size; i++) {
+		A0[i] = (int *) MALLOC(size*sizeof(int));
+	}
+	A1 = (int**) MALLOC(size*sizeof(int*));
+	for (i = 0; i < size; i++) {
+		A1[i] = (int *) MALLOC(size*sizeof(int));
+	}
+
+	Next = (int**) MALLOC(size*sizeof(int*));
+	for (i = 0; i < size; i++) {
+		Next[i] = (int *) MALLOC(size*sizeof(int));
 	}
 
 	fp = f_lqm;
 
-   THREAD_SEM_INIT_LOCKED(&isconn);
+	THREAD_SEM_INIT_LOCKED(&isconn);
 }
 
 void free_lqm() {
@@ -159,57 +157,55 @@ void free_lqm() {
 
 }
 
-void fill_lqm(char val){
-	int i,j;
-	for (i=0;i<size;i++){
-		for (j=0;j<size;j++){
-			if (i!=j) lqm[i][j]=val;
-			else lqm[i][j]=0;
+void fill_lqm(char val) {
+	int i, j;
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			if (i != j)
+				lqm[i][j] = val;
+			else
+				lqm[i][j] = 0;
 		}
 	}
 }
 
-char lqm_get_val(int i, int j){
+char lqm_get_val(int i, int j) {
 	return lqm[i][j];
 }
 
-int lqm_get_num_hops(int i, int j){
-	if (i<0 || j<0 || i>=size || j>=size){
+int lqm_get_num_hops(int i, int j) {
+	if (i < 0 || j < 0 || i >= size || j >= size) {
 		return -1;
-	}else{
+	} else {
 		return lqm_dist[i][j];
 	}
 }
 
-void lqm_set_val(int i, int j, char val){
-	if (!status.is_forced_lqm){
-		lqm[i][j]=val;
-	}else{
-		lqm[i][j] = status.forced_lqm[i*wmpGetNumOfNodes()+j];
-	}
+void lqm_set_val(int i, int j, char val) {
+	lqm[i][j] = val;
 }
 
-char** lqm_get_ptr(void){
+char** lqm_get_ptr(void) {
 	return lqm;
 }
 
-int  wmpIsNetworkConnected(void){
+int wmpIsNetworkConnected(void) {
 	return net_connected;
 }
 
-int  wmpIsNetworkConnectedBlocking(int timeout_ms){
+int wmpIsNetworkConnectedBlocking(int timeout_ms) {
 	int ret;
 	informed = 0;
-	if (timeout_ms > 0){
-      ret = ( THREAD_SEM_WAIT_TIMED(isconn, timeout_ms) == 0 );
-	} else{
-      THREAD_SEM_WAIT(&isconn);
+	if (timeout_ms > 0) {
+		ret = (THREAD_SEM_WAIT_TIMED(isconn, timeout_ms) == 0);
+	} else {
+		THREAD_SEM_WAIT(&isconn);
 		ret = 1;
 	}
 	return ret;
 }
 
-void lqm_calculate_distances(void){
+void lqm_calculate_distances(void) {
 	int i, j;
 	net_connected = 1;
 
@@ -222,13 +218,13 @@ void lqm_calculate_distances(void){
 			if (i != j) {
 				int len = dijkstra_path_len(0, i, j);
 
-				if (nstat_isLost(i) || nstat_isLost(j)){
-					len  = -1;
+				if (nstat_isLost(i) || nstat_isLost(j)) {
+					len = -1;
 				}
 
 				lqm_dist[i][j] = len;
 				lqm_dist[j][i] = len;
-				net_connected = (net_connected && (len > 0));// && (lqm[i][j] <= 100));
+				net_connected = (net_connected && (len > 0)); // && (lqm[i][j] <= 100));
 			} else {
 				lqm_dist[i][j] = 0;
 			}
@@ -236,59 +232,62 @@ void lqm_calculate_distances(void){
 		}
 	}
 	if (net_connected && !informed) {
-      THREAD_SEM_SIGNAL(&isconn);
+		THREAD_SEM_SIGNAL(&isconn);
 		informed = 1;
-	}else{
+	} else {
 		informed = 0;
 	}
 }
 
-int lqm_is_leaf(char id){
-	int i, sum=0;
-	for (i=0;i<size;i++){
-		if (lqm[(int)id][i]>0) sum+=1;
+int lqm_is_leaf(char id) {
+	int i, sum = 0;
+	for (i = 0; i < size; i++) {
+		if (lqm[(int) id][i] > 0)
+			sum += 1;
 	}
-	if (sum > 1) return 0;
-	else if (sum ==1) return 1;
-	else return -1;
+	if (sum > 1)
+		return 0;
+	else if (sum == 1)
+		return 1;
+	else
+		return -1;
 }
-static int copied=0;
+static int copied = 0;
 
-void lqm_backup(){
-	int i,j;
-	for (i=0;i<size;i++){
-		for (j=0;j<size;j++){
-			lqm_copy[i][j]=lqm[i][j];
+void lqm_backup() {
+	int i, j;
+	for (i = 0; i < size; i++) {
+		for (j = 0; j < size; j++) {
+			lqm_copy[i][j] = lqm[i][j];
 		}
 	}
 	copied = 1;
 }
 
-void lqm_restore(){
-	if (copied)	{
-		int i,j;
-		for (i=0;i<size;i++){
-			for (j=0;j<size;j++){
-				lqm[i][j]=lqm_copy[i][j];
+void lqm_restore() {
+	if (copied) {
+		int i, j;
+		for (i = 0; i < size; i++) {
+			for (j = 0; j < size; j++) {
+				lqm[i][j] = lqm_copy[i][j];
 			}
 		}
 	}
-	copied=0;
+	copied = 0;
 }
 
-int lqm_get_distance(char i, char j){
-	return lqm_dist[(int)i][(int)j];
+int lqm_get_distance(char i, char j) {
+	return lqm_dist[(int) i][(int) j];
 }
 
-
-void print_lqm3(char* txt, char **lqm){
+void print_lqm3(char* txt, char **lqm) {
 	char q[1020];
-	lqmToString(lqm,q,status.N_NODES);
-   WMP_ERROR(stderr,"@%s@\n%s#\n",txt,q);
+	lqmToString(lqm, q, status.N_NODES);
+	WMP_ERROR(stderr, "@%s@\n%s#\n", txt, q);
 }
 
 char ** lqm_prune(char ** mlqm) {
-   int i, j, val_ij, val_ji, found;
+	int i, j, val_ij, val_ji, found;
 
 	if (!isConnected(lqm)) {
 		return lqm;
@@ -307,7 +306,7 @@ char ** lqm_prune(char ** mlqm) {
 		found = 0;
 		for (i = 0; i < size; i++) {
 			for (j = 0; j < size; j++) {
-				if (i == j){
+				if (i == j) {
 					continue;
 				}
 				if (lqm_pruned[i][j] > 0 && lqm_pruned[i][j] < umbral) {
@@ -319,7 +318,7 @@ char ** lqm_prune(char ** mlqm) {
 			}
 		}
 
-		if (found){
+		if (found) {
 			//fprintf(stderr,"found seli:%d selj:%d umbral:%d\n",sel_i,sel_j,umbral);
 
 			val_ij = lqm_pruned[sel_i][sel_j];
@@ -338,7 +337,7 @@ char ** lqm_prune(char ** mlqm) {
 	}
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
-			if (i==j) {
+			if (i == j) {
 				continue;
 			}
 			lqm_pruned[i][j] = abs(lqm_pruned[i][j]);
@@ -351,7 +350,7 @@ char ** lqm_prune(char ** mlqm) {
 }
 
 void lqm_copy_to(char ** dest, char ** src) {
-	int i,j;
+	int i, j;
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < size; j++) {
 			if (i != j) {
@@ -361,94 +360,135 @@ void lqm_copy_to(char ** dest, char ** src) {
 	}
 }
 
-
-char (*lqm_get_f())(char){
-	return fp;
-}
-
-
-void lqm_set_f( char (*f) (char)){
-	fp = f;
-}
-
-void lqm_compute_prob(char ** lqm) {
-	int i,j,k;
-	for (i=0; i< size; i++){
-		for (j=0; j< size; j++){
-			Next[i][j]=j;
-			if (i==j){
-				A0[i][j] = 1000;
-			}else{
-				A0[i][j] = lqm[i][j]*10; //XXX:
-			}
+char (*lqm_get_f())(char) {
+			return fp;
 		}
-	}
 
-	for (k = 0; k < size; k++) {
-		for (i = 0; i < size; i++) {
-			for (j = 0; j < size; j++) {
-				if (A0[i][k] * A0[k][k] * A0[k][j] / 1000000 > A0[i][j]) {
-					Next[i][j] = Next[i][k];
-					A1[i][j] = A0[i][k] * A0[k][k] * A0[k][j] / 1000000;
-				} else {
-					A1[i][j] = A0[i][j];
+		void lqm_set_f(char (*f)(char)) {
+			fp = f;
+		}
+
+		void lqm_compute_prob(char ** lqm) {
+			int i, j, k;
+			for (i = 0; i < size; i++) {
+				for (j = 0; j < size; j++) {
+					Next[i][j] = j;
+					if (i == j) {
+						A0[i][j] = 1000;
+					} else {
+						int val = lqm[i][j];
+						if (val > status.prob_99_perc_rssi_min) {
+							val = 99;
+						} else {
+							val = val * 99 / status.prob_99_perc_rssi_min;
+							val = val > 99 ? 99 : val;
+						}
+						A0[i][j] = val * 10; //lqm[i][j]*10; //XXX:
+					}
 				}
 			}
+
+			for (k = 0; k < size; k++) {
+				for (i = 0; i < size; i++) {
+					for (j = 0; j < size; j++) {
+						if (A0[i][k] * A0[k][k] * A0[k][j] / 1000000
+								> A0[i][j]) {
+							Next[i][j] = Next[i][k];
+							A1[i][j] = A0[i][k] * A0[k][k] * A0[k][j] / 1000000;
+						} else {
+							A1[i][j] = A0[i][j];
+						}
+					}
+				}
+				memcpy(A0, A1, sizeof(A0));
+			}
 		}
-		memcpy(A0, A1, sizeof(A0));
-	}
-}
 
-/* returns first hop (if exist) or -1 if not. If path is passed, the function returns the whole path */
-int lqm_prob_get_path(int src, int dest, char * path) {
-	int res = src, exres = 0, idx = 0;
-	while (res != dest) {
+		/* returns first hop (if exist) or -1 if not. If path is passed, the function returns the whole path */
+		int lqm_prob_get_path(int src, int dest, char * path) {
+			int res = src, exres = 0, idx = 0;
+			while (res != dest) {
 
-		res = Next[res][dest];
+				res = Next[res][dest];
 //		fprintf(stderr,"src:%d dst:%d res:%d\n",src,dest,res);
-		if (path != 0){
-			path[idx] = res;
-			idx++;
-		}
+				if (path != 0) {
+					path[idx] = res;
+					idx++;
+				}
 //		if (res == exres){
 //			return -1;
 //		}
-		exres = res;
-	}
-	return path[0];//Next[res][dest];
-}
-/* returns first hop (if exist) or -1 if not. If path is passed, the function returns the whole path */
-int lqm_prob_get_val(int src, int dest) {
-	return A0[src][dest];
-}
+				exres = res;
+			}
+			return path[0]; //Next[res][dest];
+		}
+		/* returns first hop (if exist) or -1 if not. If path is passed, the function returns the whole path */
+		int lqm_prob_get_val(int src, int dest) {
+			return A0[src][dest];
+		}
 
+		/* FAKE LQM */
+		static char fake[32 * 32];
+		static int fake_set = 0;
 
+		void lqm_set_fake(char * fake_lqm) {
+			int i = 0;
+			for (i = 0; i < size * size; i++) {
+				fake[i] = fake_lqm[i];
+			}
+			fake_set = 1;
+		}
 
-/* FAKE LQM */
-static char fake[32*32];
-static int fake_set = 0;
+		int lqm_fake_is_set() {
+			return fake_set;
+		}
 
-void lqm_set_fake(char * fake_lqm){
-	int i = 0;
-	for (i = 0; i< size*size; i++){
-		fake[i] = (fake_lqm[i] - '0')*10;
-	}
-	fake_set = 1;
-}
+		void lqm_fake_unset() {
+			fake_set = 0;
+		}
 
-int lqm_fake_is_set(){
-	return fake_set;
-}
+		void lqm_put_fake() {
+			int i, j;
+			for (i = 0; i < size; i++) {
+				for (j = 0; j < size; j++) {
+					if (i == j) {
 
-void lqm_put_fake() {
-   int i, j;
-   for (i = 0; i < size; i++) {
-		for (j = 0; j < size; j++) {
-			if (i==j){
-
-			}else{
-				lqm[i][j] = fake[i*size+j];
+					} else {
+						lqm[i][j] = fake[i * size + j];
+					}
+				}
 			}
 		}
-   }
-}
+
+
+		/* FAKE PATH */
+		static int fake_path_set = 0;
+		static char path [32];
+		int lqm_fake_path_is_set() {
+			return fake_path_set;
+		}
+		void lqm_set_fake_path(char * ppath) {
+			memcpy(path,ppath, status.N_NODES+1);
+			fake_path_set = 1;
+		}
+		char lqm_fake_path_get_next(char id_dest) {
+			int i, myslf, dest;
+			for (i = 0; i< status.N_NODES+1; i++){
+				if (path[i] == status.id){
+					myslf = i;
+					break;
+				}
+			}
+			for (i = 0; i< status.N_NODES+1; i++){
+				if (path[i] == id_dest){
+					dest = i;
+					break;
+				}
+			}
+
+			if (dest > myslf){
+				return path[myslf + 1];
+			}else{
+				return path[myslf - 1];
+			}
+		}

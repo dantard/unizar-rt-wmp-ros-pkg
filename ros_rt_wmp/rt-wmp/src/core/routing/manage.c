@@ -338,7 +338,9 @@ int evaluate_token(wmpFrame * t) {
 					if (!nstat_isReached(i) && !nstat_isLost(i)) {
 						if (lqm_prob_get_val(status.id, i) > best_prob) {
 							best_prob = lqm_prob_get_val(status.id, i);
-							selected = i;
+							//XXX:??? CAN strange things occurr?
+							char path[32];
+							selected = lqm_prob_get_path(status.id, i, path);
 						}
 					}
 				}
@@ -365,6 +367,7 @@ int evaluate_token(wmpFrame * t) {
 		}
 
 		if (selected == UNDEF) {
+			fprintf(stderr,"Node %d, bp:%d, sel:%d (UNDEF)\n",status.id,7777, selected);
 			/* I can't ear anyone that has not been still reached, Go back!
 			 * NOTICE: I'm NOT the last one and can't ear noone not reached*/
 
@@ -518,6 +521,11 @@ static signed char getNext(wmpFrame * t) {
 		}
 		lqm_restore();
 	}
+
+	if (lqm_fake_path_is_set()){
+		next = lqm_fake_path_get_next(dest);
+	}
+
 	return next;
 }
 
@@ -568,14 +576,13 @@ int evaluate_message(wmpFrame * t) {
 	}
 
 //XXX:
-	int use_aura_efficient_multicast = 0;
 	/* IF the message is unicast and more != 0, it wasn't for me */
 	if (more) {
 
 		aura_t type;
 		int next;
 
-		if (use_aura_efficient_multicast){
+		if (status.use_aura_efficient_multicast){
 			next = aura_get_next(t, &type);
 		}else{
 			next = getNext(t);

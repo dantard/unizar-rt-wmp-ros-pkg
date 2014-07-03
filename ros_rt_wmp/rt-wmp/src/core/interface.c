@@ -39,124 +39,165 @@
 #include "include/lqm.h"
 #include "interface/wmp_interface.h"
 
-char wmpGetNodeId(void){
+char wmpGetNodeId(void) {
 	return status.id;
 }
 
-char wmpGetNumOfNodes(void){
+char wmpGetNumOfNodes(void) {
 	return status.N_NODES;
 }
 
-int wmpGetLatestLQM(char * lqm){
-	int k=0,i=0,j=0;
-	for (i=0;i<status.N_NODES;i++){
-		for (j=0;j<status.N_NODES;j++){
-			lqm[k]=lqm_get_val(i,j);
+int wmpGetLatestLQM(char * lqm) {
+	int k = 0, i = 0, j = 0;
+	for (i = 0; i < status.N_NODES; i++) {
+		for (j = 0; j < status.N_NODES; j++) {
+			lqm[k] = lqm_get_val(i, j);
 			k++;
 		}
 	}
 	return k;
 }
 
-
-int wmpGetLatestDistances(char * lqm){
-	int k=0,i=0,j=0;
-	for (i=0;i<status.N_NODES;i++){
-		for (j=0;j<status.N_NODES;j++){
-			lqm[k]=lqm_get_distance(i,j);
+int wmpGetLatestDistances(char * lqm) {
+	int k = 0, i = 0, j = 0;
+	for (i = 0; i < status.N_NODES; i++) {
+		for (j = 0; j < status.N_NODES; j++) {
+			lqm[k] = lqm_get_distance(i, j);
 			k++;
 		}
 	}
 	return k;
 }
 
-
-char wmpGetMaxRssi(void){
+char wmpGetMaxRssi(void) {
 	return status.max_rssi;
 }
 
-void wmpSetCpuDelay(int val){
+void wmpSetCpuDelay(int val) {
 	status.cpu_delay = val;
 }
 
-int wmpGetCpuDelay(void){
-   return status.cpu_delay;
+int wmpGetCpuDelay(void) {
+	return status.cpu_delay;
 }
 
-void wmpSetTimeout(int val){
+void wmpSetTimeout(int val) {
 	status.TIMEOUT = val;
 }
 
-int wmpGetTimeout(void){
-   return status.TIMEOUT;
+int wmpGetTimeout(void) {
+	return status.TIMEOUT;
 }
 
-void wmpSetWCMult(int val){
+void wmpSetWCMult(int val) {
 	status.multiplier = val;
 }
 
-int wmpGetWCMult(void){
-   return status.multiplier;
+int wmpGetWCMult(void) {
+	return status.multiplier;
 }
 
-void wmpSetRate(int val){
+void wmpSetRate(int val) {
 	status.rate = val;
 }
 
-int wmpGetRate(void){
-   return status.rate;
+int wmpGetRate(void) {
+	return status.rate;
 }
 
-int wmpGetNetIT(void){
+int wmpGetNetIT(void) {
 	return status.net_inactivity_timeout;
 }
 
-void wmpSetInstanceId(short iid){
+void wmpSetInstanceId(short iid) {
 	status.instance_id = iid;
 }
 
-short wmpGetInstanceId(void){
-   return status.instance_id;
+short wmpGetInstanceId(void) {
+	return status.instance_id;
 }
 
-
-void wmp_set_levels(int w100, int w3, int w2, int w1){
+void wmp_set_levels(int w100, int w3, int w2, int w1) {
 	status.w100 = w100;
 	status.w3 = w3;
 	status.w2 = w2;
 	status.w1 = w1;
 }
 
-void wmpSetMessageReschedule(int val){
+void wmpSetMessageReschedule(int val) {
 	status.enable_message_reschedule = val;
 }
-int wmpGetMessageReschedule(void){
-   return status.enable_message_reschedule;
+int wmpGetMessageReschedule(void) {
+	return status.enable_message_reschedule;
 }
 
-void wmpSetFlowControl(int val){
+void wmpSetFlowControl(int val) {
 	status.enable_flow_control = val;
 }
 
-int wmpGetFlowControl(void){
-   return status.enable_flow_control;
+int wmpGetFlowControl(void) {
+	return status.enable_flow_control;
 }
 
-unsigned int wmpGetSerial(void){
+unsigned int wmpGetSerial(void) {
 	return status.serial;
 }
 
-unsigned int wmpGetLoopId(void){
+unsigned int wmpGetLoopId(void) {
 	return status.loop_id;
 }
 
-void setBeluga(int isbeluga){
+void setBeluga(int isbeluga) {
 	status.beluga = isbeluga;
 }
-void wmpForceLQM(char * lqm){
-	int i;
-	status.is_forced_lqm = 1;
-	for (i = 0; i< wmpGetNumOfNodes()*wmpGetNumOfNodes(); i++){
-		status.forced_lqm[i] = lqm[i];
+void wmpForceLQM(char * _lqm) {
+	int i,j;
+
+	if (strcmp(_lqm, "chain") == 0) {
+		int idx = 0;
+		char tmp[32 * 32];
+		for (i = 0; i < status.N_NODES; i++) {
+			for (j = 0; j < status.N_NODES; j++) {
+				if (abs(i-j) == 1){
+					tmp[idx] = 77;
+				}else {
+					tmp[idx] = 0;
+				}
+				idx++;
+			}
+		}
+		fprintf(stderr,"Set CHAIN LQM\n");
+		lqm_set_fake(tmp);
+	}else{
+		lqm_set_fake(_lqm);
 	}
 }
+
+void wmpForcePath(char * path) {
+	lqm_set_fake_path(path);
+}
+
+void wmpSet99PercentLimit(int val){
+	status.prob_99_perc_rssi_min = val;
+}
+
+int wmpSetParam(const char * txt, int val){
+	if (strcmp(txt,"99percent") == 0){
+		status.prob_99_perc_rssi_min = val;
+		return 1;
+	}else if (strcmp(txt,"fake_lqm_unset") == 0){
+		lqm_fake_unset();
+		return 1;
+	}
+
+	return 0;
+}
+int wmpGetParam(const char * txt){
+	if (strcmp(txt,"99percent") == 0){
+		return status.prob_99_perc_rssi_min;
+	}else if (strcmp(txt,"fake_lqm_is_set") == 0){
+		return lqm_fake_is_set();
+	}
+	return -1;
+}
+
