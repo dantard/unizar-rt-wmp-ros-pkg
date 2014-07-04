@@ -104,8 +104,8 @@ void mobile_avg_new_value(MobileAverage*e, char val){
 
 
 void mobile_avg_reset(MobileAverage* e) {
-//	e->initialized = 0;
-//	e->avgd_value = 0;
+	e->initialized = 0;
+	e->avgd_value = 0;
 };
 
 

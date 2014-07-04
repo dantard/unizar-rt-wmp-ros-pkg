@@ -54,6 +54,8 @@ void clear(queue_t * q, int idx){
 	if (idx >= 0 && idx < q->max_msg_num) {
 		q->longMsg[idx]->done = 0;
 		q->longMsg[idx]->received_parts = 0;
+		q->longMsg[idx]->parts_pointer = 0;
+		q->longMsg[idx]->part_id = 0;
 		q->longMsg[idx]->num_parts = 0;
 		q->longMsg[idx]->done = 0;
 		q->longMsg[idx]->size = 0;
@@ -61,6 +63,8 @@ void clear(queue_t * q, int idx){
 		q->longMsg[idx]->rescheduled = 0;
 		memset(q->longMsg[idx]->received_part,0,q->longMsg[idx]->max_message_parts);
 		q->longMsg[idx]->hash = 0;
+		q->longMsg[idx]->parts_sent = 0;
+
 	}
 }
 
@@ -100,11 +104,13 @@ int queue_get_elem_dest(queue_t * q, int id){
 
 int queue_get_elem_burst(queue_t * q, int id) {
 	int i, count = 0;
-	unsigned short hash = q->longMsg[id]->burst_hash;
-	for (i = 0; i < q->max_msg_num; i++) {
-		if (hash == q->longMsg[i]->burst_hash) {
-			count+=q->longMsg[i]->num_parts - q->longMsg[i]->parts_pointer;
-			//printk(KERN_ERR "id:%d hash:%d num_parts%d parts_point:%d", id, hash,q->longMsg[i]->num_parts, q->longMsg[i]->parts_pointer);
+	if (id >= 0 && id < q->max_msg_size){
+		unsigned short hash = q->longMsg[id]->burst_hash;
+		for (i = 0; i < q->max_msg_num; i++) {
+			if (hash == q->longMsg[i]->burst_hash) {
+				count+=q->longMsg[i]->num_parts - q->longMsg[i]->parts_pointer;
+				//printk(KERN_ERR "id:%d hash:%d num_parts%d parts_point:%d", id, hash,q->longMsg[i]->num_parts, q->longMsg[i]->parts_pointer);
+			}
 		}
 	}
 	return count;

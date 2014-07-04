@@ -76,6 +76,10 @@ int wmp_queue_tx_get_elem_burst(int id);
 int wmp_queue_tx_reschedule(void);
 int wmp_queue_tx_confirm(void);
 
+//XXX:
+void wmp_queue_tx_done(void);
+
+
 int wmp_queue_tx_get_elem_port(int id);
 void wmp_queue_tx_drop_elem(int id);
 void wmp_queue_tx_get_last_popped_info(int * age, int *port, int * priority);

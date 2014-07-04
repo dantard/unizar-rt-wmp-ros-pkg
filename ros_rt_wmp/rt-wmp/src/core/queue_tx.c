@@ -94,6 +94,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 	unsigned short ts = (unsigned short) (getRawActualTimeus() & 0x7F);
 
 	if (q->drop_next){
+		fprintf(stderr,"DROPPING MESSAGE (FLOW CONTROL)\n");
 		q->drop_next = 0;
 		return 1;
 	}
@@ -162,6 +163,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 		return 0;
 	}
 
+
 	q->longMsg[selected]->size = size;
 	q->longMsg[selected]->dest = dest;
 	q->longMsg[selected]->port = port;
@@ -172,6 +174,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 	q->longMsg[selected]->num_parts = nparts;
 	q->longMsg[selected]->parts_pointer = 0;
 	q->longMsg[selected]->this_part_size = 0;
+	q->longMsg[selected]->parts_sent = 0;
 
 	/* Force Burst */
 	if (q->force_burst == port) {
@@ -183,6 +186,8 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 	memcpy(q->longMsg[selected]->data, p, size);
 	q->elem++;
 	q->longMsg[selected]->done = 1;
+	//fprintf(stderr,"PUSHING id:%d elem:%d nparts:%d\n",selected ,q->elem, nparts);
+
 
 	exclusive_off(q);
 	if (must_signal) {
@@ -238,9 +243,12 @@ int queue_tx_pop_part(queue_t * q, longMsg_t ** p) {
 			}else{
 				q->longMsg[id]->part_id = q->longMsg[id]->parts_pointer;
 			}
+			q->longMsg[id]->parts_sent ++;
+
 			*p = q->longMsg[id];
 			q->last_popped_id = id;
 		}
+		//fprintf(stderr,"POPPING id:%d elem:%d part_id: %d\n",id ,q->elem, q->longMsg[id]->part_id);
 		return id;
 	} else {
 		return -1;
@@ -261,17 +269,40 @@ int queue_tx_reschedule(queue_t * q) {
 int queue_tx_confirm(queue_t * q) {
 	if (q->last_popped_id >= 0 && q->last_popped_id < q->max_msg_num) {
 		exclusive_on(q);
-		q->longMsg[q->last_popped_id]->rescheduled = 0;
-		q->longMsg[q->last_popped_id]->parts_pointer++;
-		if (q->longMsg[q->last_popped_id]->parts_pointer
-				== q->longMsg[q->last_popped_id]->num_parts) {
+
+		if (q->longMsg[q->last_popped_id]->num_parts == 0){
+			clear(q, q->last_popped_id);
+			exclusive_off(q);
+			return 0;
+		}
+
+		if (q->longMsg[q->last_popped_id]->parts_sent > q->longMsg[q->last_popped_id]->parts_pointer){
+			q->longMsg[q->last_popped_id]->rescheduled = 0;
+			q->longMsg[q->last_popped_id]->parts_pointer++;
+		}
+		//fprintf(stderr,"pp: %d np:%d\n",q->longMsg[q->last_popped_id]->parts_pointer,q->longMsg[q->last_popped_id]->num_parts);
+
+		//XXX:
+		//if (q->longMsg[q->last_popped_id]->parts_pointer == q->longMsg[q->last_popped_id]->num_parts) {
+		//fprintf(stderr,"CONFIRM id:%d elem:%d\n",q->last_popped_id ,q->elem);
+
+		if (q->longMsg[q->last_popped_id]->num_parts>0 && q->longMsg[q->last_popped_id]->parts_sent == q->longMsg[q->last_popped_id]->num_parts) {
 			clear(q, q->last_popped_id);
 			q->elem--;
+			//fprintf(stderr,"CLEAR id:%d elem:%d\n",q->last_popped_id ,q->elem);
 		}
+
 		exclusive_off(q);
 		return 1;
 	}
 	return 0;
+}
+
+void queue_tx_done(queue_t * q){
+	exclusive_on(q);
+	clear(q, q->last_popped_id);
+	q->elem--;
+	exclusive_off(q);
 }
 
 void queue_tx_get_last_popped_info(queue_t * q, int * age, int *port, int * priority){

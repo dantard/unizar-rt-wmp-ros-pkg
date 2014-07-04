@@ -1499,6 +1499,7 @@ void main_window::update_frame_labels(wmpFrame * f) {
 		row_child_append("Priority", nts((int)f->msg.priority));
 		row_child_append("Length", nts(f->msg.len));
 		row_child_append("Age", nts((int) f->msg.age));
+		row_child_append("Cnt", nts((int) f->msg.cnt));
 
 		row_child_append("Msg Hash", nts(f->msg.msg_hash));
 		row_child_append("Msg Part ID", nts(f->msg.part_id));

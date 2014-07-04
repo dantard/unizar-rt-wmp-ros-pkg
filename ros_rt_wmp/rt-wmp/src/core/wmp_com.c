@@ -89,6 +89,8 @@ void wmpUpdateRssi(wmpFrame *p){
 		if (i==status.id) continue;
 		if (rssi_get_averaged_rssi(i)>0 && rssi_get_age(i)> status.hold_time){
 			rssi_reset(i);
+			lqm_set_val(i,status.id,0);
+			lqm_set_val(status.id,i,0);
 		}
 	}
 	/* if I received a frame but the other says does not hear me, I suppose it
@@ -188,6 +190,14 @@ int wmpSend(wmpFrame* p){
 	lastTX.type = p->hdr.type;
 
 	size+=wmp_print_put(p);
+
+	//XXX:TMP
+	static unsigned int cnt = 0;
+	if ( p->hdr.type == MESSAGE && p->msg.src == status.id){
+		p->msg.cnt = cnt++;
+	}
+
+
 	ml_send( p, size);
 	return WAIT_ACK;
 }

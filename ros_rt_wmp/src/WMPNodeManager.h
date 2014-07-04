@@ -76,7 +76,7 @@ public:
 
 		if (req.command == SET_FAKE_LQM) {
 			char lqm[req.param3.length()];
-			for (int i = 0; i< req.param3.length();i++){
+			for (unsigned int i = 0; i< req.param3.length();i++){
 				lqm[i] = (req.param3.at(i)-48)*10;
 			}
 			wmpForceLQM(lqm);
@@ -90,7 +90,7 @@ public:
 			return true;
 		}else if (req.command == SET_FAKE_PATH) {
 			char path[req.param3.length()];
-			for (int i = 0; i< req.param3.length();i++){
+			for (unsigned int i = 0; i< req.param3.length();i++){
 				path[i] = (req.param3.at(i)-48);
 				fprintf(stderr,"Putting path:%d\n", path[i]);
 			}

@@ -170,6 +170,11 @@ int wmp_queue_tx_confirm(){
 	return queue_tx_confirm(&wmp_queue_tx);
 }
 
+void wmp_queue_tx_done(){
+	queue_tx_done(&wmp_queue_tx);
+}
+
+
 int wmp_queue_rx_get_count(int port){
 	return queue_rx_get_count(&wmp_queue_rx, port);
 }
@@ -193,8 +198,7 @@ int wmpPush(Msg *p) {
 		return 0;
 	}
 	task_push(p->priority);
-	return queue_tx_push_data(&wmp_queue_tx, p->port, p->data, p->len, dest,
-			p->priority);
+	return queue_tx_push_data(&wmp_queue_tx, p->port, p->data, p->len, dest, p->priority);
 }
 
 void wmp_queue_init(int rx_nelems, int tx_nelems, int max_msg_size, int num_ports) {

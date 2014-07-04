@@ -56,7 +56,7 @@ extern "C" {
 
 static ros::Publisher message_publisher;
 static ros::Publisher publisher;
-static int nnodes, node_id;
+static int nnodes, node_id, write_messages;
 
 //void received(int *rtnCode, wmpFrame *p, wmpFrame*q) {
 //	static ros_rt_wmp_msgs::WMPFrames v;
@@ -75,7 +75,14 @@ void message_callback(wmpFrame * q){
 	char lqm[nnodes*nnodes];
 
 	v.rx_rssi = q->hdr.rssi;
-	v.serial = q->hdr.serial;
+
+	//XXX:TMP
+	int diff = 0;
+	static int last = q->msg.cnt-1;
+	diff = q->msg.cnt - last - 1;
+	last = q->msg.cnt;
+
+	v.serial = 	q->msg.cnt;// q->hdr.serial;
 	v.loop_id = q->hdr.loop_id;
 	v.header.stamp = ros::Time::now();
 	v.src = q->msg.src;
@@ -98,8 +105,35 @@ void message_callback(wmpFrame * q){
 	for (i = 0; i < nnodes*nnodes; i++) {
 		v.lqm.push_back(lqm[i]);
 	}
-
 	message_publisher.publish(v);
+
+	if (write_messages){
+		/* write messages */
+		static FILE * p = 0;
+		if (p==0){
+			char filename[256];
+			char time[256];
+			getTimedFilename(time);
+			sprintf(filename,"ros-rt-wmp-messages-n%d-%s.dat",node_id,time);
+			p = fopen(filename,"w+");
+		}
+
+		fprintf(p,"%llu %3d %3d %3d %3d %4d %4d %4d %4d %3d %5d %3d     ",getRawActualTimeus(), q->msg.port, q->msg.src, q->msg.priority, q->msg.part_id, q->hdr.from, q->hdr.rssi, q->msg.len,  q->msg.age, q->hdr.gretries, q->msg.cnt, diff);
+
+		for (i = 0; i < nnodes; i++) {
+			fprintf(p,"%2d ", q->msg.path[i]);
+		}
+
+		fprintf(p,"    ");
+
+		for (i = 0; i < nnodes*nnodes; i++) {
+			fprintf(p,"%3d ", lqm[i]);
+		}
+
+		fprintf(p,"\n");
+		fflush(p);
+		/* write messages */
+	}
 }
 
 
@@ -147,6 +181,9 @@ int main(int argc, char** argv) {
 			STR("Specify the namespace"));
 	argo_setCommentId(argo_addInt(&ans, STR("auto-namespace"), 0, 0),
 			STR("Obtain the namespace from the RT-WMP node_id"));
+
+	argo_setCommentId(argo_addInt(&write_messages, STR("write-messages"), 0, 0),
+				STR("Write message log"));
 
 	if (!wmpIsKernelSpace()){
 		argo_setCommentId(argo_addIntMandatory(&node_id, STR("node-id"), 0, 1),

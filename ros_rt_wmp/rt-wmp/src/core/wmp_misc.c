@@ -219,6 +219,9 @@ int apply_config(Status * status, char * param, char * val) {
 	}else if (strcmp(param, "PERC99_THRESHOLD") == 0) {
 		status->prob_99_perc_rssi_min = atoi(val);
 		return 1;
+	}else if (strcmp(param, "ENABLE_MESSAGE_RESCHEDULE") == 0) {
+		status->enable_message_reschedule = atoi(val);
+		return 1;
 	}
 	return 0;
 

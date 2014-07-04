@@ -201,3 +201,10 @@ int wmpGetParam(const char * txt){
 	return -1;
 }
 
+void getTimedFilename(char * str_time) {
+	struct tm *tm;
+	time_t t;
+	t = time(NULL);
+	tm = localtime(&t);
+	strftime(str_time, 256, "%H_%M_%S_%d_%m_%Y", tm);
+}

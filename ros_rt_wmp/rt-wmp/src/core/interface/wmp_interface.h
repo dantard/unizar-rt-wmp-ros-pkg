@@ -276,6 +276,6 @@ void wmpForceLQM(char * lqm);
 void wmpForcePath(char * path);
 int wmpSetParam(const char * txt, int val);
 int wmpGetParam(const char * txt);
-
+void getTimedFilename(char * str_time);
 #endif
 

@@ -367,7 +367,7 @@ int evaluate_token(wmpFrame * t) {
 		}
 
 		if (selected == UNDEF) {
-			fprintf(stderr,"Node %d, bp:%d, sel:%d (UNDEF)\n",status.id,7777, selected);
+
 			/* I can't ear anyone that has not been still reached, Go back!
 			 * NOTICE: I'm NOT the last one and can't ear noone not reached*/
 
@@ -392,6 +392,7 @@ int evaluate_token(wmpFrame * t) {
 			t->hdr.to = selected;
 			t->hdr.retries = 0;
 			t->hdr.type = TOKEN;
+
 			return SEND_TOKEN;
 		}
 	}
@@ -731,39 +732,44 @@ int create_authorization(wmpFrame * t) {
 }
 
 int create_message(wmpFrame * t) {
-   static longMsg_t * m;
+	static longMsg_t * m;
+
 	int m_id = wmp_queue_tx_pop_part(&m), i;
 
-	t->hdr.burst = wmp_queue_tx_get_elem_burst(m_id);
+	if (m_id < 0) {
+		wmp_queue_tx_pop_part_done(m_id);
+		wmp_print_clean(t);
+		fprintf(stderr,"NEW TOKEN (NOTHING TO TRANSMIT)\n");
+		return NEW_TOKEN;
+	}
 
+	t->hdr.burst = wmp_queue_tx_get_elem_burst(m_id);
 	t->hdr.type = MESSAGE;
 	t->hdr.from = status.id;
 	t->hdr.to = status.id; /* like If I received the frame */
 
-	t->msg.age =  us_to_ms(((int)(getRawActualTimeus()-m->ts)));
+	t->msg.age = us_to_ms(((int) (getRawActualTimeus() - m->ts)));
 	t->msg.dest = m->dest;
-
 	t->msg.src = status.id;
 	memcpy(wmp_get_message_data_pointer(t), m->pointer, m->this_part_size);
 	t->msg.len = (unsigned short) m->this_part_size;
 	t->msg.port = m->port;
 	t->msg.priority = m->priority;
-
 	t->msg.msg_hash = m->hash;
 	t->msg.part_id = m->part_id;
 	t->msg.msg_part_size = m->msg_part_size;
 
 	t->msg.reached = 0;
 
-	for ( i = 0; i<status.N_NODES; i++){
+	for (i = 0; i < status.N_NODES; i++) {
 		t->msg.path[i] = -1;
 	}
 
-	mBitsSet(t->msg.type,AURA_MSG);
-	if (m->rescheduled){
-		mBitsSet(t->msg.type,RESCHEDULED);
-	}else{
-		mBitsUnset(t->msg.type,RESCHEDULED);
+	mBitsSet(t->msg.type, AURA_MSG);
+	if (m->rescheduled) {
+		mBitsSet(t->msg.type, RESCHEDULED);
+	} else {
+		mBitsUnset(t->msg.type, RESCHEDULED);
 	}
 
 	t->hdr.ack = 0;
@@ -773,8 +779,8 @@ int create_message(wmpFrame * t) {
 	status.wait_ack_of_part = m->part_id;
 
 	wmp_queue_tx_pop_part_done(m_id);
-
 	wmp_print_clean(t);
+
 	return EVALUATE_MESSAGE;
 }
 
@@ -784,15 +790,6 @@ void wmpSetMessageCallback( void (*f) (wmpFrame *)){
 	msg_cb = f;
 }
 
-void getTimedFilename(char * str_time) {
-	struct tm *tm;
-	time_t t;
-	t = time(NULL);
-	tm = localtime(&t);
-	strftime(str_time, 256, "%H_%M_%S_%d_%m_%Y", tm);
-}
-
-
 int enqueue_message(wmpFrame * t) {
 	int i, j;
 	for ( i = 0; i<status.N_NODES; i++){
@@ -801,30 +798,6 @@ int enqueue_message(wmpFrame * t) {
 			break;
 		}
 	}
-
-
-
-	/* write messages */
-	static FILE * p = 0;
-	if (p==0){
-		char filename[256];
-		char time[256];
-		getTimedFilename(time);
-		sprintf(filename,"rt-wmp-messages-n%d-%s.dat",status.id,time);
-		p = fopen(filename,"w+");
-	}
-	fprintf(p,"%2d %3d %d %d %4d %llu %d %3d",t->msg.port, t->msg.part_id, t->hdr.from, t->hdr.rssi, t->msg.len, getRawActualTimeus(), t->msg.age, t->hdr.gretries);
-	for (i = 0; i < status.N_NODES; i++) {
-		fprintf(p,"%2d ", t->msg.path[i]);
-	}
-	for (i = 0; i < status.N_NODES; i++) {
-		for (j = 0; j < status.N_NODES; j++) {
-			fprintf(p,"%3d ", lqm_get_val(i,j));
-		}
-	}
-	fprintf(p,"\n");
-	fflush(p);
-	/* write messages */
 
 	if (msg_cb != 0){
 		msg_cb(t);

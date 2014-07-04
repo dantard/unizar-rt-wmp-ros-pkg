@@ -91,6 +91,7 @@ typedef struct {
 	__u8 port;
 	__s8 priority;
 	__s8 path[32];
+	__u32 cnt;
 } __attribute__ ((__packed__)) Message;
 
 typedef struct {

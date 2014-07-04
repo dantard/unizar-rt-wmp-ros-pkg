@@ -55,7 +55,7 @@ typedef struct {
 	int msg_part_size;
 	unsigned short hash;
 	unsigned short burst_hash;
-	short num_parts, part_id;
+	short num_parts, part_id, parts_sent;
 	unsigned short received_parts;
 	char * received_part;
 	unsigned short max_message_parts;
@@ -129,5 +129,6 @@ void queue_tx_drop_elem(queue_t * q, int id);
 void queue_tx_get_last_popped_info(queue_t * q, int * age, int *port, int * priority);
 void queue_tx_drop_next(queue_t * q);
 void queue_tx_force_burst(queue_t * q, int port);
+void queue_tx_done(queue_t * q);
 
 #endif /* LONG_MESSAGES_H_ */
