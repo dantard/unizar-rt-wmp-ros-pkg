@@ -376,7 +376,7 @@ char (*lqm_get_f())(char) {
 					if (i == j) {
 						A0[i][j] = 1000;
 					} else {
-						int val = lqm[i][j];
+						int val = lqm[i][j]>lqm[j][i]?lqm[j][i]:lqm[i][j];
 						if (val > status.prob_99_perc_rssi_min) {
 							val = 99;
 						} else {

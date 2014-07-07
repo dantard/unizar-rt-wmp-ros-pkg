@@ -182,7 +182,6 @@ int evaluate_token(wmpFrame * t) {
 		}else{
 			wmp_queue_tx_confirm();
 		}
-
 		if (status.loop_id != t->hdr.loop_id){
 			status.loop_id = t->hdr.loop_id;
 		}
@@ -276,7 +275,7 @@ int evaluate_token(wmpFrame * t) {
 
 //XXX: MERGING
 		//force wc
-		if (0){
+		if (1){
 			if (status.id != t->tkn.beginner && t->hdr.from != status.id) {//&& t->tkn.ack_hash != 0
 				nstat_clearReached(t->tkn.beginner);
 				return EVALUATE_TOKEN;
@@ -392,7 +391,6 @@ int evaluate_token(wmpFrame * t) {
 			t->hdr.to = selected;
 			t->hdr.retries = 0;
 			t->hdr.type = TOKEN;
-
 			return SEND_TOKEN;
 		}
 	}

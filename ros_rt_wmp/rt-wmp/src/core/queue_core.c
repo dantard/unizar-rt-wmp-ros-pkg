@@ -61,6 +61,7 @@ void clear(queue_t * q, int idx){
 		q->longMsg[idx]->size = 0;
 		q->longMsg[idx]->burst_hash = 0;
 		q->longMsg[idx]->rescheduled = 0;
+		q->longMsg[idx]->priority = -1;
 		memset(q->longMsg[idx]->received_part,0,q->longMsg[idx]->max_message_parts);
 		q->longMsg[idx]->hash = 0;
 		q->longMsg[idx]->parts_sent = 0;

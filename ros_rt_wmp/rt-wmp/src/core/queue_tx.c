@@ -125,7 +125,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 
 	if (num_of_this_prio > priority){
 		exclusive_off(q);
-		fprintf(stderr,"*** TOO MUCH OF PRIO %d, DISCARDING \n", priority);
+		fprintf(stderr,"*** TOO MUCH OF PRIO %d, DISCARDING (%d in queue)\n", priority, q->elem);
 		return 0;
 	}
 
@@ -133,6 +133,7 @@ int queue_tx_push_data(queue_t * q, unsigned int port, char * p, unsigned int si
 		if (q->longMsg[i]->hash == 0) {
 			selected = i;
 			must_signal = 1;
+
 			break;
 		} else {
 			if (priority >  100 && priority > q->longMsg[i]->priority) {
@@ -214,8 +215,7 @@ int queue_tx_get_port_period(queue_t * q) {
 
 int queue_tx_pop_part(queue_t * q, longMsg_t ** p) {
 	int id, ret = 0;
-
-	ret = WAIT_TIMED(q->sem,5000);
+	ret = WAIT_TIMED(q->sem,2300);
 
 	exclusive_on(q);
 	if (ret == 0) {
