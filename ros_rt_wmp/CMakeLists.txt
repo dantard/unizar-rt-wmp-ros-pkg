@@ -25,7 +25,8 @@ rosbuild_add_executable(ros-rt-wmp EXCLUDE_FROM_ALL src/main.cpp)
 rosbuild_add_executable(ros-rt-wmp-us-sock  EXCLUDE_FROM_ALL src/main.cpp)
 rosbuild_add_executable(ros-rt-wmp-us-ath5k  EXCLUDE_FROM_ALL src/main.cpp)
 rosbuild_add_executable(ros-rt-wmp-ks  EXCLUDE_FROM_ALL src/main.cpp)
-rosbuild_add_executable(test  EXCLUDE_FROM_ALL src/main.cpp)
+rosbuild_add_executable(test EXCLUDE_FROM_ALL src/main.cpp)
+rosbuild_add_executable(ros-rt-wmp-ip  EXCLUDE_FROM_ALL src/main.cpp ip/low_level.c)
 
 
 target_link_libraries(ros-rt-wmp          rt-wmp z pcap)
@@ -33,6 +34,8 @@ target_link_libraries(ros-rt-wmp-us-sock  rt-wmp z pcap)
 target_link_libraries(ros-rt-wmp-us-ath5k rt-wmp z pcap)
 target_link_libraries(ros-rt-wmp-ks       rt-wmp-ks z pcap)
 target_link_libraries(test                rt-wmp z pcap)
+target_link_libraries(ros-rt-wmp-ip       z)
+
 
 #ADD_DEFINITIONS(-Wno-address -Wno-deprecated -Wno-deprecated-declarations -std=gnu++0x -I../../rt-wmp/platforms/linux_us)
 
@@ -115,7 +118,6 @@ add_custom_target(
         WORKING_DIRECTORY ../rt-wmp
 )
 
-
 add_custom_target(compile ALL)
                                    
 ## Select the desired configuration v here v
@@ -126,4 +128,4 @@ add_dependencies(compile ${type})
 #add_dependencies(compile ros-rt-wmp)
 #add_dependencies(compile ros-rt-wmp-us-sock)
 #add_dependencies(compile ros-rt-wmp-us-ath5k)
-#add_dependencies(compile ros-rt-wmp-ks)
+#add_dependencies(compile ros-rt-wmp-ip)
