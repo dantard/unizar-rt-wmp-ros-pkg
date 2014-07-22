@@ -248,9 +248,6 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->enable_flow_control = 0;
 	s->enable_message_reschedule = 1;
 	s->net_id=0;
-	s->use_prim = 0;
-	s->use_prune = 0;
-	s->use_prob = 1;
 	s->highestSerial = 0;
 	s->wait_implicit_ack_from = -1;
 	s->pow = -1;
@@ -259,17 +256,23 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->active_search = 1;
 	s->lastRecvdType = -1;
 	s->w100 = 30;
-	s->w3 = 35;
-	s->w2 = 40;
-	s->w1 = 80;
+	s->w3 = 30;
+	s->w2 = 45;
+	s->w1 = 65;
 	s->power_save = 1;
 	s->secure = 1;
 	s->max_msg_size = 65535;
 	s->num_ports = 32;
 	s->beluga = 1;
-	s->prune_threshold = 10;
-	s->prob_99_perc_rssi_min = 70;
+	s->prune_threshold = 1;
+	s->prob_99_perc_rssi_min = 100;
 	s->use_aura_efficient_multicast = 0;
+
+	s->use_prim = 0;
+	s->use_prune = 0;
+	s->use_prob = 0;
+	s->use_pdr = 0;
+
 }
 
 

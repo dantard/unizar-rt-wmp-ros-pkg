@@ -51,12 +51,12 @@
 char isolated_count[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static int confirmed(unsigned int ack, unsigned short ack_hash, short ack_part){
+static int confirmed(unsigned int ack, unsigned short ack_hash, short ack_part) {
 	if (status.wait_ack_of_hash == ack_hash
 			&& status.wait_ack_of_part == ack_part
-			&& ack == status.wait_ack_from){
+			&& ack == status.wait_ack_from) {
 		return 1;
-	}else{
+	} else {
 		return 0;
 	}
 }
@@ -64,14 +64,13 @@ static int confirmed(unsigned int ack, unsigned short ack_hash, short ack_part){
 int create_new_token(wmpFrame * t) {
 	int i = 0;
 
-	if (status.power_save && t->hdr.waiting <= 1 && status.lastRecvdType != MESSAGE ){
-		if (t->hdr.sleep > 0){
-			wmpSendAck(t);
-			t->hdr.sleep = 0;
-			return RECEIVE;
+	if (status.power_save
+			&& t->hdr.waiting <= 1&& status.lastRecvdType != MESSAGE) {if (t->hdr.sleep > 0) {
+				wmpSendAck(t);
+				t->hdr.sleep = 0;
+				return RECEIVE;
+			}
 		}
-	}
-
 
 	t->hdr.sleep = ms_to_us(500);
 	t->hdr.serial = status.highestSerial;
@@ -110,13 +109,14 @@ int evaluate_token(wmpFrame * t) {
 	int i, tot, last_one, burst = 0, waiting = 0, delay;
 	signed char highestPriority = UNDEF;
 	unsigned int age;
-	if (t->tkn.idMaxPri >=0){
-		delay = task_get_next_predicted_push_delay_most_priority_than(t->tkn.maxPri+1);
-	}else{
+	if (t->tkn.idMaxPri >= 0) {
+		delay = task_get_next_predicted_push_delay_most_priority_than(
+				t->tkn.maxPri + 1);
+	} else {
 		delay = task_get_next_predicted_push_delay();
 	}
 
-	if (delay > 1000){ //XXX:number
+	if (delay > 1000) { //XXX:number
 		delay = 1000;
 	}
 
@@ -125,11 +125,11 @@ int evaluate_token(wmpFrame * t) {
 	int most_urgent_is_mine = 0;
 	int enough_time_for_other_message = 0;
 
-	if (delay < t->hdr.sleep){
+	if (delay < t->hdr.sleep) {
 		most_urgent_is_mine = 1;
 		t->hdr.sleep = delay;
 
-	}else{
+	} else {
 		enough_time_for_other_message = (t->hdr.sleep > ms_to_us(12));
 	}
 
@@ -138,14 +138,15 @@ int evaluate_token(wmpFrame * t) {
 	/* XXX: SOMPORT */
 	//nstat_setReached(status.id);
 
-
 	aura_clear();
 
 	if ((t->hdr.from != status.id) || (t->hdr.type == FRESH_TOKEN)) {
 
+		//lqm_print();
+
 		t->hdr.type = TOKEN;
 
-        /* Frame freshly received */
+		/* Frame freshly received */
 		if (t->tkn.idMaxPri != UNDEF) {
 			t->tkn.age += wmp_calculate_frame_duration_ms(status.rate,
 					wmp_get_frame_total_lenght(t));
@@ -159,16 +160,16 @@ int evaluate_token(wmpFrame * t) {
 		/* Reschedule if last message not delivered */
 		if (status.enable_message_reschedule) {
 			if (status.wait_ack_from) {
-				if (confirmed(t->hdr.ack, t->tkn.ack_hash, t->tkn.ack_part)){
+				if (confirmed(t->hdr.ack, t->tkn.ack_hash, t->tkn.ack_part)) {
 					wmp_queue_tx_confirm();
-				}else{
+				} else {
 					int age, port, period, priority;
 					wmp_queue_tx_get_last_popped_info(&age, &port, &priority);
 					period = task_get_priority_period(priority);
 					if (status.secure || age < period) {
 						t->hdr.sleep = 0;
 						wmp_queue_tx_reschedule();
-					} else{
+					} else {
 						wmp_queue_tx_confirm();
 					}
 				}
@@ -179,10 +180,10 @@ int evaluate_token(wmpFrame * t) {
 				t->tkn.ack_part = 0;
 				status.wait_ack_from = 0;
 			}
-		}else{
+		} else {
 			wmp_queue_tx_confirm();
 		}
-		if (status.loop_id != t->hdr.loop_id){
+		if (status.loop_id != t->hdr.loop_id) {
 			status.loop_id = t->hdr.loop_id;
 		}
 
@@ -229,13 +230,13 @@ int evaluate_token(wmpFrame * t) {
 					//if (nstat_get_val(i) == status.id) {
 
 					/* I've to search someone!*/
-					lqm_set_val(status.id, i, 100);
-					lqm_set_val(i, status.id, 100);
-
+					//lqm_set_val(status.id, i, 100);
+					//lqm_set_val(i, status.id, 100);
 					t->hdr.to = i;
 					t->hdr.retries = 0;
 					t->hdr.type = TOKEN;
 					t->hdr.sleep = 0;
+					wmp_print("ST1 ");
 					return SEND_TOKEN;
 				}
 			}
@@ -253,31 +254,27 @@ int evaluate_token(wmpFrame * t) {
 
 	if (tot == 0) {
 		t->hdr.sleep = 0;
-		status.highestSerial+=status.id*5;
+		status.highestSerial += status.id * 5;
 		/* I have the token but cannot see nothing */
+		wmp_print("NT2 ");
 		return NEW_TOKEN;
 	}
 
 	/*LQM is NOT empty --> Control if I'm the last one*/
 
 	last_one = 1;
-	wmp_print("LN:", last_one);
 	for (i = 0; i < status.N_NODES; i++) {
-		wmp_print("%d,%d ", i, nstat_isReached(i));
 		last_one = last_one && nstat_isReached(i);
 	}
-	wmp_print("LN %d ", last_one);
 	if (last_one > 0) {
-
-
 		/* Force WC */
 		//XXX: ANALISYS status.N_NODES > 2
-
 //XXX: MERGING
 		//force wc
-		if (1){
-			if (status.id != t->tkn.beginner && t->hdr.from != status.id) {//&& t->tkn.ack_hash != 0
+		if (0) {
+			if (status.id != t->tkn.beginner && t->hdr.from != status.id) { //&& t->tkn.ack_hash != 0
 				nstat_clearReached(t->tkn.beginner);
+				wmp_print("ET1 ");
 				return EVALUATE_TOKEN;
 			}
 		}
@@ -285,7 +282,7 @@ int evaluate_token(wmpFrame * t) {
 		//XXX:BUG
 		/* I'm the last one */
 		if (t->tkn.idMaxPri >= 0) {
-/*XXX: SOMPORT BUG */
+			/*XXX: SOMPORT BUG */
 //			if (enough_time_for_other_message){
 //				return CREATE_AUTHORIZATION;
 //			}else{
@@ -297,6 +294,7 @@ int evaluate_token(wmpFrame * t) {
 //			return NEW_TOKEN;
 			return CREATE_AUTHORIZATION;
 		} else {
+			wmp_print("NT1 ");
 			/* Noone have to transmit nothing - Start a new PAP */
 			return NEW_TOKEN;
 		}
@@ -338,8 +336,9 @@ int evaluate_token(wmpFrame * t) {
 						if (lqm_prob_get_val(status.id, i) > best_prob) {
 							best_prob = lqm_prob_get_val(status.id, i);
 							//XXX:??? CAN strange things occurr?
-							char path[32];
-							selected = lqm_prob_get_path(status.id, i, path);
+							//char path[32];
+							//selected = lqm_prob_get_path(status.id, i, path);
+							selected = i;
 						}
 					}
 				}
@@ -372,7 +371,7 @@ int evaluate_token(wmpFrame * t) {
 
 			if (status.lr == UNDEF) {
 				t->hdr.sleep = 0;
-				status.highestSerial+=status.id*5;
+				status.highestSerial += status.id * 5;
 
 				return NEW_TOKEN;
 			} else {
@@ -382,6 +381,8 @@ int evaluate_token(wmpFrame * t) {
 				t->hdr.type = TOKEN;
 				//TODO: Study this situation
 				status.lr = UNDEF;
+
+				wmp_print("ST2 ");
 				return SEND_TOKEN;
 			}
 			/* Execution cannot reach this point */
@@ -391,6 +392,7 @@ int evaluate_token(wmpFrame * t) {
 			t->hdr.to = selected;
 			t->hdr.retries = 0;
 			t->hdr.type = TOKEN;
+			wmp_print("ST3 ");
 			return SEND_TOKEN;
 		}
 	}
@@ -405,28 +407,32 @@ int manage_token_expired_timeout(wmpFrame* t) {/* token timeout expired*/
 	 So we can increase this number up to 2n-3+p and provide p>=0 possibility for retry in each loop and only ONE
 	 retry per node. It MUST be considered at planification time.
 	 */
-	if (status.retries < status.maxPerNodeRetries && t->hdr.retries
-			< status.maxTotalRetries) {/* set node to reached */
+	if (status.retries < status.maxPerNodeRetries
+			&& t->hdr.retries < status.maxTotalRetries) {/* set node to reached */
 		status.retries++;
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
-
 		t->hdr.gretries++;
 		return RETRY;
 	} else {
 		nstat_setReached(t->hdr.to);
 		status.retries = 0;
-		rssi_reset(t->hdr.to);
+		//rssi_reset(t->hdr.to);
+
 		rssi_confiability_decrement(t->hdr.to);
-		lqm_set_val(status.id, t->hdr.to, rssi_get_averaged_rssi(t->hdr.to));
+		lqm_set_val(t->hdr.to, status.id, rssi_get_averaged_rssi(t->hdr.to));
+
+		nstat_setReached(t->hdr.to);
 		t->hdr.sleep = 0;
+		wmp_print("EXP ");
+
 		return EVALUATE_TOKEN;
 	}
 }
 
 int manage_authorization_expired_timeout(wmpFrame * t) {/* Authorization timeout expired*/
-	if (status.retries < status.maxPerNodeRetries && t->hdr.retries
-			< status.maxTotalRetries) {/* set node to reached */
+	if (status.retries < status.maxPerNodeRetries
+			&& t->hdr.retries < status.maxTotalRetries) {/* set node to reached */
 		status.retries++;
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
@@ -435,10 +441,10 @@ int manage_authorization_expired_timeout(wmpFrame * t) {/* Authorization timeout
 		return RETRY;
 	} else {
 		status.retries = 0;
-		rssi_reset(t->hdr.to);
+		//rssi_reset(t->hdr.to);
 
-		rssi_confiability_decrement(t->hdr.to);
-		lqm_set_val(status.id, t->hdr.to, rssi_get_averaged_rssi(t->hdr.to));
+		//rssi_confiability_decrement(t->hdr.to);
+		//lqm_set_val(status.id, t->hdr.to, rssi_get_averaged_rssi(t->hdr.to));
 
 		t->hdr.sleep = 0;
 		return NEW_TOKEN;
@@ -446,8 +452,8 @@ int manage_authorization_expired_timeout(wmpFrame * t) {/* Authorization timeout
 }
 
 int manage_message_expired_timeout(wmpFrame * t) {/* Authorization timeout expired*/
-	if (status.retries < status.maxPerNodeRetries && t->hdr.retries
-			< status.maxTotalRetries) {/* set node to reached */
+	if (status.retries < status.maxPerNodeRetries
+			&& t->hdr.retries < status.maxTotalRetries) {/* set node to reached */
 		status.retries++;
 		t->hdr.retries++;
 		t->hdr.sleep = 0;
@@ -456,10 +462,10 @@ int manage_message_expired_timeout(wmpFrame * t) {/* Authorization timeout expir
 		return RETRY;
 	} else {
 		status.retries = 0;
-		rssi_reset(t->hdr.to);
+		//rssi_reset(t->hdr.to);
 
-		rssi_confiability_decrement(t->hdr.to);
-		lqm_set_val(status.id, t->hdr.to, rssi_get_averaged_rssi(t->hdr.to));
+		//rssi_confiability_decrement(t->hdr.to);
+		//lqm_set_val(status.id, t->hdr.to, rssi_get_averaged_rssi(t->hdr.to));
 
 		t->hdr.sleep = 0;
 		return NEW_TOKEN;
@@ -478,7 +484,7 @@ static signed char getNext(wmpFrame * t) {
 
 	if (t->hdr.type == MESSAGE) {
 		for (i = 0; i < status.N_NODES; i++) {
-			if (mBitsIsSet(t->msg.dest,i)){
+			if (mBitsIsSet(t->msg.dest,i)) {
 				dest = i;
 				break;
 			}
@@ -490,9 +496,10 @@ static signed char getNext(wmpFrame * t) {
 	}
 	if (status.use_prim) {
 		next = nextStepWithCost(prim(lqm_get_ptr()), status.id, dest, &cost);
-	} else if (status.use_prune){
-		next = nextStepWithCost(lqm_prune(lqm_get_ptr()), status.id, dest, &cost);
-	}else if (status.use_prob){
+	} else if (status.use_prune) {
+		next = nextStepWithCost(lqm_prune(lqm_get_ptr()), status.id, dest,
+				&cost);
+	} else if (status.use_prob) {
 		char path[32];
 		lqm_compute_prob(lqm_get_ptr());
 		next = lqm_prob_get_path(status.id, dest, path);
@@ -511,17 +518,17 @@ static signed char getNext(wmpFrame * t) {
 				}
 			}
 		}
-		if (status.use_prob){
+		if (status.use_prob) {
 			char path[32];
 			lqm_compute_prob(lqm_get_ptr());
 			next = lqm_prob_get_path(status.id, dest, path);
-		}else{
+		} else {
 			next = nextStepWithCost(lqm_get_ptr(), status.id, dest, &cost);
 		}
 		lqm_restore();
 	}
 
-	if (lqm_fake_path_is_set()){
+	if (lqm_fake_path_is_set()) {
 		next = lqm_fake_path_get_next(dest);
 	}
 
@@ -529,6 +536,7 @@ static signed char getNext(wmpFrame * t) {
 }
 
 int evaluate_message(wmpFrame * t) {
+	lqm_print();
 
 	int i, more = 0;
 	if (mBitsIsSet(t->msg.type, BURST)) {
@@ -581,11 +589,12 @@ int evaluate_message(wmpFrame * t) {
 		aura_t type;
 		int next;
 
-		if (status.use_aura_efficient_multicast){
+		if (status.use_aura_efficient_multicast) {
 			next = aura_get_next(t, &type);
-		}else{
+		} else {
 			next = getNext(t);
 			type = aura_msg;
+			fprintf(stderr, "Next: %d\n", next);
 		}
 
 		if (type == aura_auth) {
@@ -615,9 +624,10 @@ int evaluate_message(wmpFrame * t) {
 			wmp_print_append(t);
 			wmp_print("%d ", wmpGetNodeId());
 
-			for ( i = 0; i<status.N_NODES; i++){
-				if (t->msg.path[i] == -1){
+			for (i = 0; i < status.N_NODES; i++) {
+				if (t->msg.path[i] == -1) {
 					t->msg.path[i] = status.id;
+					t->msg.rssi[i] = t->hdr.rssi;
 					break;
 				}
 			}
@@ -626,8 +636,8 @@ int evaluate_message(wmpFrame * t) {
 		}
 	}
 
-
-	if (status.beluga && status.power_save && t->hdr.burst > 1 && t->hdr.sleep > ms_to_us(12)){ //XXX: replace number
+	if (status.beluga && status.power_save && t->hdr.burst > 1
+			&& t->hdr.sleep > ms_to_us(12)) { //XXX: replace number
 		signed char msg_src = t->msg.src;
 		unsigned short ack_hash = t->msg.msg_hash;
 
@@ -642,7 +652,7 @@ int evaluate_message(wmpFrame * t) {
 		t->aut.ack_part = ack_part_id;
 		return EVALUATE_AUTHORIZATION;
 
-	}else{
+	} else {
 		unsigned short ack_hash = t->msg.msg_hash;
 		short ack_part_id = t->msg.part_id;
 		t->msg.reached = 0;
@@ -653,11 +663,11 @@ int evaluate_message(wmpFrame * t) {
 }
 
 int evaluate_authorization(wmpFrame * t) {
-	if (t->aut.dest == UNDEF){
+	if (t->aut.dest == UNDEF) {
 		return NEW_TOKEN;
 	}
 
-	if (mBitsIsSet(t->aut.type, BURST)){
+	if (mBitsIsSet(t->aut.type, BURST)) {
 		aura_clear();
 	}
 
@@ -666,23 +676,23 @@ int evaluate_authorization(wmpFrame * t) {
 	} else {
 		aura_add(aura_auth, t->hdr.from);
 	}
-	mBitsSet(t->aut.reached,status.id);
+	mBitsSet(t->aut.reached, status.id);
 
 	if (t->aut.dest == status.id) {/* Is for me */
 
 		/* Reschedule */
 		if (status.enable_message_reschedule) {
 			if (status.wait_ack_from) {
-				if (confirmed(t->hdr.ack, t->aut.ack_hash, t->aut.ack_part)){
+				if (confirmed(t->hdr.ack, t->aut.ack_hash, t->aut.ack_part)) {
 					wmp_queue_tx_confirm();
-				}else{
+				} else {
 					int age, port, period, priority;
 					wmp_queue_tx_get_last_popped_info(&age, &port, &priority);
 					period = task_get_priority_period(priority);
 					if (status.secure || age < period) {
 						t->hdr.sleep = 0;
 						wmp_queue_tx_reschedule();
-					} else{
+					} else {
 						wmp_queue_tx_confirm();
 					}
 				}
@@ -692,7 +702,7 @@ int evaluate_authorization(wmpFrame * t) {
 				t->tkn.ack_part = 0;
 				status.wait_ack_from = 0;
 			}
-		}else{
+		} else {
 			wmp_queue_tx_confirm();
 		}
 		if (wmp_queue_tx_get_count() > 0) {
@@ -725,7 +735,7 @@ int create_authorization(wmpFrame * t) {
 	t->hdr.from = status.id;
 	t->hdr.type = AUTHORIZATION;
 	t->hdr.retries = 0;
-	mBitsUnset(t->aut.type,BURST);
+	mBitsUnset(t->aut.type, BURST);
 	return EVALUATE_AUTHORIZATION;
 }
 
@@ -737,7 +747,7 @@ int create_message(wmpFrame * t) {
 	if (m_id < 0) {
 		wmp_queue_tx_pop_part_done(m_id);
 		wmp_print_clean(t);
-		fprintf(stderr,"NEW TOKEN (NOTHING TO TRANSMIT)\n");
+		fprintf(stderr, "NEW TOKEN (NOTHING TO TRANSMIT)\n");
 		return NEW_TOKEN;
 	}
 
@@ -761,6 +771,7 @@ int create_message(wmpFrame * t) {
 
 	for (i = 0; i < status.N_NODES; i++) {
 		t->msg.path[i] = -1;
+		t->msg.rssi[i] = 0;
 	}
 
 	mBitsSet(t->msg.type, AURA_MSG);
@@ -782,27 +793,28 @@ int create_message(wmpFrame * t) {
 	return EVALUATE_MESSAGE;
 }
 
-static void (*msg_cb) (wmpFrame *)=0;
+static void (*msg_cb)(wmpFrame *)=0;
 
-void wmpSetMessageCallback( void (*f) (wmpFrame *)){
+void wmpSetMessageCallback(void (*f)(wmpFrame *)) {
 	msg_cb = f;
 }
 
 int enqueue_message(wmpFrame * t) {
 	int i, j;
-	for ( i = 0; i<status.N_NODES; i++){
-		if (t->msg.path[i] == -1){
+	for (i = 0; i < status.N_NODES; i++) {
+		if (t->msg.path[i] == -1) {
 			t->msg.path[i] = status.id;
+			t->msg.rssi[i] = t->hdr.rssi;
 			break;
 		}
 	}
 
-	if (msg_cb != 0){
+	if (msg_cb != 0) {
 		msg_cb(t);
 	}
 
 	static longMsg_t m;
-    m.src = t->msg.src;
+	m.src = t->msg.src;
 	m.priority = t->msg.priority;
 	m.dest = t->msg.dest;
 	m.size = t->msg.len;
@@ -814,6 +826,4 @@ int enqueue_message(wmpFrame * t) {
 	wmp_queue_rx_push_part(&m);
 	return NEW_TOKEN;
 }
-
-
 

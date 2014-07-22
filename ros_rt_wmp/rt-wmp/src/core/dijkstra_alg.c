@@ -190,5 +190,15 @@ int dij_isIsolated2(int src) {
 }
 
 
+void dij_print_matrix() {
+	int i, j;
+	fprintf(stderr, "\n");
+	for (i = 0; i < status.N_NODES; i++) {
+		for (j = 0; j < status.N_NODES; j++) {
+			fprintf(stderr, " %3d", dij_get(i, j));
+		}
+		fprintf(stderr, "\n");
+	}
+}
 
 

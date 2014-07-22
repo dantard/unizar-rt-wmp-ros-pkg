@@ -173,6 +173,7 @@ typedef struct  {
 	int prune_threshold;
 	int prob_99_perc_rssi_min;
 	int use_aura_efficient_multicast;
+	int use_pdr;
 }Status;
 
 

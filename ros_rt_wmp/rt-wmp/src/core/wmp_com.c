@@ -77,29 +77,26 @@ char getSimulatedRssi(char to){
 	return 80;
 }
 
-void wmpUpdateRssi(wmpFrame *p){
+void wmpUpdateRssi(wmpFrame *q){
 	int i;
 	/* Calculate RSSI */
 
-	p->hdr.rssi= fp(p->hdr.rssi);
-	rssi_new_frame(p->hdr.from, p->hdr.rssi);
+	q->hdr.rssi= fp(q->hdr.rssi);
+	rssi_new_frame(q->hdr.from, q->hdr.rssi);
 
 	//status.retries=0;
 	for (i=0;i<status.N_NODES;i++){
 		if (i==status.id) continue;
 		if (rssi_get_averaged_rssi(i)>0 && rssi_get_age(i)> status.hold_time){
 			rssi_reset(i);
-			lqm_set_val(i,status.id,0);
-			lqm_set_val(status.id,i,0);
+//			lqm_set_val(i,status.id,0);
+//			lqm_set_val(status.id,i,0);
 		}
 	}
-	/* if I received a frame but the other says does not hear me, I suppose it
-	 * hear me
-	 */
-	rssi_new_loop(p->hdr.from, p->hdr.loop_id);
-	//fprintf(stderr,"Node  %d, diff222:%d \n",p->hdr.from,0);
 
-	lqm_set_val(status.id,p->hdr.from,rssi_get_averaged_rssi(p->hdr.from));
+	rssi_new_loop(q->hdr.from, q->hdr.loop_id);
+	lqm_set_val(q->hdr.from,status.id, rssi_get_averaged_rssi(q->hdr.from));
+
 }
 
 void wmpSendDrop(wmpFrame * p){
@@ -137,7 +134,7 @@ int wmpUpdateReceivedRssi(wmpFrame* q){
 
 int wmpUpdateAcknowkedgedRssi(wmpFrame* q){
 
-	rssi_confiability_increment(q->hdr.from);
+//	rssi_confiability_increment(q->hdr.from);
 //	fprintf(stderr,"Node  %d, increment\n",q->hdr.from);
 	wmpUpdateRssi(q);
 	return DECODE_ROUTING_INFO_ON_WACK;

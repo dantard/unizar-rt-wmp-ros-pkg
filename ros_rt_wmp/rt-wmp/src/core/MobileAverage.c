@@ -43,118 +43,105 @@ extern Status status;
 unsigned char CONFIABILITY_WINDOW;
 unsigned short LOOP_WINDOW;
 
-#define HUNDRED_PERCENT 100
-void mobile_avg_free(MobileAverage * e){
+void mobile_avg_free(MobileAverage * e) {
 	FREE(e->elem);
 }
 
-void mobile_avg_init(MobileAverage * e, int n_elements, int node_id){
+void mobile_avg_init(MobileAverage * e, int n_elements, int node_id) {
 	int i;
 
-	CONFIABILITY_WINDOW = 100;
+	CONFIABILITY_WINDOW = 00;
 	LOOP_WINDOW = 50;
 
-	e->elem=(char *) MALLOC(n_elements*sizeof(char));
-	e->n_elements=n_elements;
-	e->seen=0;
-	e->idx=0;
-	e->initialized=0;
-	e->avgd_value=0; /* or 0 better */
+	e->elem = (char *) MALLOC(n_elements*sizeof(char));
+	e->n_elements = n_elements;
+	e->seen = 0;
+	e->idx = 0;
+	e->initialized = 0;
+	e->avgd_value = 0; /* or 0 better */
 	e->node_id = node_id;
 
-	for (i = 0; i< CONFIABILITY_WINDOW; i++){
-		e->conf[i] = 1;
-	}
-	e->c_idx = 0;
-
-	for (i = 0; i< LOOP_WINDOW; i++){
+	for (i = 0; i < LOOP_WINDOW; i++) {
 		e->loops[i] = 1;
 	}
 	e->l_idx = 0;
+}
 
-};
+void compute_average(MobileAverage*e) {
+	int avg = 0, i;
+	for (i = 0; i < e->n_elements; i++) {
+		avg += (e->elem[i]);
+	}
+	avg = avg / e->n_elements;
+	e->avgd_value = (char) avg;
+}
 
-void mobile_avg_new_value(MobileAverage*e, char val){
+void mobile_avg_new_value(MobileAverage*e, char val) {
 	int i;
-	int avg = 0;
-	e->seen=getRawActualTimeus();
-	if (!e->initialized){
-		if (status.rssi_rising_factor <=0){
-			status.rssi_rising_factor=1;
+	e->seen = getRawActualTimeus();
+	if (!e->initialized) {
+		if (status.rssi_rising_factor <= 0) {
+			status.rssi_rising_factor = 1;
 		}
 
-		int end = (e->n_elements/status.rssi_rising_factor);
-		for (i=0 ; i < end ; i++){
-			e->elem[i]=val;
+		memset(e->elem, 0, e->n_elements);
+
+		int end = (e->n_elements / status.rssi_rising_factor);
+		for (i = 0; i < end; i++) {
+			e->elem[i] = val;
 			e->idx++;
 		}
-		e->avgd_value=val;
-		e->initialized=1;
+		compute_average(e);
+		e->initialized = 1;
 	} else {
 		e->idx++;
-		if (e->idx>=e->n_elements) e->idx=0;
-		e->elem[e->idx]=val;
-		for (i=0;i<e->n_elements;i++){
-			avg+=(e->elem[i]);
+		if (e->idx >= e->n_elements) {
+			e->idx = 0;
 		}
-		avg=avg/e->n_elements;
-		e->avgd_value= (char) avg;
+		e->elem[e->idx] = val;
+		compute_average(e);
 	}
-};
-
+}
 
 void mobile_avg_reset(MobileAverage* e) {
 	e->initialized = 0;
 	e->avgd_value = 0;
-};
+}
 
+char mobile_avg_get_averaged_value(MobileAverage * e) {
+	if (status.use_pdr){
+		return (char) e->rxr;
+	}
 
-char mobile_avg_get_averaged_value(MobileAverage * e){
-
-	int val = e->avgd_value;// * e->pdr * e->rxr / 100 / 100;
-//	if (val == 0 && e->avgd_value > 0 && e->pdr > 0 && e->rxr > 0){
-//		val = 1;
-//	}
-
-//	fprintf(stderr,"Node %2d has e->avg of %3d, conf of %3d, rxr is %3d, val is %3d, consec_loops:%d \n",e->node_id,e->avgd_value, e->pdr, e->rxr, val,e->consecutive_loops_ok);
+	int val = e->avgd_value;
+	if (val > status.prob_99_perc_rssi_min) {
+		val = 99;
+	} else {
+		val = val * 99 / status.prob_99_perc_rssi_min;
+		val = val > 99 ? 99 : val;
+	}
 
 	return (char) val;
-};
+}
 
-unsigned long mobile_avg_get_age(MobileAverage * e){
-   return (DO_DIV64(getRawActualTimeus(),1000) - DO_DIV64(e->seen,1000)) ;
-};
-
-/* CONFIABILITY*/
-
-void mobile_avg_confiability_new_value(MobileAverage * e, int val){
-	int i, sum = 0;
-	e->conf[e->c_idx] = val;
-	e->c_idx++;
-	e->c_idx = e->c_idx<CONFIABILITY_WINDOW?e->c_idx:0;
-
-	for (i = 0; i< CONFIABILITY_WINDOW; i++){
-			sum+= e->conf[i];
-	}
-	e->pdr = sum*100/CONFIABILITY_WINDOW>=0?sum*100/CONFIABILITY_WINDOW:0;
+unsigned long mobile_avg_get_age(MobileAverage * e) {
+	return (DO_DIV64(getRawActualTimeus(),1000) - DO_DIV64(e->seen,1000));
 }
 
 /* LOOPS */
-
-void mobile_avg_compute(MobileAverage * e){
+void mobile_avg_compute(MobileAverage * e) {
 	int i, sum = 0;
-	for (i = 0; i< LOOP_WINDOW; i++){
-		sum+= e->loops[i];
+	for (i = 0; i < LOOP_WINDOW; i++) {
+		sum += e->loops[i];
 	}
-
-	e->rxr = sum*100/LOOP_WINDOW>=0?sum*100/LOOP_WINDOW:0;
+	e->rxr = sum * 100 / LOOP_WINDOW >= 0 ? sum * 100 / LOOP_WINDOW : 0;
+	e->rxr = e->rxr > 99 ? 99 : e->rxr;
 }
 
-
-void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
-	if (loop_id != e->net_loop_id){
-		e->l_idx ++;
-		e->l_idx = e->l_idx < LOOP_WINDOW? e->l_idx:0;
+void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id) {
+	if (loop_id != e->net_loop_id) {
+		e->l_idx++;
+		e->l_idx = e->l_idx < LOOP_WINDOW ? e->l_idx : 0;
 		e->loops[e->l_idx] = 0;
 		mobile_avg_compute(e);
 		e->net_loop_id = loop_id;
@@ -162,20 +149,20 @@ void mobile_avg_new_loop_tick(MobileAverage* e, long loop_id){
 }
 
 void mobile_avg_new_loop(MobileAverage* e, long loop_id) {
-
 	e->loops[e->l_idx] = 1;
-
 	mobile_avg_compute(e);
-
-	if (e->rxr == HUNDRED_PERCENT){
-		e->consecutive_loops_ok++;
-	}else{
-		e->consecutive_loops_ok = 0;
-	}
-	if (e->consecutive_loops_ok == LOOP_WINDOW){
-		mobile_avg_confiability_new_value(e,1);
-		e->consecutive_loops_ok = 0;
-	}
 }
 
-
+/* CONFIABILITY*/
+void mobile_avg_confiability_new_value(MobileAverage * e, int val) {
+	if (val < 0) {
+		int i;
+		for (i = 0; i < LOOP_WINDOW; i++) {
+			if (e->loops[i] == 1) {
+				e->loops[i] = 0;
+				break;
+			}
+		}
+		mobile_avg_compute(e);
+	}
+}

@@ -64,6 +64,7 @@ typedef struct {
 	int this_part_size;
 	int parts_pointer;
 	signed char path[32];
+	signed char rssi[32];
 	char * pointer;
 	char * data;
 } longMsg_t;

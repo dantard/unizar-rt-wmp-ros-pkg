@@ -44,77 +44,51 @@
 int timer_initied=0;
 
 void decode_routing_info(wmpFrame *p){
-	//wmp_print_lqm(lqm_get_ptr(),"before decode",wmpGetNumOfNodes());
-	/*if is a TOKEN update local LQM and unset new_token*/
-	int i,j;
+
+	/* Update received matrix */
+	int i, j;
+
 	char *cp;
-	if (p->hdr.type == TOKEN){
-		cp= wmp_get_frame_routing_pointer(p);
-		for (i=0;i<status.N_NODES;i++){
-			for (j=0;j<status.N_NODES;j++){
-				if (i!=j) {
-					if (j == wmpGetNodeId() && i == p->hdr.from && (*cp) == 0){
-						/* is for me */
-						lqm_set_val(i,j,rssi_get_averaged_rssi(i));
-					}else{
-						/* not try value */
-						lqm_set_val(i,j,*cp);
-					}
-				}else {
-					nstat_set_byte(i,*cp);
+	if (p->hdr.type == TOKEN) {
+		cp = wmp_get_frame_routing_pointer(p);
+		for (i = 0; i < status.N_NODES; i++) {
+			for (j = 0; j < status.N_NODES; j++) {
+				if (i != j) {
+					lqm_set_val(i, j, *cp);
+				} else {
+					nstat_set_byte(i, *cp);
 				}
 				cp++;
 			}
 		}
 	}
-	//wmp_print_lqm(lqm_get_ptr(),"after1",wmpGetNumOfNodes());
-
-	/*  Actualize LocalLQM */
-	for (i=0;i<status.N_NODES;i++){
-		if (i==status.id) continue;
-		lqm_set_val(status.id,i,rssi_get_averaged_rssi(i));
-	}
-	//wmp_print_lqm(lqm_get_ptr(),"after2",wmpGetNumOfNodes());
-#ifdef WORST_LQM
-	for (j = 0; j < status.N_NODES; j++) {
-		if (lqm_get_val(status.id, j) > lqm_get_val(j, status.id) && lqm_get_val(j,status.id) > 0 ) {
-			lqm_set_val(status.id, j, lqm_get_val(j, status.id));
+	/* Put my data in */
+	for (i = 0; i< status.N_NODES; i++){
+		if (i!=status.id){
+			lqm_set_val(i,status.id,rssi_get_averaged_rssi(i));
 		}
 	}
-#endif
 
 	if (lqm_fake_is_set()){
 		lqm_put_fake(lqm_get_ptr());
 	}
 
 	lqm_calculate_distances();
-	//wmp_print_lqm(lqm_get_ptr(),"after3",wmpGetNumOfNodes());
 }
-
-
-
 
 void encode_routing_info(wmpFrame * t){
 	int i,j;
-	/* Create frame, setting reached and lqm */
 
 	if (lqm_fake_is_set()){
 		lqm_put_fake(lqm_get_ptr());
 	}
 
-#ifdef WORST_LQM
-	for (i=0;i<status.N_NODES;i++){
-		if (i==status.id) continue;
-		lqm_set_val(status.id,i,rssi_get_averaged_rssi(i));
-	}
-#endif
-
-	char *cp=wmp_get_frame_routing_pointer(t);
-	for (i=0;i<status.N_NODES;i++){
-		for (j=0;j<status.N_NODES;j++){
-			if (i!=j) {
-				(*cp) = lqm_get_val(i,j);
-			}else {
+	char *cp = wmp_get_frame_routing_pointer(t);
+	for (i = 0; i < status.N_NODES; i++) {
+		for (j = 0; j < status.N_NODES; j++) {
+			if (i != j) {
+				(*cp) = lqm_get_val(i, j);
+			} else {
 				(*cp) = nstat_get_byte(i);
 			}
 			cp++;

@@ -1744,10 +1744,42 @@ static bool ieee80211_frame_allowed(struct ieee80211_rx_data *rx, __le16 fc)
 	return true;
 }
 
+//#include <linux/ip.h>
+//#include <linux/if_ether.h>
+//#include <linux/udp.h>
 
 /*
  * requires that rx->skb is a frame with ethernet header
  */
+
+struct iphdr2 {
+#if defined(__LITTLE_ENDIAN_BITFIELD)
+	__u8	ihl:4,
+		version:4;
+#elif defined (__BIG_ENDIAN_BITFIELD)
+	__u8	version:4,
+  		ihl:4;
+#else
+#error	"Please fix <asm/byteorder.h>"
+#endif
+	__u8	tos;
+	__be16	tot_len;
+	__be16	id;
+	__be16	frag_off;
+	__u8	ttl;
+	__u8	protocol;
+	__sum16	check;
+	__be32	saddr;
+	__be32	daddr;
+	/*The options start here. */
+};
+
+struct udphdr2 {
+	__be16	source;
+	__be16	dest;
+	__be16	len;
+	__sum16	check;
+};
 static void
 ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 {
@@ -1826,6 +1858,13 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 				//printk(KERN_ERR "proto4:%d signal: %d data:%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", skb->protocol,status->signal,skb->data[0],skb->data[1],skb->data[2],skb->data[3],skb->data[4],skb->data[5],skb->data[6],skb->data[7],skb->data[8],skb->data[9],skb->data[10],skb->data[11],skb->data[12],skb->data[13],skb->data[14],skb->data[15],skb->data[16],skb->data[17],skb->data[18],skb->data[19]);
 				skb->data[14] = status->signal + 98;
 				skb->ip_summed = CHECKSUM_UNNECESSARY;
+			} else{
+				struct iphdr2 * ih = (struct iphdr2 * ) (skb->data + sizeof(struct ethhdr));
+				struct udphdr2 * uh = (struct udphdr2 *) (skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr2));
+				int a = ntohl(ih->daddr);
+				unsigned char * aa = (unsigned char *) &a;
+
+				printk(KERN_ERR "daddr:%d proto:%d sport:%d dport:%d last:%d", ntohl(ih->daddr), ih->protocol, ntohs(uh->source), ntohs(uh->dest), aa[0]);
 			}
 			/* DANILO */
 

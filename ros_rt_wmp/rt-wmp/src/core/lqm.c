@@ -47,19 +47,7 @@ static THREAD_SEM_T isconn;
 
 static char (*fp)(char);
 
-int logs = 0;
-
 char f_lqm(char val) {
-
-	if (logs) {
-		if (val <= 1) {
-			return 0;
-		}
-		double v1 = (double) val;
-		v1 = fabs(log(v1 / 100.0)) * 10.0;
-		v1 = v1 > 127 ? 127 : v1;
-		return (char) v1;
-	}
 
 	/* val is a % value (0-100) */
 	if (val == 0) {
@@ -376,13 +364,25 @@ char (*lqm_get_f())(char) {
 					if (i == j) {
 						A0[i][j] = 1000;
 					} else {
-						int val = lqm[i][j]>lqm[j][i]?lqm[j][i]:lqm[i][j];
-						if (val > status.prob_99_perc_rssi_min) {
-							val = 99;
-						} else {
-							val = val * 99 / status.prob_99_perc_rssi_min;
-							val = val > 99 ? 99 : val;
-						}
+//						int val1 = lqm[i][j], val2 = lqm[j][i], val;
+//						if (val1 == 0 || val1 == 100) {
+//							val1 = 0;
+//						}
+//						if (val2 == 0 || val2 == 100) {
+//							val2 = 0;
+//						}
+//						val = val1 > val2 ? val1 : val2;
+
+						//XXX??:
+						int val = lqm[j][i];
+						//int val = lqm[i][j];
+
+//						if (val > status.prob_99_perc_rssi_min) {
+//							val = 99;
+//						} else {
+//							val = val * 99 / status.prob_99_perc_rssi_min;
+//							val = val > 99 ? 99 : val;
+//						}
 						A0[i][j] = val * 10; //lqm[i][j]*10; //XXX:
 					}
 				}
@@ -460,35 +460,44 @@ char (*lqm_get_f())(char) {
 			}
 		}
 
-
 		/* FAKE PATH */
 		static int fake_path_set = 0;
-		static char path [32];
+		static char path[32];
 		int lqm_fake_path_is_set() {
 			return fake_path_set;
 		}
 		void lqm_set_fake_path(char * ppath) {
-			memcpy(path,ppath, status.N_NODES+1);
+			memcpy(path, ppath, status.N_NODES + 1);
 			fake_path_set = 1;
 		}
 		char lqm_fake_path_get_next(char id_dest) {
 			int i, myslf, dest;
-			for (i = 0; i< status.N_NODES+1; i++){
-				if (path[i] == status.id){
+			for (i = 0; i < status.N_NODES + 1; i++) {
+				if (path[i] == status.id) {
 					myslf = i;
 					break;
 				}
 			}
-			for (i = 0; i< status.N_NODES+1; i++){
-				if (path[i] == id_dest){
+			for (i = 0; i < status.N_NODES + 1; i++) {
+				if (path[i] == id_dest) {
 					dest = i;
 					break;
 				}
 			}
 
-			if (dest > myslf){
+			if (dest > myslf) {
 				return path[myslf + 1];
-			}else{
+			} else {
 				return path[myslf - 1];
+			}
+		}
+		void lqm_print() {
+			int i, j;
+			fprintf(stderr, "\n");
+			for (i = 0; i < status.N_NODES; i++) {
+				for (j = 0; j < status.N_NODES; j++) {
+					fprintf(stderr, " %3d", lqm_get_val(i, j));
+				}
+				fprintf(stderr, "\n");
 			}
 		}

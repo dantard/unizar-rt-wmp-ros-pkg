@@ -75,6 +75,9 @@ void put_matrix(char ** matrix){
 			}
 		}
 	}
+	lqm_print();
+	dij_print_matrix();
+
 }
 
 void dij_put_matrix(char ** matrix){
