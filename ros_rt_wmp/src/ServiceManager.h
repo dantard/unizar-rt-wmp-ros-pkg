@@ -149,7 +149,10 @@ public:
 			ROSWMP_DEBUG(stderr, "Popping (wait) on port %d",port);
 			int idx = wmpPopData(port, &p, &size, &src, &pri);
 			flow_t * f = (flow_t *) p;
-
+			if (idx == -1){
+				sleep(1);
+				continue;
+			}
 			ROSWMP_DEBUG(stderr, "Deserializing");
 			deserialize<typename T::Request>((p + sizeof(flow_t)),size - sizeof(flow_t), req);
 			ROSWMP_DEBUG(stderr, "Deserialized");
@@ -191,6 +194,10 @@ public:
 			unsigned int size;
 			unsigned char src;
 			int idx = wmpPopData(port + 1, &p, &size, &src, &pri);
+			if (idx == -1){
+				sleep(1);
+				continue;
+			}
 			ROSWMP_DEBUG(stderr, "Received on Manager\n");
 			flow_t * f = (flow_t *) p;
 

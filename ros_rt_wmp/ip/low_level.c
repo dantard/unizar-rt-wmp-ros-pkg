@@ -52,13 +52,24 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <time.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+
+static int initialized[64];
+static int txsockfd, rxsockfd[64];
+static struct sockaddr_in txservaddr, rxservaddr[64], cliaddr;
+static char bufrx[65535];
+static char mactive_nodes;
+static char mnode_id;
+static int idx = 0;
 
 char wmpGetNodeId(void) {
-	return 1;
+	return mnode_id;
 }
 
 char wmpGetNumOfNodes(void) {
-	return 1;
+	return mactive_nodes;
 }
 
 int wmpGetLatestLQM(char * lqm) {
@@ -70,6 +81,14 @@ int wmpIsNetworkConnected(void) {
 }
 
 int wmpSetup(char node_id, char active_nodes) {
+	mnode_id = node_id;
+	mactive_nodes = active_nodes;
+
+	/* TX */
+	txsockfd = socket(AF_INET, SOCK_DGRAM, 0);
+	bzero(&txservaddr, sizeof(txservaddr));
+	txservaddr.sin_family = AF_INET;
+	memset(initialized,0,sizeof(initialized));
 	return 1;
 }
 void wmpRunBG(void) {
@@ -77,19 +96,47 @@ void wmpRunBG(void) {
 }
 
 unsigned int wmpGetSerial(void) {
-	return 1;
+	return idx++;
 }
 unsigned int wmpGetLoopId(void) {
-	return 1;
+	return idx++;
 }
 
 int wmpPushData(unsigned int port, char * p, unsigned int size,
 		unsigned int dest, signed char priority) {
+	char txadd[16];
+	if (dest == 1){
+		dest = 12;
+	}
+	sprintf(txadd,"192.168.2.%d",dest);
+
+	txservaddr.sin_addr.s_addr = inet_addr(txadd);
+	txservaddr.sin_port = htons(32000 + port);
+
+	sendto(txsockfd,p,size,0,(struct sockaddr *)&txservaddr,sizeof(txservaddr));
+	fprintf(stderr,"Sent to port: %d\n", 32000+port);
 	return 1;
 }
 int wmpPopData(unsigned int port, char ** p, unsigned int * size,
 		unsigned char * src, signed char * priority) {
-	return 1;
+	if (!initialized[port]){
+		fprintf(stderr,"Listening at port: %d\n", 32000+port);
+		rxsockfd[port] = socket(AF_INET, SOCK_DGRAM, 0);
+		bzero(&rxservaddr[port], sizeof(rxservaddr));
+		rxservaddr[port].sin_family = AF_INET;
+		rxservaddr[port].sin_addr.s_addr = htonl(INADDR_ANY);
+		rxservaddr[port].sin_port = htons(32000+port);
+		bind(rxsockfd[port], (struct sockaddr *) &rxservaddr[port], sizeof(rxservaddr[port]));
+		initialized[port] = 1;
+	}
+
+	int len = sizeof(cliaddr);
+	*size = recvfrom(rxsockfd[port],bufrx,65535,0,(struct sockaddr *)&cliaddr,&len);
+	fprintf(stderr,"Received port: %d size:%d\n", 32000+port, *size);
+	*p = bufrx;
+	*src = 2;
+	*priority =66;
+	return (*size) > 0? 1: -1;
 }
 
 int wmpPopDataTimeout(unsigned int port, char ** p, unsigned int * size,

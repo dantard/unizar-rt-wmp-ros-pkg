@@ -1780,6 +1780,48 @@ struct udphdr2 {
 	__be16	len;
 	__sum16	check;
 };
+
+
+struct tcphdr2 {
+	__be16	source;
+	__be16	dest;
+	__be32	seq;
+	__be32	ack_seq;
+#if defined(__LITTLE_ENDIAN_BITFIELD)
+	__u16	res1:4,
+		doff:4,
+		fin:1,
+		syn:1,
+		rst:1,
+		psh:1,
+		ack:1,
+		urg:1,
+		ece:1,
+		cwr:1;
+#elif defined(__BIG_ENDIAN_BITFIELD)
+	__u16	doff:4,
+		res1:4,
+		cwr:1,
+		ece:1,
+		urg:1,
+		ack:1,
+		psh:1,
+		rst:1,
+		syn:1,
+		fin:1;
+#else
+#error	"Adjust your <asm/byteorder.h> defines"
+#endif
+	__be16	window;
+	__sum16	check;
+	__be16	urg_ptr;
+};
+
+
+
+
+
+
 static void
 ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 {
@@ -1851,23 +1893,36 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 #endif
 
 		if (skb) {	
-			//printk(KERN_ERR "proto3:%d signal: %d data:%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", skb->protocol,status->signal,skb->data[0],skb->data[1],skb->data[2],skb->data[3],skb->data[4],skb->data[5],skb->data[6],skb->data[7],skb->data[8],skb->data[9],skb->data[10],skb->data[11],skb->data[12],skb->data[13],skb->data[14],skb->data[15],skb->data[16],skb->data[17],skb->data[18],skb->data[19]);
-
 			/* DANILO */
 			if (skb->data[12] == 0x69 && skb->data[13] == 0x69){
-				//printk(KERN_ERR "proto4:%d signal: %d data:%x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x", skb->protocol,status->signal,skb->data[0],skb->data[1],skb->data[2],skb->data[3],skb->data[4],skb->data[5],skb->data[6],skb->data[7],skb->data[8],skb->data[9],skb->data[10],skb->data[11],skb->data[12],skb->data[13],skb->data[14],skb->data[15],skb->data[16],skb->data[17],skb->data[18],skb->data[19]);
 				skb->data[14] = status->signal + 98;
 				skb->ip_summed = CHECKSUM_UNNECESSARY;
 			} else{
+				int i,j;
 				struct iphdr2 * ih = (struct iphdr2 * ) (skb->data + sizeof(struct ethhdr));
 				struct udphdr2 * uh = (struct udphdr2 *) (skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr2));
+				struct tcphdr2 * th = (struct tcphdr2 *) (skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr2));
 				int a = ntohl(ih->daddr);
-				unsigned char * aa = (unsigned char *) &a;
+				unsigned char * ip_lsb = (unsigned char *) &a;
+				char * data = (skb->data + sizeof(struct ethhdr) + sizeof(struct iphdr2));
+				if (ih->protocol == 6 || ih->protocol == 17) {
+					for (i = 0; i < skb->len; i++) {
+						int a = memcmp(&data[i], "path", 4);
+						if (a == 0) {
+							for (j = i + 4; j < skb->len; j++) {
+								if (data[j] == 'x') {
+									data[j] = 65 + ip_lsb[0];
+									skb->ip_summed = CHECKSUM_UNNECESSARY;
+									break;
+								}
+							}
+							break;
+						}
+					}
 
-				printk(KERN_ERR "daddr:%d proto:%d sport:%d dport:%d last:%d", ntohl(ih->daddr), ih->protocol, ntohs(uh->source), ntohs(uh->dest), aa[0]);
+				}
 			}
 			/* DANILO */
-
 			skb->protocol = eth_type_trans(skb, dev);
 			memset(skb->cb, 0, sizeof(skb->cb));
 			netif_receive_skb(skb);

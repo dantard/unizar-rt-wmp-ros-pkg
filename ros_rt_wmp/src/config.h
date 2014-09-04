@@ -40,6 +40,8 @@
 
 /* INCLUDE DATA TYPE HERE */
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
+
 #include <roscpp_tutorials/TwoInts.h>
 #include <theora_image_transport/Packet.h>
 //#include <audio_common_msgs/AudioData.h>
@@ -54,7 +56,9 @@ BEGIN_TOPIC_DEFINITION
 //QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 //TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
-TOPIC("audio", std_msgs::Float64, "1", "0", 15);
+TOPIC("text", std_msgs::String, "1", "0", 15);
+TOPIC("number", std_msgs::Float64, "1", "0", 15);
+
 //TOPIC_START_STOPPED("video/theora", theora_image_transport::Packet, "1", "0", 10);
 //TOPIC("scan", sensor_msgs::LaserScan, "1,2,3,4,5", "0", 12);
 
