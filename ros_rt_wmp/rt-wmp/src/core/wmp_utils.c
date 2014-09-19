@@ -41,7 +41,7 @@
 #include "interface/wmp_interface.h"
 
 
-#define NET_DEBUG
+// #define NET_DEBUG
 
 long long wmp_timespec_to_ns(struct timespec *ts){
     long long val = (long long) ts->tv_sec * 1000000000 + (long long) ts->tv_nsec;
