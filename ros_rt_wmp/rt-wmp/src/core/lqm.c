@@ -470,6 +470,11 @@ char (*lqm_get_f())(char) {
 			memcpy(path, ppath, status.N_NODES + 1);
 			fake_path_set = 1;
 		}
+
+		void lqm_get_fake_path(char * ppath) {
+			memcpy(ppath, path, status.N_NODES + 1);
+		}
+
 		char lqm_fake_path_get_next(char id_dest) {
 			int i, myslf, dest;
 			for (i = 0; i < status.N_NODES + 1; i++) {

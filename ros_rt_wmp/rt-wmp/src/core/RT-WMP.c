@@ -250,7 +250,7 @@ int wmpInit(void) {
 //		}
 //		fprintf(fp,"%d %d %d",rtnCode, p->hdr.from, p->hdr.to);
 //		fflush(fp);
-//		fprintf(stderr,"STATE: %d\n",rtnCode);
+
 		switch (rtnCode) {
 		case RECEIVE:
 			rtnCode = wmpReceive(q);

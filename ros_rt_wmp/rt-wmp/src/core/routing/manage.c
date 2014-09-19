@@ -303,7 +303,28 @@ int evaluate_token(wmpFrame * t) {
 		int bestRssi;
 		signed char selected = UNDEF;
 
-		if (status.use_prim) {
+		if (lqm_fake_path_is_set()){
+			int i,j;
+			char path[32];
+			lqm_backup();
+			lqm_get_fake_path(path);
+			for (i = 0; i < status.N_NODES - 1; i++) {
+				int id1 = path[i];
+				int id2 = path[i+1];
+				lqm_set_val(id1,id2,-lqm_get_val(id1,id2));
+				lqm_set_val(id2,id1,-lqm_get_val(id2,id1));
+			}
+			for (i = 0; i < status.N_NODES; i++) {
+				for (j = 0; j < status.N_NODES; j++) {
+					int v = lqm_get_val(i, j);
+					if (v > 0) {
+						lqm_set_val(i, j, 0);
+					} else {
+						lqm_set_val(i, j, -v);
+					}
+				}
+			}
+		}else if (status.use_prim) {
 			/* new */
 			int i, j;
 			char ** prim_lqm;
@@ -359,8 +380,9 @@ int evaluate_token(wmpFrame * t) {
 			}
 		}
 
-		if (status.use_prim || status.use_prune) {
+		if (status.use_prim || status.use_prune || lqm_fake_path_is_set()) {
 			/* restore LQM */
+			//lqm_print();
 			lqm_restore();
 		}
 
@@ -536,7 +558,7 @@ static signed char getNext(wmpFrame * t) {
 }
 
 int evaluate_message(wmpFrame * t) {
-	lqm_print();
+	//lqm_print();
 
 	int i, more = 0;
 	if (mBitsIsSet(t->msg.type, BURST)) {
@@ -594,7 +616,7 @@ int evaluate_message(wmpFrame * t) {
 		} else {
 			next = getNext(t);
 			type = aura_msg;
-			fprintf(stderr, "Next: %d\n", next);
+			//fprintf(stderr, "Next: %d\n", next);
 		}
 
 		if (type == aura_auth) {
