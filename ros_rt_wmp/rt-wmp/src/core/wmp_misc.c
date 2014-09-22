@@ -246,7 +246,7 @@ void wmpSetDefaultConfiguration(Status * s){
 	s->multiplier=1;
 	s->wait_ack_from=0;
 	s->enable_flow_control = 0;
-	s->enable_message_reschedule = 1;
+	s->enable_message_reschedule = 0;
 	s->net_id=0;
 	s->highestSerial = 0;
 	s->wait_implicit_ack_from = -1;
