@@ -169,7 +169,7 @@ int evaluate_token(wmpFrame * t) {
 					if (status.secure || age < period) {
 						t->hdr.sleep = 0;
 						wmp_queue_tx_reschedule();
-						fprintf(stderr,"Rescheduling message\n");
+						//fprintf(stderr,"Rescheduling message\n");
 
 					} else {
 						wmp_queue_tx_confirm();
@@ -191,7 +191,7 @@ int evaluate_token(wmpFrame * t) {
 
 		/* Select MPM */
 		waiting = wmp_queue_tx_get_len();
-		fprintf(stderr,"Queue len: %d\n", waiting);
+		//fprintf(stderr,"Queue len: %d\n", waiting);
 
 		if (waiting > 0) {
 			int id = wmp_queue_tx_get_head_id();
@@ -200,7 +200,7 @@ int evaluate_token(wmpFrame * t) {
 			burst = wmp_queue_tx_get_elem_burst(id);
 
 			t->hdr.waiting += waiting;
-			fprintf(stderr,"HP: %d, age: %d --> maxPri:%d \n", highestPriority, age, t->tkn.maxPri);
+			//fprintf(stderr,"HP: %d, age: %d --> maxPri:%d \n", highestPriority, age, t->tkn.maxPri);
 			if (highestPriority > t->tkn.maxPri) {
 				/* control if I have a message more priority than the others */
 				t->tkn.idMaxPri = status.id;
