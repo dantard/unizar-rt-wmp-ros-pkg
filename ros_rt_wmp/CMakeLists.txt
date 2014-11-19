@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
-cmake_policy(SET CMP0015 NEW)
+project(ros_rt_wmp)
 
-rosbuild_init()
+if(COMMAND cmake_policy)
+	cmake_policy(SET CMP0003 NEW)
+	cmake_policy(SET CMP0015 NEW)
+endif(COMMAND cmake_policy)
+
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp std_msgs ros_rt_wmp_msgs roscpp_serialization roscpp_tutorials)
+find_package(Boost REQUIRED COMPONENTS thread)
 
 file(APPEND .config "")
 file(APPEND .target "")
@@ -20,33 +25,31 @@ link_directories(rt-wmp/lib-linux_us)
 link_directories(rt-wmp/lib-linux_ks)
 
 include_directories(rt-wmp/src)
+include_directories(include ${catkin_INCLUDE_DIRS})
 
-rosbuild_add_executable(ros-rt-wmp EXCLUDE_FROM_ALL src/main.cpp)
-rosbuild_add_executable(ros-rt-wmp-us-sock  EXCLUDE_FROM_ALL src/main.cpp)
-rosbuild_add_executable(ros-rt-wmp-us-ath5k  EXCLUDE_FROM_ALL src/main.cpp)
-rosbuild_add_executable(ros-rt-wmp-ks  EXCLUDE_FROM_ALL src/main.cpp)
-rosbuild_add_executable(test EXCLUDE_FROM_ALL src/main.cpp)
-rosbuild_add_executable(ros-rt-wmp-ip  EXCLUDE_FROM_ALL src/main.cpp ip/low_level.c)
+catkin_package(CATKIN_DEPENDS roscpp ros_rt_wmp_msgs roscpp_serialization roscpp_tutorials)
 
+add_executable(ros-rt-wmp           EXCLUDE_FROM_ALL src/main.cpp)
+add_executable(ros-rt-wmp-us-sock   EXCLUDE_FROM_ALL src/main.cpp)
+add_executable(ros-rt-wmp-us-ath5k  EXCLUDE_FROM_ALL src/main.cpp)
+add_executable(ros-rt-wmp-ks        EXCLUDE_FROM_ALL src/main.cpp)
+add_executable(test                 EXCLUDE_FROM_ALL src/main.cpp)
 
-target_link_libraries(ros-rt-wmp          rt-wmp z pcap)
-target_link_libraries(ros-rt-wmp-us-sock  rt-wmp z pcap)
-target_link_libraries(ros-rt-wmp-us-ath5k rt-wmp z pcap)
-target_link_libraries(ros-rt-wmp-ks       rt-wmp-ks z pcap)
-target_link_libraries(test                rt-wmp z pcap)
-target_link_libraries(ros-rt-wmp-ip       z)
-
+target_link_libraries(ros-rt-wmp          rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(ros-rt-wmp-us-sock  rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(ros-rt-wmp-us-ath5k rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(ros-rt-wmp-ks       rt-wmp-ks z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(test                rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 
 #ADD_DEFINITIONS(-Wno-address -Wno-deprecated -Wno-deprecated-declarations -std=gnu++0x -I../../rt-wmp/platforms/linux_us)
 
 if (NOT CONF MATCHES raw)
-add_dependencies(ros-rt-wmp librtwmp)
+add_dependencies(ros-rt-wmp librtwmp ${catkin_LIBRARIES} )
 endif( NOT CONF  MATCHES raw)
 
 if (NOT CONF MATCHES sock)
 add_dependencies(ros-rt-wmp-us-sock librtwmp_sock)
 endif( NOT CONF  MATCHES sock)
-
 
 if (NOT CONF MATCHES ath5k)
 add_dependencies(ros-rt-wmp-us-ath5k librtwmp_ath5k)
@@ -67,22 +70,22 @@ add_custom_command(TARGET test
 add_custom_command(TARGET ros-rt-wmp 
 	POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../bin/ros-rt-wmp
-	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../bin/ros-rt-wmp
+	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
+	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
 )
 
 add_custom_command(TARGET ros-rt-wmp-us-ath5k
         POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-        COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../bin/ros-rt-wmp-us-ath5k
-        COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../bin/ros-rt-wmp-us-ath5k
+	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ath5k
+	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ath5k
 )
 
 add_custom_command(TARGET ros-rt-wmp-ks
         POST_BUILD
         COMMAND echo "Applying sticky bit to the executable..."
-	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../bin/ros-rt-wmp-ks
-        COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../bin/ros-rt-wmp-ks
+	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ks
+	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ks
 )
 
 
@@ -91,7 +94,7 @@ add_custom_target(
 	COMMAND ./configure --with-llcom=raw
 	COMMAND make clean all
 	COMMAND echo "\"set("CONF raw")"\" > ${PROJECT_SOURCE_DIR}/.config
-	WORKING_DIRECTORY ../rt-wmp
+	WORKING_DIRECTORY ../../src/ros_rt_wmp/rt-wmp
 )
 
 add_custom_target(
@@ -99,7 +102,7 @@ add_custom_target(
         COMMAND ./configure --with-llcom=sock
         COMMAND make clean all
         COMMAND echo "\"set("CONF sock")"\" > ${PROJECT_SOURCE_DIR}/.config
-        WORKING_DIRECTORY ../rt-wmp
+	WORKING_DIRECTORY ../../src/ros_rt_wmp/rt-wmp
 )
 
 add_custom_target(
@@ -107,7 +110,7 @@ add_custom_target(
         COMMAND ./configure --with-llcom=ath5k_raw
         COMMAND make clean all
         COMMAND echo "\"set("CONF ath5k")"\" > ${PROJECT_SOURCE_DIR}/.config
-        WORKING_DIRECTORY ../rt-wmp
+	WORKING_DIRECTORY ../../src/ros_rt_wmp/rt-wmp
 )
 
 add_custom_target(
@@ -115,8 +118,9 @@ add_custom_target(
         COMMAND ./configure --with-platform=linux_ks
         COMMAND make clean all
         COMMAND echo "\"set("CONF ks")"\" > ${PROJECT_SOURCE_DIR}/.config
-        WORKING_DIRECTORY ../rt-wmp
+	WORKING_DIRECTORY ../../src/ros_rt_wmp/rt-wmp
 )
+
 
 add_custom_target(compile ALL)
                                    
@@ -128,5 +132,4 @@ add_dependencies(compile ${type})
 #add_dependencies(compile ros-rt-wmp)
 #add_dependencies(compile ros-rt-wmp-us-sock)
 #add_dependencies(compile ros-rt-wmp-us-ath5k)
-#add_dependencies(compile ros-rt-wmp-ip)
 #add_dependencies(compile ros-rt-wmp-ks)
