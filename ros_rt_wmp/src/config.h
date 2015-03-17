@@ -46,6 +46,8 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/CompressedImage.h>
+
 //#include <tunnel_navigation/RunNavigation.h>
 
 /* INCLUDE TOPIC and SERVICES HERE */
@@ -55,7 +57,8 @@ BEGIN_TOPIC_DEFINITION
 //QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 //TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
-
+TOPIC("image", sensor_msgs::CompressedImage , "2", "0", 60);
+TOPIC("number", std_msgs::Float64, "0", "1", 2);
 END_TOPIC_DEFINITION
 
 #endif

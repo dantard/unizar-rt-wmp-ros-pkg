@@ -34,12 +34,15 @@ add_executable(ros-rt-wmp-us-sock   EXCLUDE_FROM_ALL src/main.cpp)
 add_executable(ros-rt-wmp-us-ath5k  EXCLUDE_FROM_ALL src/main.cpp)
 add_executable(ros-rt-wmp-ks        EXCLUDE_FROM_ALL src/main.cpp)
 add_executable(test                 EXCLUDE_FROM_ALL src/main.cpp)
+add_executable(ros-rt-wmp-ip  		EXCLUDE_FROM_ALL src/main.cpp ip/low_level.c)
 
 target_link_libraries(ros-rt-wmp          rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(ros-rt-wmp-us-sock  rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(ros-rt-wmp-us-ath5k rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(ros-rt-wmp-ks       rt-wmp-ks z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(test                rt-wmp    z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(ros-rt-wmp-ip       rt-wmp    z      rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+
 
 #ADD_DEFINITIONS(-Wno-address -Wno-deprecated -Wno-deprecated-declarations -std=gnu++0x -I../../rt-wmp/platforms/linux_us)
 
@@ -62,9 +65,9 @@ endif( NOT CONF  MATCHES ks)
 
 
 add_custom_command(TARGET test
-        POST_BUILD
-        COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../bin/test
-        COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../bin/test
+    POST_BUILD
+   	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../bin/test
+    COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../bin/test
 )
 
 add_custom_command(TARGET ros-rt-wmp 
@@ -75,19 +78,18 @@ add_custom_command(TARGET ros-rt-wmp
 )
 
 add_custom_command(TARGET ros-rt-wmp-us-ath5k
-        POST_BUILD
+    POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
 	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ath5k
 	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ath5k
 )
 
 add_custom_command(TARGET ros-rt-wmp-ks
-        POST_BUILD
-        COMMAND echo "Applying sticky bit to the executable..."
+    POST_BUILD
+    COMMAND echo "Applying sticky bit to the executable..."
 	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ks
 	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ks
 )
-
 
 add_custom_target(
 	librtwmp
@@ -126,10 +128,5 @@ add_custom_target(compile ALL)
                                    
 ## Select the desired configuration v here v
 
-
-
 add_dependencies(compile ${type})
-#add_dependencies(compile ros-rt-wmp)
-#add_dependencies(compile ros-rt-wmp-us-sock)
-#add_dependencies(compile ros-rt-wmp-us-ath5k)
-#add_dependencies(compile ros-rt-wmp-ks)
+
