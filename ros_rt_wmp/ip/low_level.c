@@ -204,8 +204,7 @@ int wmpPopData(unsigned int port, char ** p, unsigned int * size,
 	return (*size) > 0 ? 1 : -1;
 }
 
-int wmpPopDataTimeout(unsigned int port, char ** p, unsigned int * size,
-		unsigned char * src, signed char * priority, int to) {
+int wmpPopDataTimeout(unsigned int port, char ** p, unsigned int * size, unsigned char * src, signed char * priority, int to) {
 	return 1;
 }
 
