@@ -73,13 +73,12 @@ static int readllcfg() {
 	char filename[256], line[256];
 	char param[20], val[20];
 
-    snprintf(base_ip, 20, "%s", "192.168.1.1");
+	snprintf(base_ip, 20, "%s", "192.168.1.1");
 	snprintf(filename, 256, "%s/.rt-wmp/rt-wmp-us-ip.ll", getenv("HOME"));
 
 	FILE * f = fopen(filename, "r");
 	if (f > 0) {
-		WMP_MSG(stderr, "Reading Low Level Configuration file (%s)... \n",
-				filename);
+		WMP_MSG(stderr, "Reading Low Level Configuration file (%s)... \n", filename);
 		while (fgets(line, 256, f) != NULL) {
 
 			if (line[0] < 65 || line[0] > 90) {
@@ -152,9 +151,7 @@ unsigned int wmpGetLoopId(void) {
 	return idx++;
 }
 
-
-int wmpPushData(unsigned int port, char * p, unsigned int size,
-		unsigned int dest, signed char priority) {
+int wmpPushData(unsigned int port, char * p, unsigned int size, unsigned int dest, signed char priority) {
 
 	int ip = 0;
 	while (dest >>= 1) {
@@ -165,41 +162,38 @@ int wmpPushData(unsigned int port, char * p, unsigned int size,
 	txservaddr.sin_addr.s_addr = address; //inet_addr(base_ip) + ip;
 	txservaddr.sin_port = htons(32000 + port);
 
-	sendto(txsockfd, p, size, 0, (struct sockaddr *) &txservaddr,
-			sizeof(txservaddr));
-    //fprintf(stderr, "Sent to port: %d (dest: %d, ip+:%d)\n", 32000 + port, dest, ip);
+	sendto(txsockfd, p, size, 0, (struct sockaddr *) &txservaddr, sizeof(txservaddr));
+	//fprintf(stderr, "Sent to port: %d (dest: %d, ip+:%d)\n", 32000 + port, dest, ip);
 	return 1;
 }
 
-int wmpPopData(unsigned int port, char ** p, unsigned int * size,
-		unsigned char * src, signed char * priority) {
+int wmpPopData(unsigned int port, char ** p, unsigned int * size, unsigned char * src, signed char * priority) {
 	if (!initialized[port]) {
 		fprintf(stderr, "Listening at port: %d\n", 32000 + port);
 		rxsockfd[port] = socket(AF_INET, SOCK_DGRAM, 0);
 		bzero(&rxservaddr[port], sizeof(rxservaddr));
 		rxservaddr[port].sin_family = AF_INET;
 
-        int address = htonl(ntohl(inet_addr(base_ip)) + mnode_id);
+		int address = htonl(ntohl(inet_addr(base_ip)) + mnode_id);
 
-        rxservaddr[port].sin_addr.s_addr = address;// htonl(INADDR_ANY);
+		rxservaddr[port].sin_addr.s_addr = address; // htonl(INADDR_ANY);
 		rxservaddr[port].sin_port = htons(32000 + port);
-        int res = bind(rxsockfd[port], (struct sockaddr *) &rxservaddr[port],
-				sizeof(rxservaddr[port]));
+		int res = bind(rxsockfd[port], (struct sockaddr *) &rxservaddr[port], sizeof(rxservaddr[port]));
 
-        if (res!=0){
-            fprintf(stderr,"*** ABORTING *** Bind error: do IP address and node-id are coherent in this machine?\n");
-            exit(0);
-        }else{
-            initialized[port] = 1;
-        }
+		if (res != 0) {
+			fprintf(stderr, "*** ABORTING *** Bind error: do IP address and node-id are coherent in this machine?\n");
+			exit(0);
+		} else {
+			initialized[port] = 1;
+		}
 	}
 
 	int len = sizeof(cliaddr);
-	*size = recvfrom(rxsockfd[port], bufrx, 65535, 0,
-			(struct sockaddr *) &cliaddr, &len);
-    //fprintf(stderr, "Received port: %d size:%d\n", 32000 + port, *size);
+	*size = recvfrom(rxsockfd[port], bufrx, 65535, 0, (struct sockaddr *) &cliaddr, &len);
+	//fprintf(stderr, "Received port: %d size:%d\n", 32000 + port, *size);
+
 	*p = bufrx;
-	*src = 2;
+	*src = (ntohl(cliaddr.sin_addr.s_addr)-ntohl(inet_addr(base_ip)));
 	*priority = 0;
 	return (*size) > 0 ? 1 : -1;
 }
