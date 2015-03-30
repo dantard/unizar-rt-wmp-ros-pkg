@@ -103,10 +103,10 @@ struct WRPHeader {
 	unsigned char priority;
 };
 
-unsigned char getNext(unsigned char dest) {
+unsigned char get_next(unsigned char dest) {
 	unsigned char i, me, him;
 	for (i = 0; i < mactive_nodes; i++) {
-		fprintf(stderr,"Path[i] = %d mnode = %d dest = %d\n",path[i], mnode_id, dest );
+		fprintf(stderr, "Path[i] = %d mnode = %d dest = %d\n", path[i], mnode_id, dest);
 
 		if (path[i] == mnode_id) {
 			me = i;
@@ -177,8 +177,8 @@ static int readllcfg() {
 
 			if (strcmp(param, "PATH") == 0) {
 				int i;
-				for (i = 0; i<strlen(val);i++){
-					path[i] = val[i]-'0';
+				for (i = 0; i < strlen(val); i++) {
+					path[i] = val[i] - '0';
 				}
 				exists = 1;
 			}
@@ -229,7 +229,7 @@ void listener(void *ptr) {
 		} else if (rxb_header->to == mnode_id) {
 			pthread_mutex_lock(&mtx);
 			memcpy(txb + ETH_HLEN, rxb + ETH_HLEN, 65536 - ETH_HLEN);
-			txb_header->to = getNext(txb_header->dest);
+			txb_header->to = get_next(txb_header->dest);
 			txb_header->from = mnode_id;
 			int res = sendto(tx, txb, rlen, 0, (struct sockaddr*) &tx_address, sizeof(tx_address));
 
@@ -295,7 +295,7 @@ int wmpPushData(unsigned int port, char * p, unsigned int size, unsigned int des
 	txb_header->dest = ip;
 	txb_header->from = mnode_id;
 	txb_header->src = mnode_id;
-	txb_header->to = getNext(txb_header->dest);
+	txb_header->to = get_next(txb_header->dest);
 	txb_header->port = port;
 	txb_header->len = size;
 	memcpy(txb_data, p, size);

@@ -139,7 +139,7 @@ void argo_setCommentId(int id, char * text){
 	sprintf(regs.at[id].comment, "--%s: %s", regs.at[id].sw, text);
 }
 void argo_setExample(char * exe, char * switchs){
-	sprintf(example, "Example: %s %s",exe, switchs);
+	sprintf(example, "Example:\n %s %s",exe, switchs);
 }
 void argo_doProcess(int argc, char * argv[], int start) {
 	int i, j;

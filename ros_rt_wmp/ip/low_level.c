@@ -138,6 +138,7 @@ int wmpSetup(char node_id, char active_nodes) {
 	bzero(&txservaddr, sizeof(txservaddr));
 	txservaddr.sin_family = AF_INET;
 	memset(initialized, 0, sizeof(initialized));
+
 	return 1;
 }
 void wmpRunBG(void) {

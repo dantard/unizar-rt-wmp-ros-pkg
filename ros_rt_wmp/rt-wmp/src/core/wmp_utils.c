@@ -56,8 +56,8 @@ long long wmp_elapsed_ms (struct timespec *begin, struct timespec *end){
 void wmp_add_ms(struct timespec *ts, int ms){
 	long long long_ms, sec, nsec;
 	long_ms = ((long long)ms * 1000 * 1000) + ts->tv_nsec;
-   sec = DO_DIV64(long_ms , (1000 * 1000 * 1000));
-   nsec = long_ms - ((long long)sec*(1000 * 1000 * 1000));
+	sec = DO_DIV64(long_ms , (1000 * 1000 * 1000));
+	nsec = long_ms - ((long long)sec*(1000 * 1000 * 1000));
 	ts->tv_sec  += sec;
 	ts->tv_nsec = nsec;
 }
