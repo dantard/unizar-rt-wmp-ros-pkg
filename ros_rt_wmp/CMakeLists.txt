@@ -22,81 +22,6 @@ include(${PROJECT_SOURCE_DIR}/.target)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-
-include_directories(wrp-network/iw-4.0)
-
-add_library(iw  
-wrp-network/iw-4.0/android-nl.c  
-wrp-network/iw-4.0/coalesce.c  
-wrp-network/iw-4.0/cqm.c   
-wrp-network/iw-4.0/event.c
-wrp-network/iw-4.0/hwsim.c  
-wrp-network/iw-4.0/info.c       
-wrp-network/iw-4.0/iw.c    
-wrp-network/iw-4.0/mesh.c   
-wrp-network/iw-4.0/mpp.c  
-wrp-network/iw-4.0/offch.c  
-wrp-network/iw-4.0/phy.c  
-wrp-network/iw-4.0/reason.c
-wrp-network/iw-4.0/roc.c   
-wrp-network/iw-4.0/sections.c  
-wrp-network/iw-4.0/status.c  
-wrp-network/iw-4.0/util.c    
-wrp-network/iw-4.0/version.c
-wrp-network/iw-4.0/bitrate.c     
-wrp-network/iw-4.0/connect.c   
-wrp-network/iw-4.0/genl.c   
-wrp-network/iw-4.0/ibss.c   
-wrp-network/iw-4.0/interface.c  
-wrp-network/iw-4.0/link.c
-wrp-network/iw-4.0/mpath.c  
-wrp-network/iw-4.0/ocb.c  
-wrp-network/iw-4.0/p2p.c    
-wrp-network/iw-4.0/ps.c   
-wrp-network/iw-4.0/reg.c     
-wrp-network/iw-4.0/scan.c  
-wrp-network/iw-4.0/station.c   
-wrp-network/iw-4.0/survey.c
-wrp-network/iw-4.0/vendor.c  
-wrp-network/iw-4.0/wowlan.c)
-
-target_link_libraries (iw nl ${catkin_LIBRARIES})
-
-
-
-add_executable(wrp-network 
-wrp-network/network-card.c
-wrp-network/radiotap.c
-wrp-network/bridge.c 
-wrp-network/timespec_utils.c
-)
-target_link_libraries(wrp-network iw rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(rt-wmp/src)
 
@@ -146,20 +71,39 @@ target_link_libraries(ros-rt-wmp-mh       rt z ${Boost_LIBRARIES}  ${catkin_LIBR
 add_custom_command(TARGET ros-rt-wmp 
 	POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
-	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
+        COMMAND sudo rm /tmp/ros-rt-wmp
+        COMMAND mv ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp /tmp
+        COMMAND sudo chown root:root /tmp/ros-rt-wmp
+        COMMAND sudo chmod +s /tmp/ros-rt-wmp
+
+	#COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
+	#COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
 )
 
 add_custom_command(TARGET ros-rt-wmp-ip 
 	POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
-	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
+        COMMAND sudo rm /tmp/ros-rt-wmp-ip
+	COMMAND mv ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip /tmp
+	COMMAND sudo chown root:root /tmp/ros-rt-wmp-ip
+        COMMAND sudo chmod +s /tmp/ros-rt-wmp-ip
+
+        #COMMAND mv /tmp/ros-rt-wmp-ip ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip 
+	#COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
+	#COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
 )
 
 add_custom_command(TARGET ros-rt-wmp-mh 
 	POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-	COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh
-	COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh
+	COMMAND sudo rm /tmp/ros-rt-wmp-mh
+        COMMAND mv ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh /tmp
+        COMMAND sudo chown root:root /tmp/ros-rt-wmp-mh
+        COMMAND sudo chmod +s /tmp/ros-rt-wmp-mh
+
+
+
+
+	#COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh
+	#COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh
 )
