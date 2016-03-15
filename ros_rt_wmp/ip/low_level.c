@@ -164,7 +164,7 @@ int wmpPushData(unsigned int port, char * p, unsigned int size, unsigned int des
 	txservaddr.sin_port = htons(32000 + port);
 
 	sendto(txsockfd, p, size, 0, (struct sockaddr *) &txservaddr, sizeof(txservaddr));
-	//fprintf(stderr, "Sent to port: %d (dest: %d, ip+:%d)\n", 32000 + port, dest, ip);
+	fprintf(stderr, "Sent to port: %d (dest: %d, ip+:%d)\n", 32000 + port, dest, ip);
 	return 1;
 }
 
