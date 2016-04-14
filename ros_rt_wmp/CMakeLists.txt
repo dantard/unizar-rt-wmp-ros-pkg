@@ -71,10 +71,8 @@ target_link_libraries(ros-rt-wmp-mh       rt z ${Boost_LIBRARIES}  ${catkin_LIBR
 add_custom_command(TARGET ros-rt-wmp 
 	POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-        COMMAND sudo rm /tmp/ros-rt-wmp
-        COMMAND mv ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp /tmp
-        COMMAND sudo chown root:root /tmp/ros-rt-wmp
-        COMMAND sudo chmod +s /tmp/ros-rt-wmp
+        COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
+        COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
 
 	#COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
 	#COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp
@@ -83,27 +81,11 @@ add_custom_command(TARGET ros-rt-wmp
 add_custom_command(TARGET ros-rt-wmp-ip 
 	POST_BUILD
 	COMMAND echo "Applying sticky bit to the executable..."
-        COMMAND sudo rm /tmp/ros-rt-wmp-ip
-	COMMAND mv ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip /tmp
-	COMMAND sudo chown root:root /tmp/ros-rt-wmp-ip
-        COMMAND sudo chmod +s /tmp/ros-rt-wmp-ip
+        COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
+        COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
 
         #COMMAND mv /tmp/ros-rt-wmp-ip ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip 
 	#COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
 	#COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-ip
 )
 
-add_custom_command(TARGET ros-rt-wmp-mh 
-	POST_BUILD
-	COMMAND echo "Applying sticky bit to the executable..."
-	COMMAND sudo rm /tmp/ros-rt-wmp-mh
-        COMMAND mv ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh /tmp
-        COMMAND sudo chown root:root /tmp/ros-rt-wmp-mh
-        COMMAND sudo chmod +s /tmp/ros-rt-wmp-mh
-
-
-
-
-	#COMMAND sudo chown root:root ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh
-	#COMMAND sudo chmod +s ${CMAKE_BINARY_DIR}/../devel/lib/ros_rt_wmp/ros-rt-wmp-mh
-)
