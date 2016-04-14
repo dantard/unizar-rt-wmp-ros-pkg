@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+#include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
-rosbuild_init()
+#rosbuild_init()
 
 add_definitions(-Wno-sign-compare)
 set ( CMAKE_CXX_FLAGS -Wno-sign-compare)
@@ -21,7 +21,7 @@ link_directories(
 include_directories(
     ${GTKMM_INCLUDE_DIRS}  ../ros_rt_wmp/rt-wmp/src src)
 
-rosbuild_add_executable(ros-rt-wmp-sniffer src/wmpSniffer.cc
+add_executable(ros-rt-wmp-sniffer src/wmpSniffer.cc
         src/main_window_glade.cc 
         src/main_window.cc 
         src/area.cc 
@@ -59,4 +59,4 @@ add_custom_command(TARGET ros-rt-wmp-sniffer
 )
 
 target_link_libraries(ros-rt-wmp-sniffer
-    ${GTKMM_LIBRARIES}  vte pcap gthread-2.0)
+    ${GTKMM_LIBRARIES}  vte pcap gthread-2.0 rt pthread z)

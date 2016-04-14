@@ -39,7 +39,7 @@
 using namespace std;
 
 //#include <config.h>
-#include <gtkmm/main.h>
+#include <gtkmm-2.4/gtkmm.h>
 
 #include "main_window.hh"
 #include "bridge.hh"
