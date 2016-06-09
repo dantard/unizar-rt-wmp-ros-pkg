@@ -50,6 +50,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CompressedImage.h>
 #include <ros_packet_msgs/packet.h>
+#include <ros_packet_msgs/Controller.h>
 
 //#include <tunnel_navigation/RunNavigation.h>
 
@@ -65,6 +66,8 @@ BEGIN_TOPIC_DEFINITION
 
 TOPIC("laser", ros_packet_msgs::packet, "0", "1", 120);
 TOPIC("image", ros_packet_msgs::packet, "0", "1", 119);
+TOPIC("y", ros_packet_msgs::Controller, "0", "1", 121);
+TOPIC("u", ros_packet_msgs::Controller, "1", "0", 121);
 
 END_TOPIC_DEFINITION
 
