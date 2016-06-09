@@ -1,22 +1,15 @@
-/*------------------------------------------------------------------------
- *---------------------           RT-WMP              --------------------
- *------------------------------------------------------------------------
- *                                                         V7.0B  11/05/10
- *
- *
- *  File: ./src/core/dijkstra.c
- *  Authors: Danilo Tardioli
- *  ----------------------------------------------------------------------
- *  Copyright (C) 2000-2010, Universidad de Zaragoza, SPAIN
+
+/*  ----------------------------------------------------------------------
+ *  Copyright (C) 2000-2016, Universidad de Zaragoza, SPAIN
  *
  *  Contact Addresses: Danilo Tardioli                   dantard@unizar.es
  *
- *  RT-WMP is free software; you can  redistribute it and/or  modify it
+ *  This is free software; you can  redistribute it and/or  modify it
  *  under the terms of the GNU General Public License  as published by the
  *  Free Software Foundation;  either  version 2, or (at  your option) any
  *  later version.
  *
- *  RT-WMP  is distributed  in the  hope  that  it will be   useful, but
+ *  This software is distributed in the hope that it will be   useful, but
  *  WITHOUT  ANY  WARRANTY;     without  even the   implied   warranty  of
  *  MERCHANTABILITY  or  FITNESS FOR A  PARTICULAR PURPOSE.    See the GNU
  *  General Public License for more details.

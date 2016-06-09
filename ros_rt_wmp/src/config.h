@@ -49,6 +49,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/CompressedImage.h>
+#include <ros_packet_msgs/packet.h>
 
 //#include <tunnel_navigation/RunNavigation.h>
 
@@ -59,8 +60,11 @@ BEGIN_TOPIC_DEFINITION
 //QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
 //TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
-TOPIC("float64", std_msgs::Float64, "0", "1", 2);
-TOPIC("int32", std_msgs::Int32, "1", "0", 2);
+//TOPIC("float64", std_msgs::Float64, "0", "1", 2);
+//TOPIC("int32", std_msgs::Int32, "1", "0", 2);
+
+TOPIC("laser", ros_packet_msgs::packet, "0", "1", 120);
+TOPIC("image", ros_packet_msgs::packet, "0", "1", 119);
 
 END_TOPIC_DEFINITION
 

@@ -61,11 +61,13 @@ target_include_directories(rt-wmp-raw PUBLIC rt-wmp/src/platforms/linux_us)
 add_executable(ros-rt-wmp           src/main.cpp)
 add_executable(ros-rt-wmp-ip  		src/main.cpp ip/low_level.c)
 add_executable(ros-rt-wmp-mh  		src/main.cpp ip/low_level-multi-hop.c)
+add_executable(fake_lqm  		src/fake_lqm.cpp)
 
 
 target_link_libraries(ros-rt-wmp          rt-wmp-raw z pcap rt ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(ros-rt-wmp-ip       rt z ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 target_link_libraries(ros-rt-wmp-mh       rt z ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
+target_link_libraries(fake_lqm            rt z yaml-cpp ${Boost_LIBRARIES}  ${catkin_LIBRARIES})
 
 
 add_custom_command(TARGET ros-rt-wmp 

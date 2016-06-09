@@ -145,7 +145,7 @@ public:
 			}else{
 				s << n->getNamespace() << "/in/" << name;
 			}
-			sub = n->subscribe(s.str(), 10, &TopicManager::callback, this);
+            sub = n->subscribe(s.str(), 10, &TopicManager::callback, this,ros::TransportHints().udp());
 			ROSWMP_DEBUG(stderr,"Callback subscribed (%s)\n", s.str().c_str());
 
 			if (! amIstatic){
