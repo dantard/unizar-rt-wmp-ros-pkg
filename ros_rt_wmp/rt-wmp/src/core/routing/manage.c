@@ -85,7 +85,9 @@ int create_new_token(wmpFrame * t) {
 	t->hdr.burst = 0;
 	t->hdr.waiting = 0;
 
-	/*clear reached and lost fields*/
+    t->hdr.sleep = 0;
+
+/*clear reached and lost fields*/
 	for (i = 0; i < status.N_NODES; i++) {
 		nstat_clearReached(i);
 	}
@@ -769,7 +771,7 @@ int create_message(wmpFrame * t) {
 
 	int m_id = wmp_queue_tx_pop_part(&m), i;
 
-	if (m_id < 0) {
+    if (m_id < 0) {
 		wmp_queue_tx_pop_part_done(m_id);
 		wmp_print_clean(t);
 		fprintf(stderr, "NEW TOKEN (NOTHING TO TRANSMIT)\n");

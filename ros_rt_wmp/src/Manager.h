@@ -51,7 +51,7 @@ extern "C" {
 #define MAX_DATA_SIZE	512000
 #define WMP_MESSAGE_SIZE  1000
 #define ROSWMP_DEBUG(output,...)   // fprintf(output, __VA_ARGS__); fprintf(output,"\n");
-#define COMPRESSION
+//#define COMPRESSION
 
 
 struct info_t {
