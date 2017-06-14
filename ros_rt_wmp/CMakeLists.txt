@@ -15,6 +15,7 @@ file(APPEND .config "")
 file(APPEND .target "")
 
 SET(type ros-rt-wmp)
+SET(CMAKE_C_FLAGS "-g -ggdb")
 
 include(${PROJECT_SOURCE_DIR}/.config)
 include(${PROJECT_SOURCE_DIR}/.target)
@@ -25,7 +26,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 include_directories(include ${catkin_INCLUDE_DIRS})
 include_directories(rt-wmp/src)
 
-add_library(rt-wmp-raw 
+add_library(rt-wmp-raw STATIC
 rt-wmp/src/core/routing/basic/frames.c
 rt-wmp/src/core/routing/basic/handle_frames.c
 rt-wmp/src/core/routing/aura.c
@@ -52,8 +53,10 @@ rt-wmp/src/core/queue_core.c
 rt-wmp/src/core/prim.c
 rt-wmp/src/platforms/linux_us/wmp_misc.c
 rt-wmp/src/platforms/linux_us/wmpInit.c
-rt-wmp/src/platforms/linux_us/hwi/raw/ll_com.c
+rt-wmp/src/platforms/linux_us/hwi/raw/ll_com_2017.c
+rt-wmp/src/platforms/linux_us/hwi/raw/raw_comm.c
 rt-wmp/src/platforms/linux_us/hwi/raw/radiotap/radiotap.c
+
 )
 
 target_include_directories(rt-wmp-raw PUBLIC rt-wmp/src/platforms/linux_us)

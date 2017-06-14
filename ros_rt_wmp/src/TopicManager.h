@@ -145,7 +145,7 @@ public:
 			}else{
 				s << n->getNamespace() << "/in/" << name;
 			}
-            sub = n->subscribe(s.str(), 10, &TopicManager::callback, this,ros::TransportHints().udp());
+            sub = n->subscribe(s.str(), 10, &TopicManager::callback, this); //2017 -> ,ros::TransportHints().udp());
 			ROSWMP_DEBUG(stderr,"Callback subscribed (%s)\n", s.str().c_str());
 
 			if (! amIstatic){
@@ -205,7 +205,7 @@ public:
 
 	virtual void callback(const boost::shared_ptr<T const> & message) {
 
-		if (!justone && (stopped || shouldDecimate())) {
+        if (!justone && (stopped || shouldDecimate())) {
 			return;
 		}
 

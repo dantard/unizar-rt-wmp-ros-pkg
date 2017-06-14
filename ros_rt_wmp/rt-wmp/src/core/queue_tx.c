@@ -318,7 +318,7 @@ int queue_tx_inspect_head(queue_t * q, longMsg_t ** p) {
 		if (p != 0) {
 			*p = q->longMsg[maxPriId];
 		}
-		return (int) (getRawActualTimeus - q->longMsg[maxPriId]->ts);
+        return (int) (getRawActualTimeus() - q->longMsg[maxPriId]->ts);
 	} else {
 		return -1;
 	}

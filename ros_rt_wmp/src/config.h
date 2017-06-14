@@ -62,12 +62,15 @@ BEGIN_TOPIC_DEFINITION
 //TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
 //TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
 //TOPIC("float64", std_msgs::Float64, "0", "1", 2);
-//TOPIC("int32", std_msgs::Int32, "1", "0", 2);
+TOPIC("int32_1_0", std_msgs::Int32, "1", "0", 2);
+TOPIC("int32_0_1", std_msgs::Int32, "0", "1", 2);
 
+/*
 TOPIC("laser", ros_packet_msgs::packet, "0", "1", 120);
 TOPIC("image", ros_packet_msgs::packet, "0", "1", 119);
 TOPIC("y", ros_packet_msgs::Controller, "0", "1", 121);
 TOPIC("u", ros_packet_msgs::Controller, "1", "0", 121);
+*/
 
 END_TOPIC_DEFINITION
 

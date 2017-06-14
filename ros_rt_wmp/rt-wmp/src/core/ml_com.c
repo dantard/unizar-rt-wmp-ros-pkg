@@ -190,12 +190,15 @@ int ml_receive(wmpFrame *f, int timeout) {
 
 		elapsed_ms = wmp_elapsed_ms(&before, &after);
 		tot_elapsed+= elapsed_ms;
-		
+
+//      fprintf(stderr,"Elapsed:%llu error:%d protocol:%x size:%d \n",elapsed_ms, ret.error, ret.proto, ret.size);
+
 		if (ret.error) {
 			return EXPIRED;
 		}
 
 		timeout = (timeout - elapsed_ms) > 0 ? (timeout - elapsed_ms) : 0;
+
 
 		if (ret.proto == 0x6969 || ret.proto == 0x6970) {
 
@@ -208,25 +211,22 @@ int ml_receive(wmpFrame *f, int timeout) {
 				//continue;
 			}
 
-			if (ml_rx_error(f)){
-				continue;
-			}
+            if (ml_rx_error(f)){
+                continue;
+            }
 
-			if (f->hdr.net_id == status.net_id) {
+            if (f->hdr.net_id == status.net_id) {
 				if (ret.has_lq) {
 					f->hdr.rssi = ret.rssi;
 					f->hdr.noise = ret.noise;
 				}
-				return RECEIVE_OK;
-			} else {
+                return RECEIVE_OK;
+
+            } else {
 				WMP_MSG(stderr, "*** Warning ::: Foreign network detected (id:%d instead of id:%d)\n", f->hdr.net_id,status.net_id);
 				continue;
 			}
 		} else{
-//			if (timeout < 5){
-//				timeout+=2;
-//			}
-//			WMP_MSG(stderr, "*** Warning ::: Foreign frame detected (proto:%d) restart read with TO %d (elapsed:%d)\n", ret.proto, timeout, elapsed_ms);
 			continue;
 		}
 	}
