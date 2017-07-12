@@ -7,9 +7,9 @@ if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0015 NEW)
 endif(COMMAND cmake_policy)
 
-find_package(catkin REQUIRED COMPONENTS message_generation roscpp std_msgs ros_rt_wmp_msgs roscpp_serialization roscpp_tutorials)
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp std_msgs ros_rt_wmp_msgs roscpp_serialization)
 find_package(Boost REQUIRED COMPONENTS thread)
-catkin_package(CATKIN_DEPENDS roscpp ros_rt_wmp_msgs roscpp_serialization roscpp_tutorials)
+catkin_package(CATKIN_DEPENDS roscpp ros_rt_wmp_msgs roscpp_serialization )
 
 file(APPEND .config "")
 file(APPEND .target "")

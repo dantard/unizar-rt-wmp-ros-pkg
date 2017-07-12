@@ -20,7 +20,6 @@
 <run_depend>ros_rt_wmp_msgs</run_depend>
 <run_depend>roscpp</run_depend>
 <run_depend>roscpp_serialization</run_depend>
-<run_depend>roscpp_tutorials</run_depend>
 </package>
 
 
