@@ -14,9 +14,10 @@ set(CMAKE_CXX_COMPILER g++-4.4)
 find_package(PkgConfig)
 
 pkg_check_modules(GTKMM gtkmm-2.4)
+pkg_check_modules(GLIBMM glibmm-2.4)
 
 link_directories(
-    ${GTKMM_LIBRARY_DIRS}  )
+    ${GTKMM_LIBRARY_DIRS} ${GLIBMM_LIBRARY_DIRS} )
 
 include_directories(
     ${GTKMM_INCLUDE_DIRS}  ../ros_rt_wmp/rt-wmp/src src)

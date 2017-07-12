@@ -508,7 +508,10 @@ int initLowLevelCom(void){
 
 }
 
-void closeLowLevelCom(void){}
+void closeLowLevelCom(void){
+    raw_close(&sockrx);
+    raw_close(&socktx);
+}
 
 int llsend(char * f, int size){
     return raw_send_broadcast(&socktx, f, size);

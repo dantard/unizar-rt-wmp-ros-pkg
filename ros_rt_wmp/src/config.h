@@ -42,17 +42,6 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int32.h>
 
-#include <roscpp_tutorials/TwoInts.h>
-#include <theora_image_transport/Packet.h>
-//#include <audio_common_msgs/AudioData.h>
-#include <geometry_msgs/Twist.h>
-#include <sensor_msgs/LaserScan.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/CompressedImage.h>
-#include <ros_packet_msgs/packet.h>
-#include <ros_packet_msgs/Controller.h>
-
-//#include <tunnel_navigation/RunNavigation.h>
 
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
