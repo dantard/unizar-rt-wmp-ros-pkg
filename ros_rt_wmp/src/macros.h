@@ -46,6 +46,8 @@
 #define TOPIC(name,type,src,dest, prio)          m = new TopicManager<type> (n, port, std::string(name), src, dest, prio, false); \
 								                 w->addManager(name, m); port++;
 
+#define PTOPIC(type, name, src, dest, prio, period, ttl)  m = new TopicManager<type> (n, port, std::string(name), src, dest, prio, false); \
+                                                 m->setPeriod(period); w->addManager(name, m); port++;
 
 #define QOS_TOPIC(name,type,src,dest, prio, queue_size, period) m = new TopicManager<type> (n, port, std::string(name), src, dest, prio, false, queue_size, period); \
 								                 w->addManager(name, m); port++;

@@ -116,6 +116,10 @@ public:
 		}
 	}
 
+    virtual void setPeriod(int ms){
+
+    }
+
 	void setDestination(std::string destination) {
 		dests.clear();
 		std::vector<std::string> strs;

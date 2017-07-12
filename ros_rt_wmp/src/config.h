@@ -39,27 +39,29 @@
 #include "macros.h"
 
 /* INCLUDE DATA TYPE HERE */
-#include <std_msgs/Float64.h>
-#include <std_msgs/Int32.h>
 
+#include <std_msgs/Int8.h>
+#include <theora_image_transport/Packet.h>
+#include <sensor_msgs/LaserScan.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <nav_msgs/Path.h>
+#include <mavros_msgs/BatteryStatus.h>
+#include <nav_msgs/Odometry.h>
+#include <mavros_msgs/State.h>
 
 /* INCLUDE TOPIC and SERVICES HERE */
 BEGIN_TOPIC_DEFINITION
 
-//QOS_TOPIC("video/theora", theora_image_transport::Packet, "1", "0", 1, 5, 250000);
-//QOS_TOPIC("scan", sensor_msgs::LaserScan, "1", "0", 5,10,108000);
-//TOPIC("featureDetector", theora_image_transport::Packet, "1", "0", 1);
-//TOPIC("audio", audio_common_msgs::AudioData, "1", "0", 2);
-//TOPIC("float64", std_msgs::Float64, "0", "1", 2);
-TOPIC("int32_1_0", std_msgs::Int32, "1", "0", 2);
-TOPIC("int32_0_1", std_msgs::Int32, "0", "1", 2);
-
-/*
-TOPIC("laser", ros_packet_msgs::packet, "0", "1", 120);
-TOPIC("image", ros_packet_msgs::packet, "0", "1", 119);
-TOPIC("y", ros_packet_msgs::Controller, "0", "1", 121);
-TOPIC("u", ros_packet_msgs::Controller, "1", "0", 121);
-*/
+PTOPIC(theora_image_transport::Packet, "/net/image/theora",                 "0", "1", 51, 1,   500);
+PTOPIC(sensor_msgs::LaserScan,         "/hokuyo/scan",                      "0", "1", 50, 200, 500);
+PTOPIC(geometry_msgs::PoseStamped,     "/mavros/local_position/pose",       "0", "1", 50, 100, 500);
+PTOPIC(geometry_msgs::TwistStamped,    "/mavros/setpoint_velocity/cmd_vel", "0", "1", 50, 100, 500);
+PTOPIC(nav_msgs::Path,                 "/mavtest/local_plan",               "0", "1", 50, 200, 500);
+PTOPIC(nav_msgs::Odometry,             "/rtabmap/odom",                     "0", "1", 50, 200, 500);
+PTOPIC(mavros_msgs::State,             "/mavros/state",                     "0", "1", 55, 500, 500);
+PTOPIC(mavros_msgs::BatteryStatus,     "/mavros/battery",                   "0", "1", 56, 100, 500);
+PTOPIC(std_msgs::Int8,                 "/int8",                             "0", "1", 50, 100, 500);
 
 END_TOPIC_DEFINITION
 

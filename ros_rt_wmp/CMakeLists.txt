@@ -61,7 +61,18 @@ rt-wmp/src/platforms/linux_us/hwi/raw/radiotap/radiotap.c
 
 target_include_directories(rt-wmp-raw PUBLIC rt-wmp/src/platforms/linux_us)
 
-add_executable(ros-rt-wmp           src/main.cpp)
+add_executable(ros-rt-wmp  src/main.cpp
+                           src/argon.h
+                           src/ServiceManager.h
+                           src/TopicManager.h
+                           src/WMPServiceManager.h
+                           src/config.h
+                           src/macros.h
+                           src/Manager.h
+                           src/TFManager.h
+                           src/WMPNodeManager.h
+                           src/WMPTopicManager.h)
+
 add_executable(ros-rt-wmp-ip  		src/main.cpp ip/low_level.c)
 add_executable(ros-rt-wmp-mh  		src/main.cpp ip/low_level-multi-hop.c)
 add_executable(fake_lqm  		src/fake_lqm.cpp)

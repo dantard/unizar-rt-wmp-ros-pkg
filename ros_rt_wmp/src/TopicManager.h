@@ -46,7 +46,7 @@ template<class T> class TopicManager: public Manager {
 protected:
 	std::map<std::string, info_t> flows_map;
 	ros::Subscriber sub;
-	int counter;
+    int counter;
 	ros::Publisher loop_publisher;
 	unsigned int queue_size, period;
 	T * emergency;
@@ -96,6 +96,10 @@ public:
 		init();
 	}
 
+    void setPeriod(int ms){
+        this->period = ms;
+    }
+
 	std::vector<T> buffer;
 	virtual void pub_loop() {
 		bool initied = false;
@@ -117,6 +121,50 @@ public:
 			usleep(period*1000);
 		}
 	}
+
+    void now(struct timespec *ts) {
+        clock_gettime(CLOCK_REALTIME, ts);
+    }
+
+    unsigned int timestamp_ms() {
+        struct timespec ts;
+        now(&ts);
+        unsigned long long res = ((unsigned long long)(ts.tv_sec)) * 1000000 + ((unsigned long long)(ts.tv_nsec)) / 1000;
+        return (unsigned int)(res/1000);
+    }
+
+    std::vector<unsigned int> ticks;
+    int count = 0;
+
+    bool is_time_to_push(){
+
+        ticks.push_back(timestamp_ms());
+        if (ticks.size() > 5){
+            ticks.erase(ticks.begin());
+        }
+
+        unsigned int sum = 0;
+        for (int i = 0; i< ticks.size()-1; i++){
+            sum += (ticks[i+1] - ticks[i]);
+        }
+
+        int period = ticks.size() > 1 ? sum/(ticks.size()-1): 0;
+        if (period == 0 || this->period == 0){
+            return true;
+        }
+
+        int rate = int(nearbyint(double(this->period)/double(period)));
+        int real_period = rate*period;
+        double error = fabs(1.0-(double(real_period)/double(this->period)));
+        if (error > 0.05){
+          //  ROS_WARN_ONCE("Topic '%s' real period is %dms", topic.c_str(), real_period);
+        }
+        if (++count > rate-1){
+            count = 0;
+            return true;
+        }
+        return false;
+    }
 
 
 	virtual void startRX(){
@@ -208,6 +256,12 @@ public:
         if (!justone && (stopped || shouldDecimate())) {
 			return;
 		}
+
+        if (!is_time_to_push()){
+            fprintf(stderr,"Not time to push\n");
+            return;
+        }
+        fprintf(stderr,"Time to push\n");
 
 		justone = false;
 
