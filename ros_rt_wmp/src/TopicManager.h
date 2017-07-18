@@ -189,7 +189,8 @@ public:
 		if (amIsrc) {
 			std::ostringstream s;
 			if (dests.size()>0){
-				s << n->getNamespace() << "/tx/" << name;
+//ARSI				s << n->getNamespace() << "/tx/" << name;
+				s << name;
 			}else{
 				s << n->getNamespace() << "/in/" << name;
 			}
@@ -258,10 +259,10 @@ public:
 		}
 
         if (!is_time_to_push()){
-            fprintf(stderr,"Not time to push\n");
+//            fprintf(stderr,"Not time to push\n");
             return;
         }
-        fprintf(stderr,"Time to push\n");
+//        fprintf(stderr,"Time to push\n");
 
 		justone = false;
 
