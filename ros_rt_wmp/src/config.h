@@ -54,7 +54,7 @@
 BEGIN_TOPIC_DEFINITION
 
 PTOPIC(theora_image_transport::Packet, "/net/image/theora",                 "0", "1", 51, 1,   500);
-PTOPIC(sensor_msgs::LaserScan,         "/hokuyo/scan",                      "0", "1", 50, 200, 500);
+PTOPIC(sensor_msgs::LaserScan,         "/scan/shaped",                      "0", "1", 50, 200, 500);
 PTOPIC(geometry_msgs::PoseStamped,     "/mavros/local_position/pose",       "0", "1", 50, 100, 500);
 PTOPIC(geometry_msgs::TwistStamped,    "/mavros/setpoint_velocity/cmd_vel", "0", "1", 50, 100, 500);
 PTOPIC(nav_msgs::Path,                 "/mavtest/local_plan",               "0", "1", 50, 200, 500);
