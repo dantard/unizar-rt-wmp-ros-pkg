@@ -342,7 +342,7 @@ static int readllcfg() {
     char filename[256], line[256];
     sprintf(DEV, "lo");
     sprintf(ESSID, "rt-wmp");
-    freq = 5200;
+    freq = 2412;
     txpower = 15;
 
     snprintf(filename, 256, "%s/.rt-wmp/rt-wmp-us-raw.ll", getenv("HOME"));
@@ -396,7 +396,7 @@ static int readllcfg() {
 
 void configure_card(){
     char cmd[256];
-    fprintf(stderr, "Checking sudoz...\n");
+    fprintf(stderr, "Checking sudo...\n");
     int res = system("sudo ls >/dev/null 2>1");
     if (res != 0){
         fprintf(stderr, "\nUnable to execute 'sudo' exiting...\n");
